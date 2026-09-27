@@ -478,11 +478,34 @@ reset role;
 
 -- School pools: saving a school puts you in its pool, for every tournament
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check((select count(*) from public.pools where school_emis = '200100823' and school_stage = 'high')
+select pg_temp.check((select count(*) from public.pools where school_emis = '200100823' and school_stage = 'high' and school_year is null)
                      = (select count(*) from public.seasons), 'a school pool per tournament');
-select pg_temp.check((select name from public.pools where school_emis = '200100823' limit 1) = 'Victoria Park High School', 'named after the school');
+select pg_temp.check((select name from public.pools where school_emis = '200100823' and school_year is null limit 1) = 'Victoria Park High School', 'named after the school');
 select pg_temp.check((select count(distinct pm.user_id) from public.pool_members pm join public.pools p on p.id = pm.pool_id
                       where p.school_emis = '200100823') = 2, 'schoolmates share the pool');
+-- Class pools: a pool per final year, and chat only there
+select pg_temp.check((select name from public.pools where school_emis = '200100823' and school_year = 1998 limit 1)
+                     = 'Victoria Park High School Class of 1998', 'a class pool is named after the school and year');
+select pg_temp.check((select count(*) from public.pool_members pm join public.pools p on p.id = pm.pool_id
+                      where p.school_emis = '200100823' and p.school_year = 1998 and pm.user_id = auth.uid())
+                     = (select count(*) from public.seasons), 'you are in your class pool for every tournament');
+select pg_temp.check((select count(*) from public.pools where school_emis = '200100823' and school_year = 1997) = 0,
+                     'another class''s pool stays out of sight');
+select pg_temp.check(public.class_pool_name('Hoërskool Jan van Riebeeck Pretoria', 2017::smallint) = 'Hoërskool Jan van Riebeec… Class of 2017',
+                     'long school names are shortened to fit');
+do $$ begin
+  insert into public.chat_messages (pool_id, author_id, body)
+  select id, auth.uid(), 'Hello everyone' from public.pools where school_emis = '200100823' and school_year is null limit 1;
+  raise exception 'FAILED: chatted in a whole-school pool';
+exception when insufficient_privilege then raise notice 'ok: whole-school pools have no chat';
+end $$;
+insert into public.chat_messages (pool_id, author_id, body)
+select id, auth.uid(), 'Class of 98!' from public.pools where school_emis = '200100823' and school_year = 1998 limit 1;
+select pg_temp.check((select count(*) from public.chat_messages where body = 'Class of 98!') = 1, 'class pools have chat');
+select pg_temp.check((select count(*) from public.school_classes((select id from public.pools where school_emis = '200100823' and school_year is null limit 1))) = 2,
+                     'the school pool lists its class years');
+select pg_temp.check((select count(*) from public.school_classes((select id from public.pools where school_emis = '200100120' and school_year is null limit 1))) = 1,
+                     'primary schools have class years too');
 delete from public.pool_members where pool_id in (select id from public.pools where school_emis is not null);
 select pg_temp.check((select count(*) from public.pool_members pm join public.pools p on p.id = pm.pool_id
                       where p.school_emis is not null and pm.user_id = auth.uid()) > 0, 'nobody leaves a school pool by hand');
@@ -493,6 +516,8 @@ exception when insufficient_privilege then raise notice 'ok: only the app makes 
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
 select pg_temp.check((select count(*) from public.pools where school_emis = '200100823') = 0, 'other schools can''t see the pool');
+select pg_temp.check((select count(*) from public.school_classes((select id from public.pools where school_emis = '200100823' and school_year is null limit 1))) = 0,
+                     'outsiders get no class table');
 do $$ declare c text; begin
   reset role; select join_code into c from public.pools where school_emis = '200100823' limit 1;
   perform pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
