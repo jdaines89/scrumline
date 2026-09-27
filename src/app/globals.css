@@ -560,3 +560,10 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 /* Admin numbers on /me/ */
 .numbers-h { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
 .mepage > .card { margin-top: 18px; }
+
+/* Notifications card on the profile page */
+.notify .notify-prefs { margin-top: 14px; display: grid; gap: 4px; }
+.notify .notify-prefs .toggle { margin-top: 0; }
+.notify .howto p { margin: 0 0 6px; }
+.notify .howto ol { margin: 0; padding-left: 20px; line-height: 1.7; }
+.notify .notify-install { margin-top: 14px; }

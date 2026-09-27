@@ -11,7 +11,7 @@ export interface Match {
   home_score: number | null; away_score: number | null;
   venue: string | null; status: string;
 }
-export interface Member { user_id: string; email: string; display_name: string; is_admin: boolean; email_reminders: boolean; avatar_path: string | null }
+export interface Member { user_id: string; email: string; display_name: string; is_admin: boolean; email_reminders: boolean; push_mentions: boolean; avatar_path: string | null }
 export interface School { emis: string; name: string; town: string | null; no_fee: boolean }
 export interface ChatMessage { id: number; author_id: string; body: string; created_at: string; image_path?: string | null }
 export interface Entry { id: number; user_id: string; season: string; team_name: string }

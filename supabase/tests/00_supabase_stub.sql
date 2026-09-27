@@ -37,3 +37,7 @@ create function storage.foldername(name text) returns text[] language sql immuta
 grant usage on schema storage to anon, authenticated, service_role;
 grant all on storage.objects to anon, authenticated, service_role;
 grant select on storage.buckets to anon, authenticated, service_role;
+
+-- Supabase Vault, reduced to the view the functions read.
+create schema vault;
+create table vault.decrypted_secrets (name text primary key, decrypted_secret text);
