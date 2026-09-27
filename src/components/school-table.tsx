@@ -29,16 +29,16 @@ export function SchoolTable() {
     .sort((a, b) => Number(b.average) - Number(a.average) || b.confirmed - a.confirmed || a.name.localeCompare(b.name));
   const waiting = (rows ?? []).filter((r) => r.average === null)
     .sort((a, b) => b.confirmed - a.confirmed || b.members - a.members || a.name.localeCompare(b.name));
-  const other: Stage = stage === "high" ? "primary" : "high";
 
   return (
     <>
-      <p className="small muted" style={{ margin: "0 0 10px" }}>
-        {stage === "high" ? "High schools" : "Primary schools"} ·{" "}
-        <button type="button" className="linkish small" onClick={() => setStage(other)}>
-          Show {other === "high" ? "high" : "primary"} schools
-        </button>
-      </p>
+      <div className="seg sm" role="tablist" aria-label="School stage">
+        {(["high", "primary"] as const).map((s) => (
+          <button key={s} type="button" role="tab" aria-selected={stage === s} className={stage === s ? "on" : ""} onClick={() => setStage(s)}>
+            {s === "high" ? "High schools" : "Primary schools"}
+          </button>
+        ))}
+      </div>
       {rows === null ? (
         <ol className="board" aria-busy="true" aria-label="Loading the table">
           {[0, 1].map((i) => <li key={i} className="skeleton" style={{ height: 64 }} />)}

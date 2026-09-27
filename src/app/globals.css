@@ -412,6 +412,14 @@ header.top .shell { position: relative; }
 .seg button { background: none; border: 0; color: var(--muted); border-radius: 999px; padding: 6px 16px; font-size: 13px; font-weight: 600; }
 .seg button:hover { background: none; color: var(--text); }
 .seg button.on { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--line); }
+.seg.sm { margin: 0 0 12px; }
+.classes { margin: 0 0 16px; }
+.classes-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 8px; }
+.classes-head h3 { margin: 0; font-size: 15px; }
+.classes-table { margin-bottom: 8px; }
+.classes-waiting { margin: 0 0 6px; }
+.nochat { text-align: left; }
+.seg.sm button { padding: 5px 14px; font-size: 12px; }
 
 /* Profile pictures: a photo in the same round frame as the initials. */
 img.avatar { object-fit: cover; padding: 0; }

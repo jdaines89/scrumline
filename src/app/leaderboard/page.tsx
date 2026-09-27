@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ClassTable } from "@/components/class-table";
 import { HeadToHead } from "@/components/head-to-head";
 import { NeedsPool, useLeague } from "@/components/league";
 import { PoolRace } from "@/components/pool-race";
@@ -28,6 +29,8 @@ function Leaderboard() {
   const [picked, setPicked] = useState<string | null>(null);
   const [view, setView] = useState<"overall" | "round" | "schools">("overall");
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
+  // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
+  const wholeSchool = !!pool!.school_emis && !pool!.school_year;
   const [prizes, reloadPrizes] = usePoolPrizes(pool!.id);
   useEffect(() => {
     setRows(readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
@@ -49,7 +52,7 @@ function Leaderboard() {
       </div>
       {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <RoundTable rows={rows} />) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
-        <PoolRace rows={rows} />
+        {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={rows} />}
         <ol className="board">
           {rows.map((r, i) => (
             <li key={r.user_id} className={`${r.user_id === me.user_id ? "me" : ""}${picked === r.user_id ? " open" : ""}`}

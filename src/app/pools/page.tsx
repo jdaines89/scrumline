@@ -61,7 +61,7 @@ export default function PoolsPage() {
                 <div className="small muted">{inIt.map((m) => m.user_id === me.user_id ? "You" : names.get(m.user_id) ?? "?").join(", ")}</div>
               </div>
               {p.school_emis ? (
-                <span className="small muted">Your {p.school_stage === "primary" ? "primary" : "high"} school</span>
+                <span className="small muted">{p.school_year ? "Your class" : `Your ${p.school_stage === "primary" ? "primary" : "high"} school`}</span>
               ) : (
                 <>
                   <div className="code">
