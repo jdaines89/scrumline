@@ -2,6 +2,8 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { usePathname } from "next/navigation";
+import { Join } from "@/components/join";
 import { clearCache } from "@/lib/cache";
 import { arrivedVia, configured, supabase } from "@/lib/supabase";
 
@@ -13,6 +15,7 @@ import { arrivedVia, configured, supabase } from "@/lib/supabase";
 export function AuthGate({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [mustSetPassword, setMustSetPassword] = useState(arrivedVia === "invite" || arrivedVia === "recovery");
+  const onJoin = (usePathname() ?? "").startsWith("/join");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -29,7 +32,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
       <p className="sub">Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_KEY to point the app at the league.</p></div>;
   }
   if (session === undefined) return <p className="muted">Loading&hellip;</p>;
-  if (!session) return <SignIn />;
+  if (!session) return onJoin ? <Join /> : <SignIn />;
   if (mustSetPassword) return <SetPassword email={session.user.email ?? ""} reset={arrivedVia === "recovery"} onDone={() => setMustSetPassword(false)} />;
   return <>{children}</>;
 }

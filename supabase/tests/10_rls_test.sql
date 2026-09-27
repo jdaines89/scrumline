@@ -844,4 +844,61 @@ select pg_temp.check((select active from public.weekly_metrics(1)) >= 1, 'an adm
 select pg_temp.check((select count(*) from public.round_participation('prize')) = 3, 'an admin sees participation per round');
 reset role;
 
+-- Personal invite links
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select code as invcode from public.my_invite() \gset
+select pg_temp.check((select used = 0 and cap = 20 from public.my_invite()), 'a player gets their own invite link');
+select pg_temp.check((select code from public.my_invite()) = :'invcode', 'and keeps the same one');
+do $$ begin
+  perform 1 from public.invite_codes;
+  raise exception 'FAILED: read invite codes directly';
+exception when insufficient_privilege then raise notice 'ok: nobody reads other players'' codes';
+end $$;
+do $$ begin
+  perform public.invite_check('x', 'y');
+  raise exception 'FAILED: a player called invite_check';
+exception when insufficient_privilege then raise notice 'ok: only the join function checks invites';
+end $$;
+reset role;
+select display_name as invname from public.members where user_id = '00000000-0000-0000-0000-00000000000a' \gset
+select pg_temp.as_user(null);
+select pg_temp.check((select inviter from public.invite_info(:'invcode')) = :'invname',
+                     'the join page shows who invited you');
+select pg_temp.check((select count(*) from public.invite_info('zzzzzzzzzz')) = 0, 'a made-up code shows nothing');
+reset role;
+set role service_role;
+select pg_temp.check((select inviter::text from public.invite_check(:'invcode', 'newbie@example.com')) = '00000000-0000-0000-0000-00000000000a', 'a good link and a new email may join');
+select pg_temp.check((select problem from public.invite_check(:'invcode', 'andy@example.com')) = 'exists', 'someone already in is told to sign in');
+select pg_temp.check((select problem from public.invite_check(:'invcode', 'not-an-email')) like '%email%', 'a bad email is refused');
+select pg_temp.check((select problem from public.invite_check('zzzzzzzzzz', 'x@example.com')) like '%isn''t valid%', 'a bad link is refused');
+reset role;
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000d1', 'newbie@example.com', now(), '{"display_name":"Newbie"}');
+set role service_role;
+select public.invite_record('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-00000000000a', 'Newbie@Example.com');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select used from public.my_invite()) = 1, 'the invite counts against the link');
+select pg_temp.check((select count(*) from public.invites) = 1, 'the inviter sees who they brought in');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.invites) = 0, 'nobody else does');
+reset role;
+insert into public.member_schools (user_id, stage, emis, last_year) values ('00000000-0000-0000-0000-00000000000a', 'high', '200100823', 2017)
+on conflict (user_id, stage) do update set emis = excluded.emis;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000d1');
+insert into public.member_schools (user_id, stage, emis, last_year) values (auth.uid(), 'high', '200100823', 2017);
+reset role;
+select pg_temp.check(exists (select 1 from public.school_vouches where voucher_id = '00000000-0000-0000-0000-00000000000a'
+                     and member_id = '00000000-0000-0000-0000-0000000000d1' and stage = 'high'),
+                     'being invited by a schoolmate counts as their confirmation');
+select pg_temp.check(not exists (select 1 from public.school_vouches where member_id = '00000000-0000-0000-0000-0000000000d1' and stage = 'primary'),
+                     'but only for the school they share');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.reset_invite_code();
+select pg_temp.check((select code from public.my_invite()) <> :'invcode', 'a reset gives a new link');
+reset role;
+set role service_role;
+select pg_temp.check((select problem from public.invite_check(:'invcode', 'another@example.com')) like '%isn''t valid%', 'and the old one stops working');
+reset role;
+
 \echo ALL CHECKS PASSED

@@ -560,3 +560,9 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 /* Admin numbers on /me/ */
 .numbers-h { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
 .mepage > .card { margin-top: 18px; }
+
+/* Invite link card (Pools) and the join page */
+.invite .row input { font-size: 14px; color: var(--muted); }
+.invite .invite-foot { margin: 10px 0 0; }
+.invite .invite-foot .linkish { font-size: inherit; font-weight: 400; color: var(--muted); text-decoration: underline; }
+.join .join-foot { margin: 14px 0 0; }
