@@ -1,5 +1,6 @@
 "use client";
 
+import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
@@ -37,6 +38,7 @@ function ChatOrClass() {
 
 function Chat() {
   const { me, members: everyone, pool } = useLeague();
+  const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
   const members = useMemo(() => everyone.filter((m) => inPool.has(m.user_id)), [everyone, inPool]);
@@ -254,6 +256,7 @@ function Chat() {
   return (
     <div className="card chat">
       <h2>{pool!.name}</h2>
+      <SponsorLine sponsor={sponsor} />
       <div className="chatlog" ref={log} onScroll={(e) => {
         const el = e.currentTarget;
         atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;

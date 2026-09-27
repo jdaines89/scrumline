@@ -914,6 +914,8 @@ reset role;
 select pg_temp.check((select status from public.sponsor_bookings where id = :lapse) = 'lapsed', 'the old hold is marked lapsed');
 select pg_temp.check(public.sponsor_booking_paid(:lapse, 'paystack', 'late', 100001, 'ZAR') = 'slot taken while payment was pending',
                      'a late payment for a lost slot is flagged for refund');
+select pg_temp.check((select status = 'refund_due' and provider_ref = 'late' from public.sponsor_bookings where id = :lapse),
+                     'and recorded, so the money is traceable');
 
 -- Payment, as the webhook would record it.
 select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 149999, 'ZAR') = 'amount mismatch', 'a wrong amount is refused');
@@ -965,6 +967,21 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select reached = 2 and seen = 2 and shares = 2 and taps = 1 and own_due = 30000 and own_paid = 0
                       from public.sponsor_results(:bk)), 'the sponsor sees reach, shares, taps and money due to schools');
 select pg_temp.check((select raised_minor = 20000 + 13334 from public.school_raised('900000001', 'spon')), 'a school page shows what it raised');
+select pg_temp.check((select count(*) from public.my_sponsorships()) = 3, 'a sponsor lists its own bookings');
+select pg_temp.check((select string_agg(school || ':' || amount_minor, ' ' order by share, amount_minor desc) from public.sponsor_allocations(:bk))
+                     = 'Sponsor High One:20000 Sponsor High Two:10000 No-fee Twin:20000 Scrumline Schools Foundation fund:10000',
+                     'a sponsor sees where its school money goes');
+select pg_temp.check((select sum(seen) from public.sponsor_daily where booking_id = :bk) = 2, 'a sponsor reads its daily counts');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) from public.sponsor_daily) = 0, 'but not anyone else''s');
+select pg_temp.check((select string_agg(status, ',') from public.my_sponsorships()) = 'refund_due', 'a sponsor sees a payment that is owed back');
+reset role;
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('sp1', 'spon', 1, now() - interval '1 day', '142072', '142073', 'FT', 'test'),
+  ('sp2', 'spon', 2, now() + interval '2 days', '142072', '142073', 'SCHEDULED', 'test');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) >= 1 and bool_and(next_round = 2) from public.sponsor_slots('900000001', 'spon')),
+                     'a business finds a school''s pools and the next open round');
 reset role;
 set role anon;
 do $$ begin

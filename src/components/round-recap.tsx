@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { PoolPrize } from "@/lib/prizes";
+import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import type { LeaderRow } from "@/lib/types";
 
 interface Scored {
@@ -20,7 +21,7 @@ interface Line { label: string; text: string }
  * so pool mates can already read every one of them. Share turns it into an
  * image for the group chat.
  */
-export function RoundRecap({ rows, prizes = [] }: { rows: LeaderRow[]; prizes?: PoolPrize[] }) {
+export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: LeaderRow[]; prizes?: PoolPrize[]; sponsor?: PoolSponsor | null }) {
   const { matches, teams, pool, season } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
   const [note, setNote] = useState<string | null>(null);
@@ -92,7 +93,8 @@ export function RoundRecap({ rows, prizes = [] }: { rows: LeaderRow[]; prizes?: 
 
   async function share() {
     setNote(null);
-    const blob = await drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table);
+    const blob = await drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, sponsor?.display_name ?? null);
+    if (sponsor) sponsorEvent(sponsor.booking_id, "share");
     const file = new File([blob], `scrumline-round-${recap!.round}.png`, { type: "image/png" });
     const text = `${title}, ${pool!.name}\n` + recap!.lines.map((l) => `${l.label}: ${l.text}`).join("\n");
     try {
@@ -119,7 +121,7 @@ export function RoundRecap({ rows, prizes = [] }: { rows: LeaderRow[]; prizes?: 
 }
 
 // The recap as a 1080x1350 image, in the app's colours, for WhatsApp and friends.
-async function drawCard(sub: string, title: string, lines: Line[], table: { name: string; pts: number; rank: number }[]): Promise<Blob> {
+async function drawCard(sub: string, title: string, lines: Line[], table: { name: string; pts: number; rank: number }[], sponsor: string | null): Promise<Blob> {
   const W = 1080, H = 1350, pad = 80;
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
@@ -151,12 +153,20 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
   // The pool table after this round, as much of it as fits.
   g.strokeStyle = "#24382f"; g.lineWidth = 2;
   for (const t of table) {
-    if (y + 20 > H - 60) break;
+    if (y + 20 > H - (sponsor ? 140 : 60)) break;
     g.beginPath(); g.moveTo(pad, y - 44); g.lineTo(W - pad, y - 44); g.stroke();
     g.fillStyle = "#8aa79a"; g.font = font(600, 32); g.fillText(String(t.rank), pad, y);
     g.fillStyle = "#e8f0ec"; g.fillText(t.name, pad + 60, y);
     g.font = font(800, 32); g.textAlign = "right"; g.fillText(String(t.pts), W - pad, y); g.textAlign = "left";
     y += 62;
+  }
+  // The sponsor's footer: one quiet line, like the one in the app.
+  if (sponsor) {
+    g.fillStyle = "#131e1b"; g.fillRect(0, H - 100, W, 100);
+    g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText("Prizes by ", pad, H - 40);
+    const x = pad + g.measureText("Prizes by ").width;
+    g.fillStyle = "#e8f0ec"; g.font = font(700, 28); g.fillText(sponsor, x, H - 40);
+    g.fillStyle = "#8aa79a"; g.font = font(600, 24); g.textAlign = "right"; g.fillText("scrumline", W - pad, H - 40); g.textAlign = "left";
   }
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
 }

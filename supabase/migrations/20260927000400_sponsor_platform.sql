@@ -123,7 +123,7 @@ create table public.sponsor_bookings (
   twin_school_minor bigint not null,
   prize_minor      bigint not null,
   scrumline_minor  bigint not null,
-  status           text not null default 'held' check (status in ('held', 'paid', 'live', 'ended', 'refunded', 'lapsed')),
+  status           text not null default 'held' check (status in ('held', 'paid', 'live', 'ended', 'refund_due', 'refunded', 'lapsed')),
   held_until       timestamptz not null default now() + interval '30 minutes',
   provider         text,
   provider_ref     text unique,
@@ -273,7 +273,10 @@ begin
   if b.status not in ('held', 'lapsed') then return 'booking is ' || b.status; end if;
   if b.status = 'lapsed' and exists (select 1 from public.sponsor_bookings o
        where o.pool_id = b.pool_id and o.round is not distinct from b.round and o.id <> b.id and o.status in ('held', 'paid', 'live')) then
-    return 'slot taken while payment was pending';  -- to be refunded
+    -- The money arrived but the slot is gone: record it so it's refunded.
+    update public.sponsor_bookings set status = 'refund_due', provider = p_provider, provider_ref = p_ref, paid_at = now()
+    where id = b.id;
+    return 'slot taken while payment was pending';
   end if;
 
   update public.sponsor_bookings
@@ -438,6 +441,66 @@ as $$
   where a.emis = p_emis and public.is_member()
 $$;
 
+-- A sponsor looking for a school: its whole-school pool and class pools in
+-- one tournament, with prices and who has them. A school's pools are the
+-- school's public face, so any signed-in business can see them.
+create or replace function public.sponsor_slots(p_emis text, p_season text, p_country text default 'ZA')
+returns table (pool_id bigint, pool_name text, kind text, school_year int, players int, price_minor bigint,
+               currency text, available boolean, taken_by text,
+               next_round int, round_price_minor bigint, round_available boolean)
+language sql stable
+security definer
+set search_path = public
+as $$
+  with nr as (
+    select min(m.round) as r from public.matches m
+    where m.season = p_season
+      and not exists (select 1 from public.matches o where o.season = p_season and o.round = m.round and o.kickoff_at <= now())
+  )
+  select p.id, p.name, q.kind, p.school_year, q.players, q.price_minor, q.currency, q.available, q.taken_by,
+         nr.r, rq.price_minor, rq.available
+  from public.pools p
+  cross join nr
+  cross join lateral public.sponsor_quote(p.id, null, p_country) q
+  left join lateral public.sponsor_quote(p.id, nr.r, p_country) rq on nr.r is not null
+  where p.school_emis = p_emis and p.season = p_season and auth.uid() is not null
+  order by p.school_year is not null, p.school_year desc
+$$;
+
+-- Everything a sponsor account has bought, newest first.
+create or replace function public.my_sponsorships()
+returns table (booking_id bigint, sponsor_id bigint, sponsor_name text, pool_name text, season_name text, round int,
+               status text, price_minor bigint, currency text, creative_status text, created_at timestamptz)
+language sql stable
+security definer
+set search_path = public
+as $$
+  select b.id, s.id, s.name, p.name, se.name, b.round, b.status, b.price_minor, b.currency, c.status, b.created_at
+  from public.sponsor_bookings b
+  join public.sponsors s on s.id = b.sponsor_id
+  join public.pools p on p.id = b.pool_id
+  join public.seasons se on se.id = p.season
+  left join public.sponsor_creatives c on c.booking_id = b.id
+  where b.status <> 'lapsed'
+    and exists (select 1 from public.sponsor_managers sm where sm.sponsor_id = s.id and sm.user_id = auth.uid())
+  order by b.created_at desc
+$$;
+
+-- Where a booking's school money goes, school by school.
+create or replace function public.sponsor_allocations(p_booking bigint)
+returns table (school text, share text, amount_minor bigint, currency text, status text)
+language sql stable
+security definer
+set search_path = public
+as $$
+  select coalesce(sc.name, 'Scrumline Schools Foundation fund'), a.share, a.amount_minor, a.currency, a.status
+  from public.school_allocations a
+  join public.sponsor_bookings b on b.id = a.booking_id
+  left join public.schools sc on sc.emis = a.emis
+  where a.booking_id = p_booking and public.manages_sponsor(b.sponsor_id)
+  order by a.share, a.amount_minor desc
+$$;
+
 -- 10. Access ----------------------------------------------------------------------
 alter table public.countries enable row level security;
 alter table public.school_twins enable row level security;
@@ -461,11 +524,13 @@ create policy "read" on public.school_twins for select to authenticated using (t
 create policy "read" on public.sponsor_prices for select to authenticated using (true);
 
 -- A sponsor's own records, for the people who manage it (and admins).
-grant select on public.sponsors, public.sponsor_managers, public.sponsor_bookings, public.sponsor_creatives, public.school_allocations to authenticated;
+grant select on public.sponsors, public.sponsor_managers, public.sponsor_bookings, public.sponsor_creatives, public.school_allocations, public.sponsor_daily to authenticated;
 create policy "your sponsor" on public.sponsors for select to authenticated using (public.manages_sponsor(id));
 create policy "your sponsor" on public.sponsor_managers for select to authenticated using (public.manages_sponsor(sponsor_id));
 create policy "your bookings" on public.sponsor_bookings for select to authenticated using (public.manages_sponsor(sponsor_id));
 create policy "your creatives" on public.sponsor_creatives for select to authenticated
+  using (exists (select 1 from public.sponsor_bookings b where b.id = booking_id and public.manages_sponsor(b.sponsor_id)));
+create policy "your results" on public.sponsor_daily for select to authenticated
   using (exists (select 1 from public.sponsor_bookings b where b.id = booking_id and public.manages_sponsor(b.sponsor_id)));
 create policy "your allocations" on public.school_allocations for select to authenticated
   using (exists (select 1 from public.sponsor_bookings b where b.id = booking_id and public.manages_sponsor(b.sponsor_id)));
@@ -493,12 +558,14 @@ revoke execute on function public.manages_sponsor(bigint), public.pool_kind(bigi
   public.hold_sponsor_slot(bigint, bigint, int), public.sponsor_booking_paid(bigint, text, text, bigint, text),
   public.review_sponsor_creative(bigint, boolean), public.save_sponsor_creative(bigint, text, text, text, text, text),
   public.pool_sponsors(bigint), public.sponsor_event(bigint, text), public.sponsor_results(bigint),
-  public.school_raised(text, text), public.create_sponsor(text, text, text, text)
+  public.school_raised(text, text), public.create_sponsor(text, text, text, text),
+  public.sponsor_slots(text, text, text), public.my_sponsorships(), public.sponsor_allocations(bigint)
   from public, anon;
 grant execute on function public.sponsor_quote(bigint, int, text), public.hold_sponsor_slot(bigint, bigint, int),
   public.review_sponsor_creative(bigint, boolean), public.save_sponsor_creative(bigint, text, text, text, text, text),
   public.pool_sponsors(bigint), public.sponsor_event(bigint, text), public.sponsor_results(bigint),
-  public.school_raised(text, text), public.create_sponsor(text, text, text, text), public.manages_sponsor(bigint)
+  public.school_raised(text, text), public.create_sponsor(text, text, text, text), public.manages_sponsor(bigint),
+  public.sponsor_slots(text, text, text), public.my_sponsorships(), public.sponsor_allocations(bigint)
   to authenticated;
 revoke execute on function public.sponsor_booking_paid(bigint, text, text, bigint, text) from authenticated;
 do $$ begin
