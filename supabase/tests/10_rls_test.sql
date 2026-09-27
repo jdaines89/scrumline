@@ -844,4 +844,143 @@ select pg_temp.check((select active from public.weekly_metrics(1)) >= 1, 'an adm
 select pg_temp.check((select count(*) from public.round_participation('prize')) = 3, 'an admin sees participation per round');
 reset role;
 
+-- Sponsor platform: prices, one sponsor per slot, the split, and results
+reset role;
+insert into public.seasons (id, name, is_replay, competition_id, feed_season) values ('spon', 'Sponsor test', false, '5069', 'spon');
+insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source) values
+  ('900000001', 'Sponsor High One', 'Stellenbosch', 'WC', false, false, true, 'test'),
+  ('900000002', 'Sponsor High Two', 'Stellenbosch', 'WC', false, false, true, 'test'),
+  ('900000011', 'No-fee Twin', 'Kayamandi', 'WC', true, false, true, 'test');
+insert into public.school_twins values ('900000001', '900000011');
+delete from public.school_vouches where stage = 'high';
+delete from public.member_schools where stage = 'high';
+insert into public.member_schools (user_id, stage, emis, last_year) values
+  ('00000000-0000-0000-0000-00000000000a', 'high', '900000001', 1997),
+  ('00000000-0000-0000-0000-00000000000b', 'high', '900000001', 1997),
+  ('00000000-0000-0000-0000-00000000000c', 'high', '900000002', 1997);
+insert into public.pools (season, name, created_by) values ('spon', 'Sponsored mates', '00000000-0000-0000-0000-00000000000a');
+insert into public.pool_members (pool_id, user_id)
+  select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
+                                                '00000000-0000-0000-0000-00000000000c']::uuid[]) u
+  where name = 'Sponsored mates' on conflict do nothing;
+-- A price that doesn't divide evenly, to prove the cents always add up.
+insert into public.sponsor_prices values ('ZA', 'pool', 3, 150000, 100001);
+create temp table sp as select id from public.pools where name = 'Sponsored mates';
+grant select on sp to authenticated;
+
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.create_sponsor('ZA', 'Lucky Bets', 'betting', 'bets@example.com');
+  raise exception 'FAILED: a betting sponsor signed up';
+exception when check_violation then raise notice 'ok: betting sponsors are refused';
+end $$;
+select public.create_sponsor('ZA', 'Van Zyl Motors', 'motoring', 'Paul@Example.com') as vz \gset
+select pg_temp.check((select email from public.sponsors where id = :vz) = 'paul@example.com', 'a business sets up its sponsor account');
+select pg_temp.check((select players = 3 and kind = 'pool' and price_minor = 150000 and available
+                      from public.sponsor_quote((select id from sp))), 'the quote shows players, kind and price');
+select public.hold_sponsor_slot(:vz, (select id from sp)) as bk \gset
+select pg_temp.check((select own_school_minor = 30000 and twin_school_minor = 30000 and prize_minor = 30000 and scrumline_minor = 60000
+                      from public.sponsor_bookings where id = :bk), 'the split is 20/20/20/40');
+select public.hold_sponsor_slot(:vz, (select id from sp), 1) as bk1 \gset
+select pg_temp.check((select own_school_minor + twin_school_minor + prize_minor + scrumline_minor = 100001 and scrumline_minor = 40001
+                      from public.sponsor_bookings where id = :bk1), 'an odd price still adds up, remainder to Scrumline');
+do $$ begin
+  perform public.sponsor_booking_paid(1, 'paystack', 'x', 1, 'ZAR');
+  raise exception 'FAILED: a player marked a booking paid';
+exception when insufficient_privilege then raise notice 'ok: only the payment webhook can mark a booking paid';
+end $$;
+
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select public.create_sponsor('ZA', 'Rival Motors', 'motoring', 'rival@example.com') as rv \gset
+do $$ begin
+  perform public.hold_sponsor_slot(currval(pg_get_serial_sequence('public.sponsors', 'id')), (select id from sp));
+  raise exception 'FAILED: two sponsors held one slot';
+exception when raise_exception then raise notice 'ok: one sponsor per pool per season';
+end $$;
+select pg_temp.check((select count(*) from public.sponsor_bookings) = 0, 'a sponsor can''t see another sponsor''s bookings');
+select pg_temp.check((select count(*) from public.sponsors) = 1, 'a sponsor sees only its own account');
+do $$ begin
+  perform public.hold_sponsor_slot((select min(id) from public.sponsors s0 where s0.name = 'Van Zyl Motors'), (select id from sp), 5);
+  raise exception 'FAILED: booked for someone else''s sponsor account';
+exception when insufficient_privilege then raise notice 'ok: nobody books in another sponsor''s name';
+end $$;
+select public.hold_sponsor_slot(:rv, (select id from sp), 2) as lapse \gset
+reset role;
+update public.sponsor_bookings set held_until = now() - interval '1 minute' where id = :lapse;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.hold_sponsor_slot(:vz, (select id from sp), 2) as bk2 \gset
+select pg_temp.check(:bk2 > 0, 'an unpaid hold lapses after 30 minutes and frees the slot');
+reset role;
+select pg_temp.check((select status from public.sponsor_bookings where id = :lapse) = 'lapsed', 'the old hold is marked lapsed');
+select pg_temp.check(public.sponsor_booking_paid(:lapse, 'paystack', 'late', 100001, 'ZAR') = 'slot taken while payment was pending',
+                     'a late payment for a lost slot is flagged for refund');
+
+-- Payment, as the webhook would record it.
+select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 149999, 'ZAR') = 'amount mismatch', 'a wrong amount is refused');
+select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 150000, 'ZAR') = 'ok', 'the exact amount marks it paid');
+select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 150000, 'ZAR') = 'already paid', 'a repeated webhook is harmless');
+select pg_temp.check((select status from public.sponsor_bookings where id = :bk) = 'paid', 'paid but not live before the creative is approved');
+select pg_temp.check((select string_agg(coalesce(emis, 'fund') || ':' || share || ':' || amount_minor, ' ' order by share, emis nulls last)
+                      from public.school_allocations where booking_id = :bk)
+                     = '900000001:own:20000 900000002:own:10000 900000011:twin:20000 fund:twin:10000',
+                     'schools get their players'' share, twins mirror it, no twin goes to the fund');
+select pg_temp.check(public.sponsor_booking_paid(:bk1, 'paystack', 'ref-2', 100001, 'ZAR') = 'ok', 'the round booking is paid');
+select pg_temp.check((select bool_and(t = 20000) from (select sum(amount_minor) t from public.school_allocations where booking_id = :bk1 group by share) x),
+                     'uneven shares still add up to the cent');
+
+-- The creative goes live only once approved.
+select set_config('test.bk', :'bk', false);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+do $$ begin
+  perform public.save_sponsor_creative(current_setting('test.bk')::bigint, 'Hijack', null, null, null);
+  raise exception 'FAILED: changed another sponsor''s creative';
+exception when insufficient_privilege then raise notice 'ok: only the sponsor edits its creative';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Paul Roos alumni: 15% off your next service', 'https://example.com', 'R500 service voucher');
+select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'nothing shows before approval');
+do $$ begin
+  perform public.review_sponsor_creative(current_setting('test.bk')::bigint, true);
+  raise exception 'FAILED: a sponsor approved itself';
+exception when insufficient_privilege then raise notice 'ok: only admins approve creatives';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.review_sponsor_creative(:bk, true);
+select pg_temp.check((select offer from public.pool_sponsors((select id from sp)) where round is null) like 'Paul Roos%', 'approved: the pool sees the sponsor');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Now 20% off', null, null);
+select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'an edited creative goes off air until reviewed');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.review_sponsor_creative(:bk, true);
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'outsiders don''t see a pool''s sponsor');
+
+-- Results: seen once per player per day, shares every time.
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.sponsor_event(:bk, 'seen'); select public.sponsor_event(:bk, 'seen'); select public.sponsor_event(:bk, 'share');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select public.sponsor_event(:bk, 'seen'); select public.sponsor_event(:bk, 'share'); select public.sponsor_event(:bk, 'tap');
+select pg_temp.check((select count(*) from public.sponsor_results(:bk)) = 0, 'players can''t read a sponsor''s results');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select reached = 2 and seen = 2 and shares = 2 and taps = 1 and own_due = 30000 and own_paid = 0
+                      from public.sponsor_results(:bk)), 'the sponsor sees reach, shares, taps and money due to schools');
+select pg_temp.check((select raised_minor = 20000 + 13334 from public.school_raised('900000001', 'spon')), 'a school page shows what it raised');
+reset role;
+set role anon;
+do $$ begin
+  perform 1 from public.sponsor_bookings;
+  raise exception 'FAILED: anon read bookings';
+exception when insufficient_privilege then raise notice 'ok: signed-out visitors see no bookings';
+end $$;
+reset role;
+update public.countries set open_to_sponsors = false where code = 'ZA';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.hold_sponsor_slot((select min(id) from public.sponsors), (select id from sp), 9);
+  raise exception 'FAILED: booked in a closed country';
+exception when raise_exception then raise notice 'ok: countries open to sponsors one at a time';
+end $$;
+reset role;
+update public.countries set open_to_sponsors = true where code = 'ZA';
+
 \echo ALL CHECKS PASSED
