@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { MySchools } from "@/components/my-schools";
+import { NotifySettings } from "@/components/notify-settings";
 import { Numbers } from "@/components/numbers";
 import { useLeague } from "@/components/league";
+import { signOut } from "@/lib/push";
 import { supabase } from "@/lib/supabase";
 
-/** Your picture, name, team, schools, password and reminders, in one place. */
+/** Your picture, name, team, schools, notifications and password, in one place. */
 export default function MePage() {
   const { me, members, entry, season } = useLeague();
   const [name, setName] = useState(me.display_name);
   const [team, setTeam] = useState(entry?.team_name ?? "");
   const [password, setPassword] = useState("");
-  const [remind, setRemind] = useState(me.email_reminders);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const say = (ok: boolean, text: string) => setMsg({ ok, text });
@@ -48,11 +49,6 @@ export default function MePage() {
     say(true, "Password changed.");
   }
 
-  async function toggleReminders(on: boolean) {
-    setRemind(on);
-    const { error } = await supabase.from("members").update({ email_reminders: on }).eq("user_id", me.user_id);
-    if (error) { setRemind(!on); say(false, error.message); }
-  }
 
   return (
     <div className="mepage">
@@ -90,6 +86,8 @@ export default function MePage() {
             <MySchools me={me} members={members} onMessage={say} />
           </div>
 
+          <NotifySettings me={me} onMessage={say} />
+
           <div className="card">
             <h2>Account</h2>
             <form onSubmit={savePassword} className="stack profile">
@@ -100,10 +98,6 @@ export default function MePage() {
               </div>
             </form>
 
-            <label className="small muted toggle">
-              <input type="checkbox" checked={remind} onChange={(e) => toggleReminders(e.target.checked)} />
-              Email me an hour before kickoff if I haven&apos;t called a score
-            </label>
 
             <div className="me-biz">
               <strong>Own a business?</strong>
@@ -115,7 +109,7 @@ export default function MePage() {
               <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
               <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}</div>
             </div>
-            <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
+            <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
           </div>
         </div>
       </div>

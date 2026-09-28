@@ -321,7 +321,7 @@ function Predict() {
         {!season.is_replay && (
           <label className="small muted toggle">
             <input type="checkbox" checked={remind} onChange={(e) => toggleReminders(e.target.checked)} />
-            Email me an hour before kickoff if I haven&apos;t called a score
+            Remind me an hour before kickoff if I haven&apos;t called a score
           </label>
         )}
         {!done && (

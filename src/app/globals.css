@@ -561,6 +561,14 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 .numbers-h { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
 .mepage > .card { margin-top: 18px; }
 
+/* Notifications card on the profile page */
+.notify .notify-prefs { margin-top: 14px; display: grid; gap: 4px; }
+.notify .notify-prefs .toggle { margin-top: 0; }
+.notify .notify-prefs .seg { justify-self: start; margin: 2px 0 6px; }
+.notify .notify-prefs p { margin: 0 0 6px; }
+.notify .howto p { margin: 0 0 6px; }
+.notify .howto ol { margin: 0; padding-left: 20px; line-height: 1.7; }
+.notify .notify-install { margin-top: 14px; }
 /* Invite link card (Pools) and the join page */
 .invite .row input { font-size: 14px; color: var(--muted); }
 .invite .invite-foot { margin: 10px 0 0; }
@@ -688,3 +696,7 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 .lookafter .stack > * { min-width: 0; }
 .lookafter .row > select { flex: 1; min-width: 0; }
 .claim-line .linkish { color: inherit; font-size: inherit; font-weight: 500; text-decoration: underline; }
+
+/* Official school pools */
+svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; color: var(--accent); flex: none; }
+.nowrap { white-space: nowrap; }

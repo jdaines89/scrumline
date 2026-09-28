@@ -514,6 +514,20 @@ do $$ begin
   raise exception 'FAILED: made a school pool by hand';
 exception when insufficient_privilege then raise notice 'ok: only the app makes school pools';
 end $$;
+do $$ declare n text; begin
+  foreach n in array array['Victoria Park High School', 'victoria-park high school', 'Victoria Park High School Class of 1998', 'Mates ✓'] loop
+    begin
+      insert into public.pools (season, name, created_by) values ('2026', n, auth.uid());
+      raise exception 'FAILED: a pool passed itself off as a school: %', n;
+    exception when check_violation then null;
+    end;
+  end loop;
+  raise notice 'ok: a pool anyone starts can''t take a school''s name or a tick';
+end $$;
+insert into public.pools (season, name, created_by) values ('2026', 'Victoria Park braai crew', auth.uid());
+select pg_temp.check(exists (select 1 from public.pools where name = 'Victoria Park braai crew'), 'but can mention the school');
+reset role;
+delete from public.pools where name = 'Victoria Park braai crew';
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
 select pg_temp.check((select count(*) from public.pools where school_emis = '200100823') = 0, 'other schools can''t see the pool');
 select pg_temp.check((select count(*) from public.school_classes((select id from public.pools where school_emis = '200100823' and school_year is null limit 1))) = 0,
@@ -844,6 +858,87 @@ select pg_temp.check((select active from public.weekly_metrics(1)) >= 1, 'an adm
 select pg_temp.check((select count(*) from public.round_participation('prize')) = 3, 'an admin sees participation per round');
 reset role;
 
+-- Push notifications
+reset role;
+insert into public.pools (season, name, created_by) values ('2027', 'Push pool', '00000000-0000-0000-0000-00000000000a');
+insert into public.pool_members (pool_id, user_id)
+select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b']::uuid[]) u
+where name = 'Push pool' on conflict do nothing;
+select id as pushpool from public.pools where name = 'Push pool' \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.save_push_subscription('https://push.example/b1', repeat('k', 87), repeat('a', 22));
+select pg_temp.check((select count(*) from public.push_subscriptions) = 1, 'a player saves their phone for push');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.push_subscriptions) = 0, 'nobody sees another player''s phones');
+delete from public.push_subscriptions;
+insert into public.chat_messages (pool_id, body) values (:pushpool, 'Big call this week <@00000000-0000-0000-0000-00000000000b>');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.chat_messages (pool_id, body) values (:pushpool, 'Talking to myself <@00000000-0000-0000-0000-00000000000b>');
+update public.members set push_mentions = false where user_id = auth.uid();
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.chat_messages (pool_id, body) values (:pushpool, 'Again <@00000000-0000-0000-0000-00000000000b>');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+do $$ begin
+  perform public.save_push_subscription('https://push.example/x', repeat('k', 87), repeat('a', 22));
+  raise exception 'FAILED: a stranger saved a phone';
+exception when insufficient_privilege then raise notice 'ok: a stranger can''t sign up for push';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform public.push_claim(10);
+  raise exception 'FAILED: a player claimed the push queue';
+exception when insufficient_privilege then raise notice 'ok: only the sender reads the push queue';
+end $$;
+reset role;
+select pg_temp.check((select count(*) from notify.push_outbox) = 1, 'a tag queues one push; tagging yourself or turning tags off queues none');
+select pg_temp.check((select title from notify.push_outbox) = (select display_name from public.members where user_id = '00000000-0000-0000-0000-00000000000a') || ' tagged you in Push pool',
+                     'the push says who tagged you and where');
+select pg_temp.check((select body not like '%<@%' and body like 'Big call this week @%' from notify.push_outbox), 'tags read as names in the push');
+select pg_temp.check((select url from notify.push_outbox) like '%/chat/?pool=' || :pushpool, 'tapping it opens that pool''s chat');
+select array_agg(id)::text as pushids from notify.push_outbox \gset
+set role service_role;
+select pg_temp.check((select count(*) from public.push_claim(10)) = 1, 'the sender gets the message for each phone');
+select pg_temp.check((select count(*) from public.push_claim(10)) = 0, 'a message is handed out once');
+select public.push_finish(:'pushids'::bigint[], array['https://push.example/b1']);
+reset role;
+select pg_temp.check((select count(*) from notify.push_outbox where sent_at is null) = 0, 'sent messages are marked sent');
+select pg_temp.check(not exists (select 1 from public.push_subscriptions where endpoint = 'https://push.example/b1'), 'a phone the push service says is gone is forgotten');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select public.save_push_subscription('https://push.example/c1', repeat('k', 87), repeat('a', 22));
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.save_push_subscription('https://push.example/c1', repeat('k', 87), repeat('a', 22));
+select pg_temp.check((select user_id::text from public.push_subscriptions where endpoint = 'https://push.example/c1') = '00000000-0000-0000-0000-00000000000a',
+                     'a phone that changes hands pushes to the new player');
+select pg_temp.check(public.push_public_key() is null, 'no push key until push is switched on');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select public.save_push_subscription('https://push.example/c2', repeat('k', 87), repeat('a', 22));
+reset role;
+insert into notify.settings (key, value) values ('vapid_public_key', 'BPublicKeyForTests');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(public.push_public_key() = 'BPublicKeyForTests', 'players get the public push key');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+select pg_temp.check(public.push_public_key() is null, 'strangers don''t');
+reset role;
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('t-push', '2027', 2, now() + interval '20 minutes', '142072', '142073', 'SCHEDULED', 'test');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+update public.members set reminder_by = 'email' where user_id = '00000000-0000-0000-0000-00000000000c';
+select pg_temp.check((select reminder_by from public.members where user_id = '00000000-0000-0000-0000-00000000000c') = 'email', 'a player can ask for reminders by email');
+update public.members set reminder_by = 'email' where user_id = '00000000-0000-0000-0000-00000000000a';
+reset role;
+select pg_temp.check((select reminder_by from public.members where user_id = '00000000-0000-0000-0000-00000000000a') = 'push', 'but not for someone else');
+select notify.send_reminders();
+select pg_temp.check((select count(*) from notify.push_outbox where tag = 'kickoff' and sent_at is null
+                      and user_id = '00000000-0000-0000-0000-00000000000a') = 1,
+                     'kickoff reminders go by push to players with a phone');
+select pg_temp.check(not exists (select 1 from notify.push_outbox where tag = 'kickoff' and user_id = '00000000-0000-0000-0000-00000000000c'),
+                     'not to a player who chose email, even with a phone');
+select pg_temp.check(not exists (select 1 from notify.push_outbox where tag = 'kickoff' and user_id = '00000000-0000-0000-0000-00000000000b'),
+                     'not to a player who turned reminders off');
+select pg_temp.check((select count(*) from notify.reminders_sent where match_id = 't-push') = 1, 'a pushed reminder counts as sent');
+select notify.send_reminders();
+select pg_temp.check((select count(*) from notify.push_outbox where tag = 'kickoff') = 1, 'and isn''t pushed twice');
+update public.members set reminder_by = 'push' where user_id = '00000000-0000-0000-0000-00000000000c';
 -- Personal invite links
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select code as invcode from public.my_invite() \gset

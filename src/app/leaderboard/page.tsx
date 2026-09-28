@@ -14,6 +14,7 @@ import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { usePoolPrizes } from "@/lib/prizes";
 import type { LeaderRow } from "@/lib/types";
+import { PoolName } from "@/components/pool-name";
 
 const PARTS = [
   ["res_pts", "RES"], ["mar_pts", "MAR"], ["cls_pts", "CLS"], ["exa_pts", "EXA"], ["banker_pts", "BNK"],
@@ -43,7 +44,7 @@ function Leaderboard() {
 
   return (
     <div className="card">
-      <h2>{view === "schools" ? "Schools" : pool!.name}</h2>
+      <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
       <p className="sub">{season.name}. {view === "schools" ? "Every school in the league, not just this pool." : season.is_replay ? "Only rounds that are locked in count." : "Scores count once a match is played."}</p>
       {view !== "schools" && <SponsorLine sponsor={sponsor} />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}

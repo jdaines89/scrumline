@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
 import { PrizeSetup } from "@/components/prize-setup";
 import { supabase } from "@/lib/supabase";
+import { PoolName } from "@/components/pool-name";
 
 interface Mate { pool_id: number; user_id: string }
 
@@ -58,14 +59,14 @@ export default function PoolsPage() {
       <div className="card">
         <h2>Your pools for {season.name}</h2>
         <p className="sub">A pool is a leaderboard and a chat. Your calls for {season.name} count in every pool you&apos;re in.
-          Save your schools on your profile and you&apos;re in their pools automatically.</p>
+          Save your schools on your profile and you&apos;re in their pools automatically. Only Scrumline makes school pools, and they carry a tick.</p>
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code from a mate.</p>}
         {pools.map((p) => {
           const inIt = mates.filter((m) => m.pool_id === p.id);
           return (
             <div key={p.id} className={`poolrow${p.id === pool?.id ? " on" : ""}`}>
               <div className="grow">
-                <button type="button" className="linkish" onClick={() => setPool(p.id)}><strong>{p.name}</strong></button>
+                <button type="button" className="linkish" onClick={() => setPool(p.id)}><strong><PoolName pool={p} /></strong></button>
                 <div className="small muted">{inIt.map((m) => m.user_id === me.user_id ? "You" : names.get(m.user_id) ?? "?").join(", ")}</div>
               </div>
               {p.school_emis ? (

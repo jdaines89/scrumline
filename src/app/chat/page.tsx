@@ -8,6 +8,7 @@ import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { photoUrl, shrinkPhoto } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, Member } from "@/lib/types";
+import { PoolName } from "@/components/pool-name";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -25,7 +26,7 @@ function ChatOrClass() {
   const classPool = pools.find((p) => p.school_emis === pool!.school_emis && p.school_stage === pool!.school_stage && p.school_year);
   return (
     <div className="card nochat">
-      <h2>{pool!.name}</h2>
+      <h2><PoolName pool={pool!} /></h2>
       <p className="sub">The whole school is too many people for one chat, so the talk happens in each class&apos;s pool.</p>
       {classPool ? (
         <button type="button" onClick={() => setPool(classPool.id)}>Go to {classPool.name}</button>
@@ -255,7 +256,7 @@ function Chat() {
 
   return (
     <div className="card chat">
-      <h2>{pool!.name}</h2>
+      <h2><PoolName pool={pool!} /></h2>
       <SponsorLine sponsor={sponsor} />
       <div className="chatlog" ref={log} onScroll={(e) => {
         const el = e.currentTarget;

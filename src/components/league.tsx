@@ -8,6 +8,7 @@ import { SponsorTabs } from "@/components/sponsor-tabs";
 import { isBusinessSession, isPublicPath, isSchoolPath, isSchoolSession, isSponsorPath } from "@/lib/account";
 import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
+import { poolLabel } from "@/components/pool-name";
 
 interface League {
   seasons: Season[];
@@ -100,6 +101,8 @@ function Loaded({ children }: { children: ReactNode }) {
     const saved = remember("season");
     const sid = b.seasons.some((s) => s.id === saved) ? saved! : defaultSeason(b.seasons).id;
     {
+      // A notification's pool link is sorted out once the fresh data arrives.
+      if (new URLSearchParams(window.location.search).get("pool")) return;
       setSeasonId(sid);
       const d = readCache<SeasonData>(`season:${sid}`);
       if (d) { setData(d); const p = Number(remember(`pool:${sid}`)); setPoolId(d.pools.some((x) => x.id === p) ? p : d.pools[0]?.id ?? null); }
@@ -129,6 +132,13 @@ function Loaded({ children }: { children: ReactNode }) {
         competitions: (comps.data ?? []) as Competition[], teams: (teams.data ?? []) as Team[] };
       writeCache("base", fresh);
       setBase(hydrate(fresh));
+      // A tapped notification links to one pool (?pool=4): open its tournament and pool.
+      const linked = Number(new URLSearchParams(window.location.search).get("pool"));
+      if (linked) {
+        const { data: lp } = await supabase.from("pools").select("id, season").eq("id", linked).maybeSingle();
+        if (lp) { remember("season", lp.season); remember(`pool:${lp.season}`, String(lp.id)); }
+        window.history.replaceState(null, "", window.location.pathname);
+      }
       const saved = remember("season");
       setSeasonId(ss.some((s) => s.id === saved) ? saved : defaultSeason(ss).id);
     })();
@@ -198,7 +208,7 @@ function Switcher() {
         <span>Pool</span>
         {pools.length ? (
           <select value={pool?.id ?? ""} onChange={(e) => setPool(Number(e.target.value))}>
-            {pools.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
           </select>
         ) : <Link href="/pools/" className="nopool">Start or join a pool</Link>}
       </label>}
