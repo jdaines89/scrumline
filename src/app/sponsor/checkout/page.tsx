@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { SponsorTile } from "@/components/sponsor-tile";
-import { CATEGORIES, money, query, split } from "@/lib/sponsor";
+import { CATEGORIES, extraFee, money, query, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
 
@@ -118,7 +118,7 @@ export default function Checkout() {
         <div className="rowline first"><span>Donation to schools<small className="muted block">All of it reaches the schools. Section 18A certificate.</small></span><b>{money(sp.own + sp.partner, cur)}</b></div>
         <div className="rowline"><span>Advertising and player prizes<small className="muted block">Tax invoice.</small></span><b>{money(sp.prizes + sp.scrumline, cur)}</b></div>
         <div className="rowline extra-row">
-          <span>Add an extra donation?<small className="muted block">Optional. 100% goes to the schools you back, and we take nothing.</small></span>
+          <span>Add an extra donation?<small className="muted block">Optional. We take nothing from it. Only the 3.5% card fee comes off{extra ? `, so ${money(extra - extraFee(extra), cur)} reaches the schools you back` : ""}.</small></span>
           <b>{extra ? money(extra, cur) : "None"}</b>
         </div>
         <div className="chips">
