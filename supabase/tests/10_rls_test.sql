@@ -1701,4 +1701,34 @@ exception when insufficient_privilege then raise notice 'ok: the full recruit li
 end $$;
 reset role; select set_config('request.jwt.claim.sub', '', false);
 
+-- Kickoff reminders name the pool's sponsor.
+insert into public.pools (season, name, created_by) values ('2027', 'Reminder pool', '00000000-0000-0000-0000-00000000000a') returning id as rpool2 \gset
+insert into public.pool_members (pool_id, user_id) values (:rpool2, '00000000-0000-0000-0000-00000000000a') on conflict do nothing;
+insert into public.sponsors (country, name, category, email) values ('ZA', 'Joe''s Butchery', 'food_drink', 'joe@example.com') returning id as rspon \gset
+insert into public.sponsor_bookings (sponsor_id, pool_id, round, kind, players_at_sale, currency, price_minor, own_school_minor, partner_school_minor, prize_minor, scrumline_minor, status)
+values (:rspon, :rpool2, 3, 'pool', 5, 'ZAR', 1000, 200, 200, 200, 400, 'live') returning id as rbook \gset
+insert into public.sponsor_creatives (booking_id, display_name, status) values (:rbook, 'Joe''s Butchery', 'approved');
+update public.members set reminder_by = 'push', email_reminders = true where user_id = '00000000-0000-0000-0000-00000000000a';
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('t-spon', '2027', 3, now() + interval '20 minutes', '142072', '142073', 'SCHEDULED', 'test'),
+  ('t-nospon', '2027', 4, now() + interval '25 minutes', '142072', '142073', 'SCHEDULED', 'test');
+select pg_temp.check((select name from notify.reminder_sponsor('00000000-0000-0000-0000-00000000000a', 't-spon')) = 'Joe''s Butchery',
+                     'a round''s sponsor is found for its match');
+select pg_temp.check(not exists (select 1 from notify.reminder_sponsor('00000000-0000-0000-0000-00000000000a', 't-nospon')),
+                     'but not for another round');
+select pg_temp.check(not exists (select 1 from notify.reminder_sponsor('00000000-0000-0000-0000-00000000000b', 't-spon')),
+                     'nor for someone outside the pool');
+delete from notify.push_outbox;
+select notify.send_reminders();
+select pg_temp.check((select body from notify.push_outbox where tag = 'kickoff' and user_id = '00000000-0000-0000-0000-00000000000a')
+                     like '%locks at kickoff. Round 3 is brought to you by Joe''s Butchery.', 'the push names the sponsor');
+select pg_temp.check((select seen from public.sponsor_daily where booking_id = :rbook) = 1, 'and counts as the sponsor being seen');
+update public.sponsor_bookings set status = 'ended' where id = :rbook;
+update public.matches set kickoff_at = now() + interval '30 minutes' where id = 't-spon';
+delete from notify.reminders_sent where match_id in ('t-spon', 't-nospon');
+delete from notify.push_outbox;
+select notify.send_reminders();
+select pg_temp.check((select body from notify.push_outbox where tag = 'kickoff' and user_id = '00000000-0000-0000-0000-00000000000a')
+                     like '%It locks at kickoff.', 'an ended booking isn''t named');
+
 \echo ALL CHECKS PASSED

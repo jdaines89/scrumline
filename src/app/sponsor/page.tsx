@@ -50,8 +50,8 @@ export default function SponsorPage() {
 
   const label = (s: Slot) => s.kind === "school" ? "The whole school" : s.school_year ? `Class of ${s.school_year}` : s.pool_name;
   const what = (s: Slot) => s.kind === "school"
-    ? "the school's pool, its table and every recap its players share"
-    : "their pool, chat header and round prizes";
+    ? "the school's pool, its table, every recap its players share and their kickoff reminders"
+    : "their pool, chat header, round prizes and kickoff reminders";
   const roundSlot = pick?.slot.next_round ? pick.slot : slots?.find((s) => s.next_round && s.round_available);
   const sp = pick ? split(pick.price) : null;
   const cur = pick?.slot.currency ?? "ZAR";
