@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
 import { money } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
@@ -9,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 
 interface Totals { committed_minor: number; paid_minor: number; confirmed_minor: number; schools: number; sponsors: number }
 interface SchoolRow { emis: string | null; name: string; town: string | null; no_fee: boolean; committed_minor: number; paid_minor: number | null; confirmed_minor: number | null; sponsors: string[] }
-interface SponsorRow { sponsor: string; category: string; to_schools_minor: number; schools: number }
+interface SponsorRow { sponsor: string; category: string; to_schools_minor: number; schools: number; logo_path: string | null; about: string | null; website: string | null }
 interface Giving { totals: Totals | null; schools: SchoolRow[]; sponsors: SponsorRow[] }
 
 const ALL = "all";
@@ -22,7 +23,8 @@ export default function GivingPage() {
   const { seasons } = useSponsorSeason();
   const [season, setSeason] = useState(ALL);
   const [view, setView] = useState<"schools" | "sponsors">("schools");
-  const key = `giving:${season}`;
+  const [open, setOpen] = useState<number | null>(null);
+  const key = `giving2:${season}`;
   const [g, setG] = useState<Giving | null>(() => readCache<Giving>(key) ?? null);
 
   useEffect(() => {
@@ -88,11 +90,15 @@ export default function GivingPage() {
           ) : (
             <ol className="give-list">
               {g.sponsors.map((r, i) => (
-                <li key={`${r.sponsor}-${i}`}>
+                <li key={`${r.sponsor}-${i}`} className={open === i ? "open" : ""}>
                   <span className="rank">{i + 1}</span>
+                  <SponsorTile name={r.sponsor} logo={r.logo_path} />
                   <div className="who">
-                    <strong>{r.sponsor}</strong>
+                    {r.about || r.website
+                      ? <button type="button" className="linkish sp-name" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)}><strong>{r.sponsor}</strong></button>
+                      : <strong>{r.sponsor}</strong>}
                     <span className="small muted">{r.schools} school{r.schools === 1 ? "" : "s"}</span>
+                    {open === i && <SponsorAbout about={r.about} website={r.website} />}
                   </div>
                   <div className="amt"><b>{money(r.to_schools_minor)}</b><span className="small muted">to schools</span></div>
                 </li>

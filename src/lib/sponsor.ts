@@ -42,4 +42,17 @@ export function query(name: string): string | null {
   return new URLSearchParams(window.location.search).get(name);
 }
 
-export interface PoolSponsor { booking_id: number; round: number | null; display_name: string; logo_path: string | null; offer: string | null; link: string | null; prize_text: string | null }
+export interface PoolSponsor {
+  booking_id: number; round: number | null; display_name: string; logo_path: string | null; offer: string | null; link: string | null; prize_text: string | null;
+  about: string | null; website: string | null;
+}
+
+/** A business's logo, from the public logo bucket. */
+export function logoUrl(path: string): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/sponsor-logos/${path}`;
+}
+
+/** "https://www.vanzyl.co.za/deals" to "vanzyl.co.za", for showing a link. */
+export function siteName(url: string): string {
+  return url.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/.*$/, "");
+}

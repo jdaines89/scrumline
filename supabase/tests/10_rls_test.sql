@@ -1144,6 +1144,7 @@ select pg_temp.check((select count(*) from public.members) = 0 and (select count
 select pg_temp.check((select count(*) from public.sponsor_slots('900000001', 'spon')) >= 1, 'a business sees what a school has open');
 select public.create_sponsor('ZA', 'Specs Corner', 'health', 'owner@specs.example.com') as specs \gset
 select pg_temp.check(public.manages_sponsor(:specs), 'a business can set up its sponsor');
+select set_config('test.specs', :'specs', false);
 do $$ begin
   insert into public.business_accounts (user_id, business_name) values (auth.uid(), 'Other');
   raise exception 'FAILED: a business could write its own account row';
@@ -1182,6 +1183,29 @@ do $$ begin
   perform * from public.giving_rows(null, 'ZAR');
   raise exception 'FAILED: the raw giving rows are open';
 exception when insufficient_privilege then raise notice 'ok: the raw giving rows stay closed';
+end $$;
+reset role;
+
+-- Business profiles: logo, a few lines and a website, edited by the business only
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000b1');
+select public.save_sponsor_profile(:specs, 'Specs Corner', 'Family optometrists in Makhanda since 1998.', 'https://specscorner.example.com', :specs || '/logo-1.png');
+select pg_temp.check((select about = 'Family optometrists in Makhanda since 1998.' and website like 'https://%' and logo_path = :specs || '/logo-1.png'
+                      from public.sponsors where id = :specs), 'a business saves its profile');
+do $$ begin
+  perform public.save_sponsor_profile(current_setting('test.specs')::bigint, 'Specs Corner', 'Best odds, bet now', null, null);
+  raise exception 'FAILED: betting words got into a profile';
+exception when invalid_parameter_value then raise notice 'ok: words the check catches are refused on the spot';
+end $$;
+do $$ begin
+  perform public.save_sponsor_profile(current_setting('test.specs')::bigint, 'Specs Corner', null, null, '1/logo.png');
+  raise exception 'FAILED: a profile pointed at another business''s logo';
+exception when check_violation then raise notice 'ok: a logo must sit in the business''s own folder';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.save_sponsor_profile(current_setting('test.specs')::bigint, 'Hijacked', null, null, null);
+  raise exception 'FAILED: someone else edited the profile';
+exception when insufficient_privilege then raise notice 'ok: only the business edits its profile';
 end $$;
 reset role;
 
