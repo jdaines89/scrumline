@@ -72,7 +72,7 @@ function BusinessOnly({ children }: { children: ReactNode }) {
   const path = usePathname();
   const router = useRouter();
   const ok = isSponsorPath(path);
-  useEffect(() => { if (!ok) router.replace("/sponsor/"); }, [ok, router]);
+  useEffect(() => { if (!ok) router.replace("/sponsor/results/"); }, [ok, router]);
   return ok ? <>{children}</> : <p className="muted">Loading&hellip;</p>;
 }
 
