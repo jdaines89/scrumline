@@ -1524,4 +1524,149 @@ select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
 select pg_temp.check((select count(*) from public.school_claim_holder(:'sch')) = 0, 'the holder is not told about themselves');
 reset role; select set_config('request.jwt.claim.sub', '', false);
 
+-- Moderation: the word filter, reports, blocks and chat bans
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into moderation.terms (term, category, whole) values
+  ('zorblat', 'hate', false), ('go jump off a cliff', 'threat', true), ('blimey', 'swearing', true);
+insert into moderation.allowed (phrase) values ('zorblat river');
+select pg_temp.check(moderation.verdict('you Z0RBL@T') = 'hate', 'capitals and 0 for o and @ for a are seen through');
+select pg_temp.check(moderation.verdict('z o r b l a t') = 'hate', 'spaced-out letters are seen through');
+select pg_temp.check(moderation.verdict('zzzorbllaaat!!') = 'hate', 'repeated letters are seen through');
+select pg_temp.check(moderation.verdict('z*rbl*t') = 'hate', 'a star for a vowel is seen through');
+select pg_temp.check(moderation.verdict('go jump off a cliff.') = 'threat', 'phrases are caught');
+select pg_temp.check(moderation.verdict('the Zorblat River school') is null, 'an allowed place name passes');
+select pg_temp.check(moderation.verdict('great tackle, 35-10 up') is null, 'ordinary chat passes');
+select pg_temp.check(moderation.verdict('blimeyfied') is null, 'a whole word does not catch longer words');
+
+select id as modpool from public.pools where name = 'Test pool' \gset
+select set_config('x.p', :'modpool', false);
+insert into public.pool_members (pool_id, user_id) values (:modpool, '00000000-0000-0000-0000-00000000000c') on conflict do nothing;
+insert into public.pools (season, name, created_by, school_emis, school_stage, school_year)
+select '2026', 'Mod School Class of 2020', '00000000-0000-0000-0000-00000000000a', min(emis), 'high', 2020 from public.schools;
+select id as modschool from public.pools where name = 'Mod School Class of 2020' \gset
+insert into public.pool_members (pool_id, user_id) values
+  (:modschool, '00000000-0000-0000-0000-00000000000a'), (:modschool, '00000000-0000-0000-0000-00000000000b') on conflict do nothing;
+
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check(public.chat_check(:modpool, 'what a try') is null, 'clean chat is cleared to send');
+select pg_temp.check(public.chat_check(:modpool, 'blimey what a try') is null, 'swearing is left to mates in a private pool');
+select pg_temp.check(public.chat_check(:modschool, 'blimey what a try') like 'Not sent%', 'but not in a school pool');
+select pg_temp.check(public.chat_check(:modpool, 'you zorblat') like 'Not sent%', 'hate is refused everywhere');
+do $$ begin
+  insert into public.chat_messages (pool_id, body) values (current_setting('x.p')::bigint, 'you zorblat');
+  raise exception 'FAILED: hate posted straight to the table';
+exception when invalid_parameter_value then raise notice 'ok: the table refuses it too, whatever the app does';
+end $$;
+select pg_temp.check(public.chat_check(:modpool, 'go jump off a cliff') like 'Not sent%', 'second strike');
+select pg_temp.check(public.chat_check(:modpool, 'zorblat') like '%can''t post in chat until%', 'the third hateful message in a day means a chat ban');
+select pg_temp.check(public.chat_check(:modpool, 'sorry') like 'You can''t post%', 'while banned, nothing is cleared');
+select pg_temp.check(public.my_chat_ban() like 'You can''t post%', 'the banned player is told before they type');
+do $$ begin
+  insert into public.chat_messages (pool_id, body) values (current_setting('x.p')::bigint, 'sorry');
+  raise exception 'FAILED: posted while banned';
+exception when insufficient_privilege then raise notice 'ok: a ban holds at the table';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.mod_caught()) = 4, 'admins see the refused messages');
+select pg_temp.check((select count(*) from public.mod_bans()) = 1, 'and who is banned');
+select public.mod_lift('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.mod_bans()) = 0, 'an admin can lift a ban');
+
+-- Names
+do $$ begin
+  update public.members set display_name = 'Zorblat King' where user_id = auth.uid();
+  raise exception 'FAILED: bad display name saved';
+exception when invalid_parameter_value then raise notice 'ok: display names are checked';
+end $$;
+do $$ begin
+  update public.entries set team_name = 'Blimey XV' where user_id = auth.uid();
+  raise exception 'FAILED: bad team name saved';
+exception when invalid_parameter_value then raise notice 'ok: team names are held to the full list';
+end $$;
+do $$ begin
+  insert into public.pools (season, name) values ('2026', 'Zorblats');
+  raise exception 'FAILED: bad pool name saved';
+exception when invalid_parameter_value then raise notice 'ok: pool names are checked';
+end $$;
+reset role;
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000e9', 'badname@example.com', now(), '{"display_name":"zorblat"}');
+select pg_temp.check((select display_name like 'Player %' from public.members where user_id = '00000000-0000-0000-0000-0000000000e9'),
+                     'a new account with a bad name still joins, as a plain Player name');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.mod_terms()) >= 3, 'admins see the word list');
+select public.mod_add_term('Frobnic', 'hate', false);
+select pg_temp.check(public.mod_try('you frobnicator') = 'hate', 'an admin can add a word and try it');
+select public.mod_remove_term('frobnic');
+select pg_temp.check(public.mod_try('you frobnicator') is null, 'and take it off again');
+
+-- Reports: gone for the reporter, held for everyone at two (one in a school pool)
+insert into public.chat_messages (pool_id, body) values (:modpool, 'you are useless, nobody wants you here');
+select id as badmsg from public.chat_messages where body like 'you are useless%' \gset
+insert into public.chat_messages (pool_id, body) values (:modschool, 'meet at the braai');
+select id as schoolmsg from public.chat_messages where body = 'meet at the braai' \gset
+select set_config('x.m', :'badmsg', false), set_config('x.s', :'schoolmsg', false);
+do $$ begin
+  insert into public.chat_reports (message_id, reason) values (current_setting('x.m')::bigint, 'bullying');
+  raise exception 'FAILED: reported own message';
+exception when insufficient_privilege then raise notice 'ok: nobody reports their own message';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.chat_reports (message_id, reason) values (:badmsg, 'bullying');
+select pg_temp.check((select body from public.chat_messages where id = :badmsg) like 'you are useless%', 'one report in a private pool does not hide it for everyone');
+select pg_temp.check((select count(*) from public.chat_reports) = 1, 'the reporter sees their own report');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) from public.chat_reports) = 0, 'but nobody else''s');
+insert into public.chat_reports (message_id, reason) values (:badmsg, 'bullying');
+select pg_temp.check((select body = '' and hidden_at is not null from public.chat_messages where id = :badmsg), 'two reports hold it: blank for everyone');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+do $$ begin
+  insert into public.chat_reports (message_id, reason) values (current_setting('x.s')::bigint, 'other');
+  raise exception 'FAILED: stranger reported';
+exception when insufficient_privilege then raise notice 'ok: only people who can read a message can report it';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.chat_reports (message_id, reason) values (:schoolmsg, 'other');
+select pg_temp.check((select hidden_at is not null from public.chat_messages where id = :schoolmsg), 'one report holds a message in a school pool');
+do $$ begin
+  perform * from public.mod_queue();
+  raise exception 'FAILED: a player read the queue';
+exception when insufficient_privilege then raise notice 'ok: only admins read the review queue';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(public.mod_waiting() = 2, 'two held messages wait');
+select pg_temp.check((select body from public.mod_queue() where message_id = :badmsg) like 'you are useless%', 'the admin reads the held words');
+select public.mod_decide(:schoolmsg, 'keep');
+select pg_temp.check((select body from public.chat_messages where id = :schoolmsg) = 'meet at the braai', 'kept: back for everyone');
+select pg_temp.check(public.mod_decide(:badmsg, 'remove') = 'Removed', 'removed');
+select pg_temp.check(not exists (select 1 from public.chat_messages where id = :badmsg), 'a removed message is gone');
+insert into public.chat_messages (pool_id, body) values (:modpool, 'still useless');
+select id as badmsg2 from public.chat_messages where body = 'still useless' \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.chat_reports (message_id, reason) values (:badmsg2, 'bullying');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+insert into public.chat_reports (message_id, reason) values (:badmsg2, 'hate');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check(public.mod_decide(:badmsg2, 'remove') like 'Removed. No chat for them until%', 'a second removal in 30 days means no chat for a week');
+select pg_temp.check(moderation.muted_until('00000000-0000-0000-0000-00000000000a') > now() + interval '6 days', 'a week, not a day');
+update moderation.mutes set lifted_at = now();
+
+-- Blocks: their messages and tags stop reaching you
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.chat_messages (pool_id, body) values (:modpool, 'good game all');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.member_blocks (blocked) values ('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(not exists (select 1 from public.chat_messages where author_id = '00000000-0000-0000-0000-00000000000a'), 'a blocked person''s messages disappear');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check(exists (select 1 from public.chat_messages where author_id = '00000000-0000-0000-0000-00000000000a'), 'for the blocker only');
+do $$ begin
+  insert into public.member_blocks (blocker, blocked) values ('00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c');
+  raise exception 'FAILED: blocked on someone else''s behalf';
+exception when insufficient_privilege then raise notice 'ok: nobody blocks for someone else';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+delete from public.member_blocks;
+select pg_temp.check(exists (select 1 from public.chat_messages where author_id = '00000000-0000-0000-0000-00000000000a'), 'unblocking brings them back');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+
 \echo ALL CHECKS PASSED

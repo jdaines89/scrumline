@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
+import { BlockedPeople } from "@/components/blocked-people";
 import { MySchools } from "@/components/my-schools";
 import { NotifySettings } from "@/components/notify-settings";
 import { Numbers } from "@/components/numbers";
@@ -17,6 +18,10 @@ export default function MePage() {
   const [team, setTeam] = useState(entry?.team_name ?? "");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [held, setHeld] = useState<number | null>(null);
+  useEffect(() => {
+    if (me.is_admin) supabase.rpc("mod_waiting").then(({ data }) => setHeld((data as number | null) ?? 0));
+  }, [me.is_admin]);
 
   const say = (ok: boolean, text: string) => setMsg({ ok, text });
 
@@ -88,6 +93,8 @@ export default function MePage() {
 
           <NotifySettings me={me} onMessage={say} />
 
+          <BlockedPeople members={members} />
+
           <div className="card">
             <h2>Account</h2>
             <form onSubmit={savePassword} className="stack profile">
@@ -107,7 +114,7 @@ export default function MePage() {
             <div className="me-biz">
               <strong>Look after your school&apos;s account?</strong>
               <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
-              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}</div>
+              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/moderation/">Moderation{held ? ` · ${held} to review` : ""}</Link>}</div>
             </div>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
           </div>

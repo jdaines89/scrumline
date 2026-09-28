@@ -1,7 +1,7 @@
 "use client";
 
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type RefObject } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
@@ -12,6 +12,7 @@ import { PoolName } from "@/components/pool-name";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
+const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "Bullying"], ["sexual", "Sexual"], ["other", "Something else"]];
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
 
@@ -61,6 +62,12 @@ function Chat() {
   const [sending, setSending] = useState(false);
   const [viewing, setViewing] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  // Moderation: messages you reported are hidden for you; a chat ban shows instead of the box.
+  const [reported, setReported] = useState<Set<number>>(new Set());
+  const [reporting, setReporting] = useState<number | null>(null);
+  const [blocking, setBlocking] = useState<string | null>(null);
+  const [note, setNote] = useState<{ text: string; block?: string } | null>(null);
+  const [ban, setBan] = useState<string | null>(null);
   // Stay pinned to the newest message unless you've scrolled up to read.
   const atBottom = useRef(true);
 
@@ -95,6 +102,12 @@ function Chat() {
   }
 
   useEffect(() => {
+    supabase.rpc("my_chat_ban").then(({ data }) => setBan((data as string | null) ?? null));
+    supabase.from("chat_reports").select("message_id")
+      .then(({ data }) => setReported(new Set((data ?? []).map((r: { message_id: number }) => r.message_id))));
+  }, []);
+
+  useEffect(() => {
     supabase.from("pool_members").select("user_id").eq("pool_id", poolId)
       .then(({ data }) => setInPool(new Set((data ?? []).map((r: { user_id: string }) => r.user_id))));
   }, [poolId]);
@@ -111,6 +124,8 @@ function Chat() {
     const ch = supabase.channel(`chat:${poolId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `pool_id=eq.${poolId}` },
         (p) => setMsgs((xs) => xs.some((x) => x.id === (p.new as ChatMessage).id) ? xs : [...xs, p.new as ChatMessage]))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages", filter: `pool_id=eq.${poolId}` },
+        (p) => setMsgs((xs) => xs.map((x) => x.id === (p.new as ChatMessage).id ? p.new as ChatMessage : x)))
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
         (p) => setMsgs((xs) => xs.filter((x) => x.id !== (p.old as { id: number }).id)))
       .subscribe();
@@ -119,7 +134,7 @@ function Chat() {
 
   // The log fills the screen down to the message box, whatever the phone:
   // measured, not guessed.
-  const form = useRef<HTMLFormElement>(null);
+  const form = useRef<HTMLElement>(null);
   const fitRef = useRef<() => void>(() => {});
   useEffect(() => {
     const fit = () => {
@@ -142,7 +157,7 @@ function Chat() {
     return () => { window.removeEventListener("resize", fit); window.visualViewport?.removeEventListener("resize", fit); };
   }, []);
 
-  useEffect(() => { fitRef.current(); }, [photo, err]);
+  useEffect(() => { fitRef.current(); }, [photo, err, ban, note]);
 
   // Newest at the bottom, like any chat: scroll the log, not the page, and
   // again whenever something under the last message grows (reactions, photos).
@@ -183,6 +198,13 @@ function Chat() {
     const body = encodeMentions(text.trim(), members);
     if ((!body && !photo) || sending) return;
     setErr(null); setSending(true);
+    // Checked before anything is uploaded, so a refused message never leaves a photo behind.
+    const { data: why } = await supabase.rpc("chat_check", { p_pool: poolId, p_body: body });
+    if (why) {
+      setSending(false); setErr(why as string);
+      supabase.rpc("my_chat_ban").then(({ data }) => setBan((data as string | null) ?? null));
+      return;
+    }
     let image_path: string | null = null;
     if (photo) {
       image_path = `${poolId}/${me.user_id}/${crypto.randomUUID()}.jpg`;
@@ -254,6 +276,28 @@ function Chat() {
     setPicked(null);
   }
 
+  // Keep the report and block prompts, and what's left after, in view inside the log.
+  const reveal = useCallback((id: number) => requestAnimationFrame(() =>
+    log.current?.querySelector(`[data-id="${id}"]`)?.scrollIntoView({ block: "nearest" })), []);
+  useEffect(() => { if (picked !== null && (reporting !== null || blocking !== null)) reveal(picked); }, [picked, reporting, blocking, reveal]);
+
+  async function report(m: ChatMessage, reason: string) {
+    const { error } = await supabase.from("chat_reports").insert({ message_id: m.id, reason });
+    setReporting(null); setPicked(null);
+    if (error && !error.message.includes("duplicate")) { setErr(error.message); return; }
+    setReported((r) => new Set(r).add(m.id));
+    setNote({ text: "Thanks. It's hidden for you, and we'll look at it.", block: m.author_id });
+    reveal(m.id);
+  }
+
+  async function block(userId: string) {
+    const { error } = await supabase.from("member_blocks").insert({ blocked: userId });
+    setBlocking(null); setPicked(null);
+    if (error && !error.message.includes("duplicate")) { setErr(error.message); return; }
+    setNote({ text: `You won't see ${people.get(userId)?.display_name ?? "them"} in chat any more. Unblock on your profile.` });
+    load();
+  }
+
   return (
     <div className="card chat">
       <h2><PoolName pool={pool!} /></h2>
@@ -273,7 +317,7 @@ function Chat() {
           const grouped = i > 0 && msgs[i - 1].author_id === m.author_id
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
-            <div key={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
+            <div key={m.id} data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
               {!grouped && !mine && <Avatar member={who} />}
               <div className="msgbody">
                 {!grouped && (
@@ -282,6 +326,11 @@ function Chat() {
                     <span>{when(m.created_at)}</span>
                   </div>
                 )}
+                {m.hidden_at || (reported.has(m.id) && !mine) ? (
+                  <div className="bubble held">
+                    {m.hidden_at ? (mine ? "Your message is held while it's checked." : "Message held while it's checked.") : "You reported this message."}
+                  </div>
+                ) : (<>
                 <div className={`bubble${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !m.body.trim() ? " photoonly" : ""}`}
                   onClick={() => setPicked(picked === m.id ? null : m.id)}>
                   {m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
@@ -290,7 +339,7 @@ function Chat() {
                 </div>
                 <Reactions list={reactions.filter((r) => r.message_id === m.id)} me={me.user_id} people={people}
                   onToggle={(e) => react(m.id, e)} />
-                {picked === m.id && (
+                {picked === m.id && reporting !== m.id && blocking !== m.author_id && (
                   <div className="msgactions">
                     <div className="emojipick" role="group" aria-label="React">
                       {EMOJI.map((e) => (
@@ -299,14 +348,48 @@ function Chat() {
                       ))}
                     </div>
                     {mine && <button type="button" className="danger" onClick={() => remove(m.id)}>Delete</button>}
+                    {!mine && <button type="button" className="ghost" onClick={() => setReporting(m.id)}>Report</button>}
+                    {!mine && <button type="button" className="ghost" onClick={() => setBlocking(m.author_id)}>Block</button>}
                   </div>
                 )}
+                {picked === m.id && reporting === m.id && (
+                  <div className="modask">
+                    <span className="small muted">What&apos;s wrong with it?</span>
+                    <div className="msgactions">
+                      {REASONS.map(([k, label]) => <button key={k} type="button" className="ghost" onClick={() => report(m, k)}>{label}</button>)}
+                      <button type="button" className="ghost" onClick={() => setReporting(null)}>Cancel</button>
+                    </div>
+                  </div>
+                )}
+                {picked === m.id && blocking === m.author_id && (
+                  <div className="modask">
+                    <span className="small muted">Block {who?.display_name ?? "them"}? You won&apos;t see their messages or get their tags.</span>
+                    <div className="msgactions">
+                      <button type="button" className="danger" onClick={() => block(m.author_id)}>Block</button>
+                      <button type="button" className="ghost" onClick={() => setBlocking(null)}>Cancel</button>
+                    </div>
+                  </div>
+                )}
+                </>)}
               </div>
             </div>
           );
         })}
       </div>
-      <form className="composer" onSubmit={send} ref={form}>
+      {note && (
+        <div className="modnote small">
+          <span>{note.text}</span>
+          {note.block && <button type="button" className="ghost" onClick={() => { const b = note.block!; setNote(null); block(b); }}>
+            Block {people.get(note.block)?.display_name ?? "them"}</button>}
+          <button type="button" className="ghost" aria-label="Close" onClick={() => setNote(null)}>OK</button>
+        </div>
+      )}
+      {ban ? (
+        <div className="composer banned" ref={form as RefObject<HTMLDivElement>}>
+          <p className="small muted">{ban} Scrumline doesn&apos;t allow racism, hate or bullying.</p>
+        </div>
+      ) : (
+      <form className="composer" onSubmit={send} ref={form as RefObject<HTMLFormElement>}>
         {matches.length > 0 && (
           <ul className="tagpick" role="listbox">
             {matches.map((m, i) => (
@@ -333,6 +416,7 @@ function Chat() {
           onChange={(e) => onType(e.target.value)} onKeyDown={onKey} />
         <button type="submit" disabled={sending || (!text.trim() && !photo)}>{sending ? "Sending…" : "Send"}</button>
       </form>
+      )}
       {viewing && (
         <div className="photoview" role="dialog" aria-label="Photo" onClick={() => setViewing(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
