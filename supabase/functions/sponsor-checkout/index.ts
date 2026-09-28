@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
   });
   const { data: b } = await db.from("sponsor_bookings")
-    .select("id, status, held_until, price_minor, currency, sponsors(email)")
+    .select("id, status, held_until, price_minor, extra_minor, currency, sponsors(email)")
     .eq("id", booking_id).maybeSingle();
   if (!b) return json({ error: "Not your booking." }, 404);
   if (b.status !== "held" || new Date(b.held_until) <= new Date()) {
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
   const reference = `slb-${b.id}-${crypto.randomUUID().slice(0, 8)}`;
   const body: Record<string, unknown> = {
     email: (b.sponsors as unknown as { email: string }).email,
-    amount: b.price_minor,
+    amount: b.price_minor + (b.extra_minor ?? 0),
     currency: b.currency,
     reference,
     callback_url: back,

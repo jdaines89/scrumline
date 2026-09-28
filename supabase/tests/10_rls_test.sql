@@ -1087,6 +1087,26 @@ delete from public.sponsor_bookings where pool_id = (select id from rp2);
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
 select pg_temp.check((select available from public.sponsor_quote((select id from rp2))), 'after the window closes, anyone can take it');
 
+-- An extra donation on top: all of it reaches schools, none of it is Scrumline's
+select public.hold_sponsor_slot(:cafe, (select id from rp2)) as ex \gset
+select set_config('test.ex', :'ex', false);
+select public.set_booking_donation(:ex, 50000);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.set_booking_donation(current_setting('test.ex')::bigint, 1);
+  raise exception 'FAILED: someone else changed the donation';
+exception when insufficient_privilege then raise notice 'ok: only the business sets its donation';
+end $$;
+reset role;
+select pg_temp.check(public.sponsor_booking_paid(:ex, 'paystack', 'ref-ex', (select price_minor from public.sponsor_bookings where id = :ex), 'ZAR') = 'amount mismatch',
+                     'paying only the price when a donation was added is refused');
+select pg_temp.check(public.sponsor_booking_paid(:ex, 'paystack', 'ref-ex', (select price_minor + 50000 from public.sponsor_bookings where id = :ex), 'ZAR') = 'ok',
+                     'the price plus the donation is accepted');
+select pg_temp.check((select sum(amount_minor) from public.school_allocations where booking_id = :ex and share = 'own')
+                     = (select own_school_minor + 50000 from public.sponsor_bookings where id = :ex), 'the whole donation goes to the school');
+select pg_temp.check((select scrumline_minor = price_minor - own_school_minor - partner_school_minor - prize_minor from public.sponsor_bookings where id = :ex),
+                     'Scrumline''s share is the same with or without a donation');
+
 -- Monday results email
 reset role;
 select pg_temp.check((select seen_week = 2 and players_week = 2 and shares_week = 2 and taps_week = 1 and schools_minor = 60000
