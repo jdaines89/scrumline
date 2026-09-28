@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { initials, money, query } from "@/lib/sponsor";
+import { SAMPLE_ALLOC, SAMPLE_BOOKING, SAMPLE_MINE, SAMPLE_RESULTS, sampleDays } from "@/lib/preview";
 import { supabase } from "@/lib/supabase";
 
 interface Mine { booking_id: number; sponsor_name: string; pool_name: string; season_name: string; round: number | null; status: string; price_minor: number; currency: string; creative_status: string | null }
@@ -40,6 +41,7 @@ export default function SponsorResults() {
   useEffect(() => {
     const id = Number(query("b"));
     if (!id) { setB(null); return; }
+    if (id === SAMPLE_BOOKING) { setB(SAMPLE_MINE); setR(SAMPLE_RESULTS); setAlloc(SAMPLE_ALLOC); setDays(sampleDays()); return; }
     (async () => {
       const [mine, res, al, dd] = await Promise.all([
         supabase.rpc("my_sponsorships"),

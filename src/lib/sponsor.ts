@@ -30,6 +30,7 @@ export const CATEGORIES: [string, string][] = [
 
 /** Counts a view once a day per device (the database also dedupes per player), and taps/shares every time. */
 export function sponsorEvent(booking: number, kind: "seen" | "tap" | "share") {
+  if (booking < 0) return;  // sample data
   if (kind === "seen") {
     const key = `sl:seen:${booking}:${new Date().toISOString().slice(0, 10)}`;
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { /* private mode: the database still dedupes */ }

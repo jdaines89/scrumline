@@ -648,3 +648,8 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 .me-biz .row { display: flex; flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
 .me-biz .row .btn { flex: none; width: auto; }
 .btn.ghostlink { background: transparent; border-color: var(--line); color: var(--text); }
+
+/* Sample-data preview (admins) */
+.preview-bar { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 16px;
+  background: #3a2f10; color: #f3d98a; font-size: 13px; text-align: center; }
+.preview-bar .linkish { color: #f3d98a; text-decoration: underline; font-size: 13px; }

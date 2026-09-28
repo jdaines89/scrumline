@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
+import { SAMPLE_GIVING, usePreview } from "@/lib/preview";
 import { money } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +26,9 @@ export default function GivingPage() {
   const [view, setView] = useState<"schools" | "sponsors">("schools");
   const [open, setOpen] = useState<number | null>(null);
   const key = `giving2:${season}`;
-  const [g, setG] = useState<Giving | null>(() => readCache<Giving>(key) ?? null);
+  const [real, setG] = useState<Giving | null>(() => readCache<Giving>(key) ?? null);
+  const preview = usePreview();
+  const g: Giving | null = preview ? SAMPLE_GIVING : real;
 
   useEffect(() => {
     setG(readCache<Giving>(key) ?? null);
