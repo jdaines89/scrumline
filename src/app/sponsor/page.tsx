@@ -13,6 +13,7 @@ interface Slot {
   next_round: number | null; round_price_minor: number | null; round_available: boolean | null;
 }
 interface Mine { booking_id: number; sponsor_name: string; pool_name: string; season_name: string; round: number | null; status: string; price_minor: number; currency: string }
+interface Partner { emis: string; name: string; town: string | null; distance_km: number | null }
 interface Pick { slot: Slot; round: number | null; price: number }
 
 const STATUS: Record<string, string> = {
@@ -25,7 +26,7 @@ export default function SponsorPage() {
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<School[]>([]);
   const [school, setSchool] = useState<School | null>(null);
-  const [twin, setTwin] = useState<string | null>(null);
+  const [partner, setPartner] = useState<Partner | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
   const [mine, setMine] = useState<Mine[]>([]);
@@ -44,7 +45,7 @@ export default function SponsorPage() {
   }, [q, school]);
 
   useEffect(() => {
-    setSlots(null); setPick(null); setTwin(null);
+    setSlots(null); setPick(null); setPartner(null);
     if (!school) return;
     supabase.rpc("sponsor_slots", { p_emis: school.emis, p_season: season.id }).then(({ data }) => {
       const ss = (data ?? []) as Slot[];
@@ -52,8 +53,8 @@ export default function SponsorPage() {
       const first = ss.find((s) => s.available && s.price_minor);
       if (first) setPick({ slot: first, round: null, price: first.price_minor! });
     });
-    supabase.from("school_twins").select("twin_emis, schools!school_twins_twin_emis_fkey(name)").eq("emis", school.emis).maybeSingle()
-      .then(({ data }) => setTwin((data?.schools as unknown as { name: string } | null)?.name ?? null));
+    supabase.rpc("school_partner", { p_emis: school.emis })
+      .then(({ data }) => setPartner(((data ?? []) as Partner[])[0] ?? null));
   }, [school, season.id]);
 
   const label = (s: Slot) => s.kind === "school" ? "The whole school" : s.school_year ? `Class of ${s.school_year}` : s.pool_name;
@@ -135,11 +136,11 @@ export default function SponsorPage() {
           </div>
           <div className="legend2">
             <span><i className="d" style={{ background: "var(--accent)" }} />{school.name}</span><b>{money(sp.own, cur)}</b>
-            <span><i className="d" style={{ background: "var(--accent-dim)" }} />{twin ? `${twin}, its no-fee twin` : "A no-fee school, its twin"}</span><b>{money(sp.twin, cur)}</b>
+            <span><i className="d" style={{ background: "var(--accent-dim)" }} />{school.no_fee ? `${school.name} again, as a no-fee school` : partner ? `${partner.name}, a no-fee school${partner.town ? ` in ${partner.town}` : " nearby"}` : "A no-fee school nearby"}</span><b>{money(sp.partner, cur)}</b>
             <span><i className="d" style={{ background: "var(--gold)" }} />Prizes for the players, with your name on them</span><b>{money(sp.prizes, cur)}</b>
             <span><i className="d" style={{ background: "#3b4a44" }} />Scrumline, to run the game</span><b>{money(sp.scrumline, cur)}</b>
           </div>
-          <p className="small muted">The schools&apos; {money(sp.own + sp.twin, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice.</p>
+          <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice.</p>
           <Link className="btn paybtn" href={`/sponsor/checkout/?pool=${pick.slot.pool_id}${pick.round ? `&round=${pick.round}` : ""}`}>
             Continue with {pick.round ? `round ${pick.round}` : pick.slot.kind === "school" ? "the whole school" : label(pick.slot)}
           </Link>
