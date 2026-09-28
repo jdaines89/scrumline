@@ -12,7 +12,7 @@ import type { Member } from "@/lib/types";
 export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: boolean, text: string) => void }) {
   const [state, setState] = useState<PushState | null>(null);
   const [busy, setBusy] = useState(false);
-  const [remind, setRemind] = useState(me.email_reminders);
+  const [remind, setRemind] = useState<"off" | "push" | "email">(!me.email_reminders ? "off" : me.reminder_by === "email" ? "email" : "push");
   const [tags, setTags] = useState(me.push_mentions);
   const [installable, setInstallable] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -39,10 +39,18 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
     setState(await pushState());
   }
 
-  async function save(field: "email_reminders" | "push_mentions", value: boolean, set: (v: boolean) => void) {
+  async function save(field: "push_mentions", value: boolean, set: (v: boolean) => void) {
     set(value);
     const { error } = await supabase.from("members").update({ [field]: value }).eq("user_id", me.user_id);
     if (error) { set(!value); onMessage(false, error.message); }
+  }
+
+  async function saveRemind(value: "off" | "push" | "email") {
+    const was = remind;
+    setRemind(value);
+    const change = value === "off" ? { email_reminders: false } : { email_reminders: true, reminder_by: value };
+    const { error } = await supabase.from("members").update(change).eq("user_id", me.user_id);
+    if (error) { setRemind(was); onMessage(false, error.message); }
   }
 
   const pushOn = state === "on";
@@ -67,13 +75,16 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
       )}
 
       <div className="notify-prefs">
-        <label className="small muted toggle">
-          <input type="checkbox" checked={remind} onChange={(e) => save("email_reminders", e.target.checked, setRemind)} />
-          An hour before kickoff if I haven&apos;t called a score{pushOn ? "" : " (by email)"}
-        </label>
+        <span className="small">Kickoff reminders, an hour before if you haven&apos;t called a score</span>
+        <div className="seg sm">
+          {([["off", "Off"], ["push", "Phone"], ["email", "Email"]] as const).map(([v, l]) => (
+            <button key={v} type="button" className={remind === v ? "on" : ""} onClick={() => saveRemind(v)}>{l}</button>
+          ))}
+        </div>
+        {remind === "push" && !pushOn && <p className="small muted">Until notifications are on for this phone, these come by email.</p>}
         <label className="small muted toggle">
           <input type="checkbox" checked={tags} disabled={!pushOn} onChange={(e) => save("push_mentions", e.target.checked, setTags)} />
-          When someone tags me in chat{pushOn ? "" : " (needs notifications on)"}
+          Tell me when someone tags me in chat{pushOn ? "" : " (needs notifications on)"}
         </label>
       </div>
 

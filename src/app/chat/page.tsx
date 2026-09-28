@@ -1,5 +1,6 @@
 "use client";
 
+import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
@@ -7,6 +8,7 @@ import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { photoUrl, shrinkPhoto } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, Member } from "@/lib/types";
+import { PoolName } from "@/components/pool-name";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -24,7 +26,7 @@ function ChatOrClass() {
   const classPool = pools.find((p) => p.school_emis === pool!.school_emis && p.school_stage === pool!.school_stage && p.school_year);
   return (
     <div className="card nochat">
-      <h2>{pool!.name}</h2>
+      <h2><PoolName pool={pool!} /></h2>
       <p className="sub">The whole school is too many people for one chat, so the talk happens in each class&apos;s pool.</p>
       {classPool ? (
         <button type="button" onClick={() => setPool(classPool.id)}>Go to {classPool.name}</button>
@@ -37,6 +39,7 @@ function ChatOrClass() {
 
 function Chat() {
   const { me, members: everyone, pool } = useLeague();
+  const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
   const members = useMemo(() => everyone.filter((m) => inPool.has(m.user_id)), [everyone, inPool]);
@@ -253,7 +256,8 @@ function Chat() {
 
   return (
     <div className="card chat">
-      <h2>{pool!.name}</h2>
+      <h2><PoolName pool={pool!} /></h2>
+      <SponsorLine sponsor={sponsor} />
       <div className="chatlog" ref={log} onScroll={(e) => {
         const el = e.currentTarget;
         atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { setPreview, usePreview } from "@/lib/preview";
 
 interface Week { week: string; players: number; new_players: number; active: number; callers: number; returners: number; retained: number | null; calls: number }
 interface Round { round: number; teams: number; callers: number; share: number | null }
@@ -10,6 +11,17 @@ const pct = (x: number | null) => (x === null ? "–" : `${Math.round(x * 100)}%
 const day = (d: string) => new Date(`${d}T00:00:00`).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
 
 /** Admin-only retention numbers: weekly activity and round-by-round participation. */
+/** Fills the sponsor features with sample data on this device, to see how they look. */
+function PreviewToggle() {
+  const on = usePreview();
+  return (
+    <label className="small muted toggle" style={{ margin: "0 0 12px" }}>
+      <input type="checkbox" checked={on} onChange={(e) => setPreview(e.target.checked)} />
+      Preview sponsor features with sample data (only you see it, on this device)
+    </label>
+  );
+}
+
 export function Numbers({ season, seasonName }: { season: string; seasonName: string }) {
   const [weeks, setWeeks] = useState<Week[] | null>(null);
   const [rounds, setRounds] = useState<Round[]>([]);
@@ -22,6 +34,7 @@ export function Numbers({ season, seasonName }: { season: string; seasonName: st
   return (
     <div className="card">
       <h2>Numbers</h2>
+      <PreviewToggle />
       <p className="sub">Only admins see this. Opens were first counted on 26 Sep, so earlier weeks show calls and chat only.</p>
       <div className="scroll-x">
         <table>

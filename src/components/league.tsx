@@ -3,9 +3,12 @@
 import { readCache, writeCache } from "@/lib/cache";
 import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { SponsorTabs } from "@/components/sponsor-tabs";
+import { isBusinessSession, isPublicPath, isSchoolPath, isSchoolSession, isSponsorPath } from "@/lib/account";
 import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
+import { poolLabel } from "@/components/pool-name";
 
 interface League {
   seasons: Season[];
@@ -59,6 +62,32 @@ function defaultSeason(seasons: Season[]): Season {
  * entry for it, and the pools you're in for it.
  */
 export function LeagueProvider({ children }: { children: ReactNode }) {
+  const path = usePathname();
+  if (isPublicPath(path)) return <>{children}</>;
+  return <Loaded>{children}</Loaded>;
+}
+
+/** A business account only has the sponsor pages; any other address takes it there. */
+function BusinessOnly({ children }: { children: ReactNode }) {
+  const path = usePathname();
+  const router = useRouter();
+  const ok = isSponsorPath(path);
+  useEffect(() => { if (!ok) router.replace("/sponsor/"); }, [ok, router]);
+  return ok ? <>{children}</> : <p className="muted">Loading&hellip;</p>;
+}
+
+/** A school account only has its school's pages. */
+function SchoolOnly({ children }: { children: ReactNode }) {
+  const path = usePathname();
+  const router = useRouter();
+  const ok = isSchoolPath(path);
+  useEffect(() => { if (!ok) router.replace("/school/"); }, [ok, router]);
+  return ok ? <>{children}</> : <p className="muted">Loading&hellip;</p>;
+}
+
+function Loaded({ children }: { children: ReactNode }) {
+  const [business, setBusiness] = useState(false);
+  const [schoolOnly, setSchoolOnly] = useState(false);
   const [base, setBase] = useState<Base | null>(null);
   const [seasonId, setSeasonId] = useState<string | null>(null);
   const [data, setData] = useState<SeasonData | null>(null);
@@ -86,6 +115,8 @@ export function LeagueProvider({ children }: { children: ReactNode }) {
       // The session is already on this device, so no round trip is needed to know who you are.
       const { data: sess } = await supabase.auth.getSession();
       const uid = sess.session?.user.id;
+      if (isBusinessSession(sess.session)) { setBusiness(true); return; }
+      if (isSchoolSession(sess.session)) { setSchoolOnly(true); return; }
       const [seasons, comps, teams, members] = await Promise.all([
         supabase.from("seasons").select("*").order("starts_on", { ascending: false, nullsFirst: false }),
         supabase.from("competitions").select("*"),
@@ -129,6 +160,8 @@ export function LeagueProvider({ children }: { children: ReactNode }) {
   }, [base, seasonId]);
   useEffect(() => { loadSeason(); }, [loadSeason]);
 
+  if (business) return <BusinessOnly>{children}</BusinessOnly>;
+  if (schoolOnly) return <SchoolOnly>{children}</SchoolOnly>;
   if (error) return <div className="notice">{error}</div>;
   if (!base || !seasonId || !data) return <p className="muted">Loading the league&hellip;</p>;
 
@@ -160,6 +193,8 @@ const POOL_SCREENS = ["/leaderboard", "/chat"];
 function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
   const path = usePathname() ?? "";
+  if (isSponsorPath(path)) return <SponsorTabs />;
+  if (isSchoolPath(path) || path.startsWith("/admin")) return null;
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
@@ -173,7 +208,7 @@ function Switcher() {
         <span>Pool</span>
         {pools.length ? (
           <select value={pool?.id ?? ""} onChange={(e) => setPool(Number(e.target.value))}>
-            {pools.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
           </select>
         ) : <Link href="/pools/" className="nopool">Start or join a pool</Link>}
       </label>}
