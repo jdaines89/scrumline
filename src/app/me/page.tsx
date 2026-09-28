@@ -19,6 +19,10 @@ export default function MePage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [held, setHeld] = useState<number | null>(null);
+  const [recruited, setRecruited] = useState<number | null>(null);
+  useEffect(() => {
+    supabase.rpc("my_recruits").then(({ data }) => setRecruited((data as number | null) ?? 0));
+  }, []);
   useEffect(() => {
     if (me.is_admin) supabase.rpc("mod_waiting").then(({ data }) => setHeld((data as number | null) ?? 0));
   }, [me.is_admin]);
@@ -62,6 +66,13 @@ export default function MePage() {
         <div className="card">
           <h2>Your profile</h2>
           <p className="sub">{me.email}</p>
+          {recruited !== null && (
+            <p className="small muted recruited">
+              {recruited > 0
+                ? <>Brought in <strong>{recruited}</strong> player{recruited === 1 ? "" : "s"}. Thanks for growing the league.</>
+                : <>You haven&apos;t brought anyone in yet. Your invite link is on <Link href="/pools/">Pools</Link>.</>}
+            </p>
+          )}
 
           <AvatarPicker me={me} onMessage={say} />
 

@@ -9,9 +9,19 @@ interface Mine { code: string; used: number; cap: number }
 export function InviteCard() {
   const [mine, setMine] = useState<Mine | null>(null);
   const [copied, setCopied] = useState(false);
+  const [school, setSchool] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.rpc("my_invite").then(({ data }) => setMine(((data ?? []) as Mine[])[0] ?? null));
+    // Your high school if you've saved one, else your primary: the one your invites help.
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("member_schools").select("stage, schools(name)").eq("user_id", user.id).then(({ data }) => {
+        const rows = (data ?? []) as unknown as { stage: string; schools: { name: string } | null }[];
+        const pick = rows.find((r) => r.stage === "high") ?? rows[0];
+        setSchool(pick?.schools?.name ?? null);
+      });
+    });
   }, []);
 
   if (!mine) return null;
@@ -19,7 +29,9 @@ export function InviteCard() {
   const full = mine.used >= mine.cap;
 
   async function share() {
-    const text = `Join me on Scrumline, rugby prediction pools with your mates and your school: ${link}`;
+    const text = school
+      ? `Join me on Scrumline and play for ${school}. Rugby prediction pools with your mates and your school: ${link}`
+      : `Join me on Scrumline, rugby prediction pools with your mates and your school: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else { await navigator.clipboard.writeText(link); setCopied(true); }
@@ -36,7 +48,11 @@ export function InviteCard() {
   return (
     <div className="card invite">
       <h2>Invite mates to Scrumline</h2>
-      <p className="sub">Your own link. Whoever joins through it plays straight away, and if you went to the same school it counts as your confirmation for them.</p>
+      <p className="sub">
+        {school
+          ? <>Every mate who joins and plays makes <strong>{school}</strong> stronger on the schools table, and a school with more players is worth more to sponsors. Your link lets them play straight away, and if they went there too, it confirms them.</>
+          : "Your own link. Whoever joins through it plays straight away, and if you went to the same school it counts as your confirmation for them."}
+      </p>
       <div className="row">
         <input readOnly value={link} onFocus={(e) => e.target.select()} aria-label="Your invite link" />
         <button type="button" onClick={share} disabled={full}>{copied ? "Copied" : "Share"}</button>

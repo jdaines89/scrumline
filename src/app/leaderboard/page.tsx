@@ -13,6 +13,7 @@ import { SchoolTable } from "@/components/school-table";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { usePoolPrizes } from "@/lib/prizes";
+import { plural, topRecruiters, usePoolRecruits } from "@/lib/recruits";
 import type { LeaderRow } from "@/lib/types";
 import { PoolName } from "@/components/pool-name";
 
@@ -35,6 +36,9 @@ function Leaderboard() {
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
   const [prizes, reloadPrizes] = usePoolPrizes(pool!.id);
   const sponsor = usePoolSponsor();
+  const recruits = usePoolRecruits(pool!.id);
+  const broughtIn = new Map(recruits.map((r) => [r.user_id, r.brought_in]));
+  const top = pool!.school_emis ? topRecruiters(recruits) : null;
   useEffect(() => {
     setRows(readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
     supabase.from("pool_leaderboard").select("*").eq("pool_id", pool!.id)
@@ -56,6 +60,7 @@ function Leaderboard() {
       </div>
       {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <RoundTable rows={rows} />) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
+        {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
         {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={rows} />}
         <ol className="board">
           {rows.map((r, i) => (
@@ -65,7 +70,7 @@ function Leaderboard() {
                 <span className="rank">{i + 1}</span>
                 <div className="who">
                   <strong>{r.manager}</strong>
-                  <span className="small muted">{r.team_name ?? "No team yet"} · {r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact</span>
+                  <span className="small muted">{r.team_name ?? "No team yet"} · {r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</span>
                 </div>
                 <span className="btotal">{r.total_points}</span>
               </div>
@@ -85,6 +90,19 @@ function Leaderboard() {
         {view === "overall" && " Tap someone to compare rounds with yours."}
       </p>}
     </div>
+  );
+}
+
+// A school pool's thanks to whoever brought the most new players in this month.
+function TopRecruiter({ ids, count, rows }: { ids: string[]; count: number; rows: LeaderRow[] }) {
+  const names = ids.map((id) => rows.find((r) => r.user_id === id)?.manager).filter(Boolean) as string[];
+  if (names.length === 0) return null;
+  const month = new Date().toLocaleString("en-ZA", { month: "long", timeZone: "Africa/Johannesburg" });
+  const who = names.length <= 2 ? names.join(" and ") : `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
+  return (
+    <p className="small muted recruiter">
+      Top recruiter in {month}: <strong>{who}</strong>, {plural(count, "new player", "new players")}{names.length > 1 ? " each" : ""}
+    </p>
   );
 }
 
