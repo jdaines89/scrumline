@@ -17,25 +17,7 @@ const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "B
 interface Reaction { message_id: number; user_id: string; emoji: string }
 
 export default function ChatPage() {
-  return <NeedsPool><ChatOrClass /></NeedsPool>;
-}
-
-// A whole-school pool is too big to talk in; its chat lives in the class pools.
-function ChatOrClass() {
-  const { pool, pools, setPool } = useLeague();
-  if (!pool!.school_emis || pool!.school_year) return <Chat />;
-  const classPool = pools.find((p) => p.school_emis === pool!.school_emis && p.school_stage === pool!.school_stage && p.school_year);
-  return (
-    <div className="card nochat">
-      <h2><PoolName pool={pool!} /></h2>
-      <p className="sub">The whole school is too many people for one chat, so the talk happens in each class&apos;s pool.</p>
-      {classPool ? (
-        <button type="button" onClick={() => setPool(classPool.id)}>Go to {classPool.name}</button>
-      ) : (
-        <p className="muted">Add the year you finished school on your profile and you&apos;ll join your class pool.</p>
-      )}
-    </div>
-  );
+  return <NeedsPool><Chat /></NeedsPool>;
 }
 
 function Chat() {
