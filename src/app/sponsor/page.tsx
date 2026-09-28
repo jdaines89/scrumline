@@ -149,12 +149,14 @@ export default function SponsorPage() {
             <i style={{ width: "20%", background: "var(--gold)" }} /><i style={{ width: "40%", background: "#3b4a44" }} />
           </div>
           <div className="legend2">
+            <span className="grp">Donation to schools, all of it reaches them</span>
             <span><i className="d" style={{ background: "var(--accent)" }} />{school.name}</span><b>{money(sp.own, cur)}</b>
             <span><i className="d" style={{ background: "var(--accent-dim)" }} />{school.no_fee ? `${school.name} again, as a no-fee school` : partner ? `${partner.name}, a no-fee school${partner.town ? ` in ${partner.town}` : " nearby"}` : "A no-fee school nearby"}</span><b>{money(sp.partner, cur)}</b>
+            <span className="grp">Advertising</span>
             <span><i className="d" style={{ background: "var(--gold)" }} />Prizes for the players, with your name on them</span><b>{money(sp.prizes, cur)}</b>
             <span><i className="d" style={{ background: "#3b4a44" }} />Scrumline: the app, results, payments and support</span><b>{money(sp.scrumline, cur)}</b>
           </div>
-          <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice.</p>
+          <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice. You can add an extra donation at checkout, and all of it goes to the school.</p>
           <Link className="btn paybtn" href={`/sponsor/checkout/?pool=${pick.slot.pool_id}${pick.round ? `&round=${pick.round}` : ""}`}>
             Continue with {pick.round ? `round ${pick.round}` : pick.slot.kind === "school" ? "the whole school" : label(pick.slot)}
           </Link>

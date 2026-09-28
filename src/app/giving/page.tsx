@@ -109,7 +109,7 @@ export default function GivingPage() {
             </ol>
           )}
       </div>
-      <p className="small muted center">Every sponsorship splits the same way: 20% to the school, 20% to a no-fee school near it, 20% to player prizes and 40% to run Scrumline. <Link href="/sponsor/">Back a school</Link></p>
+      <p className="small muted center">Every sponsorship includes a donation of 40% of its price, half to the school and half to a no-fee school near it, and sponsors can add more on top. Scrumline takes nothing from donations. <Link href="/sponsor/">Back a school</Link></p>
     </>
   );
 }

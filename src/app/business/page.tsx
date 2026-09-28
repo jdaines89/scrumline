@@ -54,12 +54,14 @@ export default function BusinessSignUp() {
           <i style={{ width: "20%", background: "var(--gold)" }} /><i style={{ width: "40%", background: "#3b4a44" }} />
         </div>
         <div className="legend2">
+          <span className="grp">Donation to schools, all of it reaches them</span>
           <span><i className="d" style={{ background: "var(--accent)" }} />The school you pick</span><b>20%</b>
           <span><i className="d" style={{ background: "var(--accent-dim)" }} />A no-fee school near it</span><b>20%</b>
+          <span className="grp">Advertising</span>
           <span><i className="d" style={{ background: "var(--gold)" }} />Prizes for the players, in your name</span><b>20%</b>
           <span><i className="d" style={{ background: "#3b4a44" }} />Scrumline: the app, results, payments and support</span><b>40%</b>
         </div>
-        <p className="small muted" style={{ marginBottom: 0 }}>Schools are paid monthly. Your results page shows each payment and when the school confirms it.</p>
+        <p className="small muted" style={{ marginBottom: 0 }}>Want to give more? Add an extra donation at checkout: 100% of it goes to the school. Schools are paid monthly, and your results page shows each payment and when the school confirms it.</p>
       </div>
       <div className="card narrow biz-points">
         <div><strong>No calls, no forms</strong><span className="small muted">Pick a school, see the price and pay by card. It goes live straight away.</span></div>
