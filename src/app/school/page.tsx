@@ -4,10 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { SchoolSearch } from "@/components/school-search";
 import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
-import { type Dashboard, type Payout } from "@/lib/school";
+import { ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
+
+interface Holder { contact_name: string; role: string; status: string }
+const heldBy = (h: Holder) =>
+  `${h.contact_name} (${ROLE_NAME[h.role]?.toLowerCase() ?? h.role}) ${h.status === "verified" ? "receives" : "has asked to receive"} sponsors' money for the school.`;
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
 
@@ -22,6 +26,7 @@ export default function SchoolPage() {
   const [dash, setDash] = useState<Dashboard | null>(null);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [holder, setHolder] = useState<Holder | null>(null);
 
   const load = useCallback(async () => {
     const acct = await supabase.from("school_accounts").select("emis").maybeSingle();
@@ -33,6 +38,8 @@ export default function SchoolPage() {
       supabase.from("school_payouts").select("id, amount_minor, currency, status, created_at, paid_at, confirmed_at, note").order("created_at", { ascending: false }),
     ]);
     setDash(((d.data ?? []) as Dashboard[])[0] ?? null);
+    const h = await supabase.rpc("school_claim_holder", { p_emis: acct.data.emis });
+    setHolder(((h.data ?? []) as Holder[])[0] ?? null);
     setPayouts((p.data ?? []) as Payout[]);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -78,7 +85,13 @@ export default function SchoolPage() {
           : <p className="small muted" style={{ marginBottom: 0 }}>No sponsor yet. Share the link below with parents and former pupils who own a business.</p>}
       </div>
 
-      {!claimed && <BankForm dash={d} onDone={load} />}
+      {!claimed && holder && !preview && (
+        <div className="card narrow">
+          <h2>{d.name} is already looked after</h2>
+          <p className="sub" style={{ marginBottom: 0 }}>{heldBy(holder)} If that&apos;s not right, reply to the email we sent you and we&apos;ll look into it.</p>
+        </div>
+      )}
+      {!claimed && !holder && <BankForm dash={d} onDone={load} />}
 
       {ps.length > 0 && (
         <div className="card narrow">
@@ -115,7 +128,13 @@ export default function SchoolPage() {
 
 function PickSchool({ onDone }: { onDone: () => void }) {
   const [pick, setPick] = useState<School | null>(null);
+  const [holder, setHolder] = useState<Holder | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    setHolder(null);
+    if (!pick) return;
+    supabase.rpc("school_claim_holder", { p_emis: pick.emis }).then(({ data }) => setHolder(((data ?? []) as Holder[])[0] ?? null));
+  }, [pick]);
   async function save() {
     if (!pick) return;
     const { error } = await supabase.rpc("set_school_account_school", { p_emis: pick.emis });
@@ -133,7 +152,9 @@ function PickSchool({ onDone }: { onDone: () => void }) {
             <div><div className="school-name">{pick.name}</div><div className="small muted">{pick.town}</div></div>
             <button type="button" className="ghost" onClick={() => setPick(null)}>Other school</button>
           </div>
-          <button type="button" className="paybtn" onClick={save}>This is my school</button>
+          {holder
+            ? <p className="notice small" style={{ margin: "10px 0 0" }}>{heldBy(holder)} If that&apos;s not right, reply to the email we sent you and we&apos;ll look into it.</p>
+            : <button type="button" className="paybtn" onClick={save}>This is my school</button>}
         </>
       ) : <SchoolSearch onPick={setPick} />}
       {msg && <p className="small" style={{ color: "var(--danger)" }}>{msg}</p>}
@@ -190,9 +211,9 @@ function BankForm({ dash, onDone }: { dash: Dashboard; onDone: () => void }) {
           <input required inputMode="numeric" placeholder="Account number" value={number} onChange={(e) => setNumber(e.target.value.replace(/[^\d ]/g, ""))} />
           <div className="field"><label>Name on the account</label>
             <input required maxLength={100} value={holder} onChange={(e) => setHolder(e.target.value)} /></div>
-          <div className="field"><label>School registration or NPO number (optional)</label>
-            <input maxLength={40} placeholder="As the bank has it" value={registration} onChange={(e) => setRegistration(e.target.value)} />
-            <span className="small muted">With it, the bank can confirm the account straight away. Without it, a person checks the claim first.</span></div>
+          <div className="field"><label>Registration number on the account (optional)</label>
+            <input maxLength={40} placeholder="Leave empty if you don't know it" value={registration} onChange={(e) => setRegistration(e.target.value)} />
+            <span className="small muted">The number the bank has for the school, from its bank letter or statement. With it, the bank can confirm the account at once. Without it, we check the claim by hand first.</span></div>
           <button type="submit" disabled={busy}>{busy ? "Checking with the bank…" : "Check and save"}</button>
         </div>
       )}

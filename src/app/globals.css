@@ -674,7 +674,9 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 .claim-line form { margin-top: 6px; }
 .task { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
 .task:first-of-type { border-top: 0; padding-top: 0; }
-.task-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.task-head { display: flex; justify-content: space-between; gap: 8px; }
+.task-head strong { flex: 1; min-width: 0; }
+.task-head > b, .task-head > span { white-space: nowrap; }
 .task .row { margin-top: 6px; }
 .task .row input { flex: 1; min-width: 0; }
 .lookafter .stack { grid-template-columns: minmax(0, 1fr); }
