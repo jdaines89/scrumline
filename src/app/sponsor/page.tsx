@@ -9,14 +9,14 @@ import type { School } from "@/lib/types";
 
 interface Slot {
   pool_id: number; pool_name: string; kind: "school" | "class" | "pool"; school_year: number | null; players: number;
-  price_minor: number | null; currency: string; available: boolean; taken_by: string | null;
+  price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null;
   next_round: number | null; round_price_minor: number | null; round_available: boolean | null;
 }
 interface Mine { booking_id: number; sponsor_name: string; pool_name: string; season_name: string; round: number | null; status: string; price_minor: number; currency: string }
 interface Pick { slot: Slot; round: number | null; price: number }
 
 const STATUS: Record<string, string> = {
-  held: "Waiting for payment", paid: "Paid · logo being checked", live: "Live", ended: "Ended",
+  held: "Waiting for payment", paid: "Paid · line being checked", live: "Live", ended: "Ended",
   refund_due: "Being refunded", refunded: "Refunded",
 };
 
@@ -104,8 +104,8 @@ export default function SponsorPage() {
           const on = pick?.slot.pool_id === s.pool_id && pick.round === null;
           if (!s.available) return (
             <div key={s.pool_id} className="opt taken">
-              <div className="grow"><strong>{label(s)}</strong><div className="small muted">{s.players} players · sponsored by {s.taken_by}</div></div>
-              <div className="price quiet">Taken</div>
+              <div className="grow"><strong>{label(s)}</strong><div className="small muted">{s.players} player{s.players === 1 ? "" : "s"} · {s.taken_by ? `sponsored by ${s.taken_by}` : s.reason}</div></div>
+              <div className="price quiet">{s.taken_by ? "Taken" : "Not yet"}</div>
             </div>
           );
           return (

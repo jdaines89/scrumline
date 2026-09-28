@@ -6,7 +6,7 @@ import { useLeague } from "@/components/league";
 import { CATEGORIES, initials, money, query, split } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
-interface Quote { pool_id: number; pool_name: string; kind: string; players: number; price_minor: number | null; currency: string; available: boolean; taken_by: string | null }
+interface Quote { pool_id: number; pool_name: string; kind: string; players: number; price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null }
 interface Sponsor { id: number; name: string; category: string; email: string }
 
 export default function Checkout() {
@@ -42,7 +42,7 @@ export default function Checkout() {
     <div className="card narrow"><h2>That slot isn&apos;t available</h2><Link className="btn" href="/sponsor/">Pick another</Link></div>
   );
   if (!quote.available) return (
-    <div className="card narrow"><h2>{quote.pool_name} is sponsored by {quote.taken_by}</h2><Link className="btn" href="/sponsor/">Pick another</Link></div>
+    <div className="card narrow"><h2>{quote.taken_by ? `${quote.pool_name} is sponsored by ${quote.taken_by}` : quote.reason}</h2><Link className="btn" href="/sponsor/">Pick another</Link></div>
   );
 
   const price = quote.price_minor, cur = quote.currency, sp = split(price);
@@ -92,7 +92,7 @@ export default function Checkout() {
           </select></div>}
         <div className="field"><label>Logo</label>
           <div className="logo-drop"><div className="sp-tile">{initials(name || "?")}</div>
-            <div className="small muted">Shown small, never as a banner. Send your logo after paying and we&apos;ll add it when we check the rest.</div></div></div>
+            <div className="small muted">Shown small, never as a banner. Your initials show until logo upload arrives.</div></div></div>
         <div className="field"><label>One line for players (optional)</label>
           <input maxLength={80} placeholder="Paul Roos alumni: 15% off your next service" value={offer} onChange={(e) => setOffer(e.target.value)} /></div>
         <div className="field"><label>Link (optional)</label>
@@ -106,7 +106,7 @@ export default function Checkout() {
         <div className="rowline first"><span>Advertising and prizes, tax invoice</span><b>{money(sp.prizes + sp.scrumline, cur)}</b></div>
         <div className="rowline"><span>Donation to schools, 18A certificate</span><b>{money(sp.own + sp.twin, cur)}</b></div>
         <div className="rowline"><b>Total today</b><b>{money(price, cur)}</b></div>
-        <p className="small muted">One card payment, split automatically. You&apos;re live as soon as we&apos;ve checked your name and line, usually the same day.</p>
+        <p className="small muted">One card payment, split automatically. You go live the moment your payment clears.</p>
         {msg && <p className="small" style={{ color: "var(--danger)" }}>{msg}</p>}
         <button className="paybtn" disabled={busy}>{busy ? "Opening the payment page…" : `Pay ${money(price, cur)} by card`}</button>
         <p className="small muted" style={{ textAlign: "center" }}>Visa, Mastercard, Instant EFT · secured by Paystack</p>

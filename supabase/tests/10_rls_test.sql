@@ -858,15 +858,26 @@ insert into public.member_schools (user_id, stage, emis, last_year) values
   ('00000000-0000-0000-0000-00000000000a', 'high', '900000001', 1997),
   ('00000000-0000-0000-0000-00000000000b', 'high', '900000001', 1997),
   ('00000000-0000-0000-0000-00000000000c', 'high', '900000002', 1997);
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-00000000000d', 'dee@example.com', now(), '{"display_name":"Dee"}'),
+  ('00000000-0000-0000-0000-00000000000e', 'eli@example.com', now(), '{"display_name":"Eli"}')
+on conflict do nothing;
 insert into public.pools (season, name, created_by) values ('spon', 'Sponsored mates', '00000000-0000-0000-0000-00000000000a');
 insert into public.pool_members (pool_id, user_id)
   select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
                                                 '00000000-0000-0000-0000-00000000000c']::uuid[]) u
   where name = 'Sponsored mates' on conflict do nothing;
--- A price that doesn't divide evenly, to prove the cents always add up.
-insert into public.sponsor_prices values ('ZA', 'pool', 3, 150000, 100001);
 create temp table sp as select id from public.pools where name = 'Sponsored mates';
 grant select on sp to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select not available and reason like 'Opens once 5 players%' from public.sponsor_quote((select id from sp))),
+                     'a pool needs 5 players before it can be sponsored');
+reset role;
+insert into public.pool_members (pool_id, user_id)
+  select (select id from sp), u from unnest(array['00000000-0000-0000-0000-00000000000d', '00000000-0000-0000-0000-00000000000e']::uuid[]) u
+  on conflict do nothing;
+-- A price that doesn't divide evenly, to prove the cents always add up.
+insert into public.sponsor_prices values ('ZA', 'pool', 3, 150000, 100001);
 
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 do $$ begin
@@ -876,7 +887,7 @@ exception when check_violation then raise notice 'ok: betting sponsors are refus
 end $$;
 select public.create_sponsor('ZA', 'Van Zyl Motors', 'motoring', 'Paul@Example.com') as vz \gset
 select pg_temp.check((select email from public.sponsors where id = :vz) = 'paul@example.com', 'a business sets up its sponsor account');
-select pg_temp.check((select players = 3 and kind = 'pool' and price_minor = 150000 and available
+select pg_temp.check((select players = 5 and kind = 'pool' and price_minor = 150000 and available
                       from public.sponsor_quote((select id from sp))), 'the quote shows players, kind and price');
 select public.hold_sponsor_slot(:vz, (select id from sp)) as bk \gset
 select pg_temp.check((select own_school_minor = 30000 and twin_school_minor = 30000 and prize_minor = 30000 and scrumline_minor = 60000
@@ -924,7 +935,7 @@ select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 15000
 select pg_temp.check((select status from public.sponsor_bookings where id = :bk) = 'paid', 'paid but not live before the creative is approved');
 select pg_temp.check((select string_agg(coalesce(emis, 'fund') || ':' || share || ':' || amount_minor, ' ' order by share, emis nulls last)
                       from public.school_allocations where booking_id = :bk)
-                     = '900000001:own:20000 900000002:own:10000 900000011:twin:20000 fund:twin:10000',
+                     = '900000001:own:12000 900000002:own:6000 fund:own:12000 900000011:twin:12000 fund:twin:18000',
                      'schools get their players'' share, twins mirror it, no twin goes to the fund');
 select pg_temp.check(public.sponsor_booking_paid(:bk1, 'paystack', 'ref-2', 100001, 'ZAR') = 'ok', 'the round booking is paid');
 select pg_temp.check((select bool_and(t = 20000) from (select sum(amount_minor) t from public.school_allocations where booking_id = :bk1 group by share) x),
@@ -939,8 +950,13 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok: only the sponsor edits its creative';
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Paul Roos alumni: 15% off your next service', 'https://example.com', 'R500 service voucher');
-select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'nothing shows before approval');
+select pg_temp.check(public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Place your bets with us', null, null) = 'pending',
+                     'a line with betting words waits for a person');
+select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'a flagged line never shows by itself');
+select pg_temp.check(public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Paul Roos alumni: 15% off your next service', 'https://example.com', 'R500 service voucher') = 'approved',
+                     'a clean name and line are approved automatically');
+select pg_temp.check((select offer from public.pool_sponsors((select id from sp)) where round is null) like 'Paul Roos%', 'and go live with no one in the loop');
+select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Bet on us', null, null);
 do $$ begin
   perform public.review_sponsor_creative(current_setting('test.bk')::bigint, true);
   raise exception 'FAILED: a sponsor approved itself';
@@ -948,12 +964,9 @@ exception when insufficient_privilege then raise notice 'ok: only admins approve
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select public.review_sponsor_creative(:bk, true);
-select pg_temp.check((select offer from public.pool_sponsors((select id from sp)) where round is null) like 'Paul Roos%', 'approved: the pool sees the sponsor');
+select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 1, 'an admin can pass a flagged line');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Now 20% off', null, null);
-select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'an edited creative goes off air until reviewed');
-select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select public.review_sponsor_creative(:bk, true);
+select public.save_sponsor_creative(:bk, 'Van Zyl Motors', 'Paul Roos alumni: 15% off your next service', 'https://example.com', 'R500 service voucher');
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
 select pg_temp.check((select count(*) from public.pool_sponsors((select id from sp))) = 0, 'outsiders don''t see a pool''s sponsor');
 
@@ -966,10 +979,10 @@ select pg_temp.check((select count(*) from public.sponsor_results(:bk)) = 0, 'pl
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select reached = 2 and seen = 2 and shares = 2 and taps = 1 and own_due = 30000 and own_paid = 0
                       from public.sponsor_results(:bk)), 'the sponsor sees reach, shares, taps and money due to schools');
-select pg_temp.check((select raised_minor = 20000 + 13334 from public.school_raised('900000001', 'spon')), 'a school page shows what it raised');
+select pg_temp.check((select raised_minor = 12000 + 8000 from public.school_raised('900000001', 'spon')), 'a school page shows what it raised');
 select pg_temp.check((select count(*) from public.my_sponsorships()) = 3, 'a sponsor lists its own bookings');
-select pg_temp.check((select string_agg(school || ':' || amount_minor, ' ' order by share, amount_minor desc) from public.sponsor_allocations(:bk))
-                     = 'Sponsor High One:20000 Sponsor High Two:10000 No-fee Twin:20000 Scrumline Schools Foundation fund:10000',
+select pg_temp.check((select string_agg(school || ':' || amount_minor, ' ' order by share, amount_minor desc, school) from public.sponsor_allocations(:bk))
+                     = 'Scrumline Schools Foundation fund:12000 Sponsor High One:12000 Sponsor High Two:6000 Scrumline Schools Foundation fund:18000 No-fee Twin:12000',
                      'a sponsor sees where its school money goes');
 select pg_temp.check((select sum(seen) from public.sponsor_daily where booking_id = :bk) = 2, 'a sponsor reads its daily counts');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
@@ -999,5 +1012,86 @@ exception when raise_exception then raise notice 'ok: countries open to sponsors
 end $$;
 reset role;
 update public.countries set open_to_sponsors = true where code = 'ZA';
+
+-- Sponsor rules that run themselves: school eligibility, one per category, renewal right
+reset role;
+update public.seasons set starts_on = '2026-12-01' where id = 'spon';
+insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source) values
+  ('900000021', 'Rules Primary', 'Stellenbosch', 'WC', false, true, false, 'test');
+delete from public.school_vouches where stage = 'primary';
+delete from public.member_schools where stage = 'primary';
+insert into public.member_schools (user_id, stage, emis, last_year)
+  select u, 'primary', '900000021', 2000 from unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
+    '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-00000000000d', '00000000-0000-0000-0000-00000000000e']::uuid[]) u;
+create temp table rp as select id, school_year from public.pools where season = 'spon' and school_emis = '900000021';
+grant select on rp to authenticated;
+select pg_temp.check((select count(*) from rp) = 2, 'the school and its class pool exist');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select reason like 'Opens once 5 players from the school%' from public.sponsor_quote((select id from rp where school_year is null))),
+                     'a school opens to sponsors once 5 of its players are confirmed');
+reset role;
+-- Everyone vouched for by the two players after them.
+insert into public.school_vouches (voucher_id, member_id, stage, emis)
+  select v, m, 'primary', '900000021'
+  from (select u, row_number() over (order by u) i from unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
+          '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-00000000000d', '00000000-0000-0000-0000-00000000000e']::uuid[]) u) a(m, i)
+  join (select u, row_number() over (order by u) i from unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
+          '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-00000000000d', '00000000-0000-0000-0000-00000000000e']::uuid[]) u) b(v, i)
+    on b.i in ((a.i % 5) + 1, ((a.i + 1) % 5) + 1);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select available from public.sponsor_quote((select id from rp where school_year is null))), 'with 5 confirmed, the school is open');
+select public.hold_sponsor_slot(:vz, (select id from rp where school_year is null)) as rs \gset
+reset role;
+select pg_temp.check(public.sponsor_booking_paid(:rs, 'paystack', 'ref-rs', (select price_minor from public.sponsor_bookings where id = :rs), 'ZAR') = 'ok',
+                     'the whole school is sponsored');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+do $$ begin
+  perform public.hold_sponsor_slot((select id from public.sponsors where name = 'Rival Motors'), (select id from rp where school_year = 2000));
+  raise exception 'FAILED: two car dealers on one school';
+exception when raise_exception then
+  if sqlerrm not like '%same line of business%' then raise; end if;
+  raise notice 'ok: one business per category per school';
+end $$;
+select public.create_sponsor('ZA', 'Die Bank Coffee', 'food_drink', 'coffee@example.com') as cafe \gset
+select pg_temp.check(public.hold_sponsor_slot(:cafe, (select id from rp where school_year = 2000)) > 0, 'a different kind of business can take a class');
+reset role;
+update public.schools set sponsor_optout = true where emis = '900000021';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select reason = 'This school isn''t taking sponsors' from public.sponsor_quote((select id from rp where school_year = 2000), 3)),
+                     'a school that opts out is closed with one switch');
+reset role;
+update public.schools set sponsor_optout = false where emis = '900000021';
+
+-- Next season: last season's sponsor has first right to renew.
+insert into public.seasons (id, name, is_replay, competition_id, feed_season, starts_on) values ('spon2', 'Sponsor test 2', false, '5069', 'spon2', '2027-12-01');
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('sq1', 'spon2', 1, now() + interval '30 days', '142072', '142073', 'SCHEDULED', 'test');
+create temp table rp2 as select id from public.pools where season = 'spon2' and school_emis = '900000021' and school_year is null;
+grant select on rp2 to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select reason like 'Held for Van Zyl Motors to renew until%' from public.sponsor_quote((select id from rp2))),
+                     'next season the slot is held for last season''s sponsor');
+do $$ begin
+  perform public.hold_sponsor_slot((select id from public.sponsors where name = 'Die Bank Coffee'), (select id from rp2));
+  raise exception 'FAILED: someone took a slot during the renewal window';
+exception when raise_exception then
+  if sqlerrm not like 'Held for%' then raise; end if;
+  raise notice 'ok: nobody else can take it while the renewal window is open';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select available from public.sponsor_quote((select id from rp2))), 'the holder sees it as theirs to renew');
+select pg_temp.check(public.hold_sponsor_slot(:vz, (select id from rp2)) > 0, 'and renews it');
+reset role;
+update public.matches set kickoff_at = now() + interval '10 days' where id = 'sq1';
+delete from public.sponsor_bookings where pool_id = (select id from rp2);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select available from public.sponsor_quote((select id from rp2))), 'after the window closes, anyone can take it');
+
+-- Monday results email
+reset role;
+select pg_temp.check((select seen_week = 2 and players_week = 2 and shares_week = 2 and taps_week = 1 and schools_minor = 60000
+                      from notify.due_sponsor_reports() where booking_id = :bk), 'each live sponsor has a weekly results email due');
+insert into notify.sponsor_reports_sent (booking_id, week) select booking_id, week from notify.due_sponsor_reports() where booking_id = :bk;
+select pg_temp.check(not exists (select 1 from notify.due_sponsor_reports() where booking_id = :bk), 'and gets it once a week');
 
 \echo ALL CHECKS PASSED
