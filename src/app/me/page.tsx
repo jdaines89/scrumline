@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { MySchools } from "@/components/my-schools";
@@ -104,7 +105,8 @@ export default function MePage() {
               Email me an hour before kickoff if I haven&apos;t called a score
             </label>
 
-            <button type="button" className="ghost" style={{ marginTop: 18 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
+            <p className="small muted" style={{ marginTop: 18 }}>Own a business? <Link href="/sponsor/">Sponsor a school</Link></p>
+            <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
           </div>
         </div>
       </div>
