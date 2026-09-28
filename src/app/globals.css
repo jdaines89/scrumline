@@ -722,3 +722,17 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .modacts button { flex: none; width: auto; padding: 8px 14px; font-size: 14px; }
 .modacts button.linkish { background: none; border: 0; color: var(--muted); padding: 8px 4px; text-decoration: underline; font-weight: 400; }
 .modacts button.linkish:hover { color: var(--text); background: none; }
+
+/* After the last call of a round: what's next */
+.allset { margin: 18px 0 6px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+.allset h3 { margin: 0 0 2px; font-size: 17px; }
+.allset > p { margin: 0; }
+.nextsteps { display: flex; flex-direction: column; margin-top: 12px; border-top: 1px solid var(--line); }
+.nextstep, button.nextstep {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 2px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; color: var(--text); font: inherit; cursor: pointer;
+}
+.nextstep:last-child { border-bottom: 0; padding-bottom: 2px; }
+.nextstep:hover, button.nextstep:hover { background: none; color: var(--accent); text-decoration: none; }
+.nextstep strong { font-weight: 600; font-size: 15px; }
+.nextstep .chev { color: var(--muted); font-size: 22px; line-height: 1; }

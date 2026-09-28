@@ -101,6 +101,17 @@ function Chat() {
     if (error) loadReactions();
   }
 
+  // A message handed over from another page (?say=...), ready to send or edit.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const say = q.get("say");
+    if (!say) return;
+    setText((t) => t || say.slice(0, 900));
+    q.delete("say");
+    window.history.replaceState(null, "", window.location.pathname + (q.size ? `?${q}` : ""));
+    requestAnimationFrame(() => box.current?.focus());
+  }, []);
+
   useEffect(() => {
     supabase.rpc("my_chat_ban").then(({ data }) => setBan((data as string | null) ?? null));
     supabase.from("chat_reports").select("message_id")
@@ -158,6 +169,16 @@ function Chat() {
   }, []);
 
   useEffect(() => { fitRef.current(); }, [photo, err, ban, note]);
+
+  // The box grows with what's in it (up to its CSS max), so a longer message can be read before it's sent.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const before = el.offsetHeight;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight + 2}px`;
+    if (el.offsetHeight !== before) fitRef.current();
+  }, [text]);
 
   // Newest at the bottom, like any chat: scroll the log, not the page, and
   // again whenever something under the last message grows (reactions, photos).
