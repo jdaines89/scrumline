@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
-import { isBusinessSession } from "@/lib/account";
+import { isBusinessSession, isSchoolSession } from "@/lib/account";
 import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { pageKind, track } from "@/lib/track";
@@ -59,6 +59,21 @@ function useSponsors(uid: string | null): boolean {
   return has;
 }
 
+/** Whether this player also looks after their school's account, for the School tab. */
+function useSchoolContact(uid: string | null): boolean {
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    if (!uid) { setHas(false); return; }
+    try { setHas(localStorage.getItem(`sl:schoolacct:${uid}`) === "1"); } catch { /* no storage */ }
+    supabase.from("school_accounts").select("user_id").limit(1).then(({ data }) => {
+      const yes = Boolean(data?.length);
+      setHas(yes);
+      try { localStorage.setItem(`sl:schoolacct:${uid}`, yes ? "1" : "0"); } catch { /* no storage */ }
+    });
+  }, [uid]);
+  return has;
+}
+
 /** You, for the picture in the corner: last visit's copy first, then the database's. */
 function useMe(uid: string | null): Member | undefined {
   const [me, setMe] = useState<Member | undefined>();
@@ -76,26 +91,36 @@ export function Nav() {
   const path = usePathname();
   const [uid, setUid] = useState<string | null>(null);
   const [business, setBusiness] = useState(false);
+  const [schoolOnly, setSchoolOnly] = useState(false);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { setUid(data.session?.user.id ?? null); setBusiness(isBusinessSession(data.session)); });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => { setUid(s?.user.id ?? null); setBusiness(isBusinessSession(s)); });
+    supabase.auth.getSession().then(({ data }) => { setUid(data.session?.user.id ?? null); setBusiness(isBusinessSession(data.session)); setSchoolOnly(isSchoolSession(data.session)); });
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => { setUid(s?.user.id ?? null); setBusiness(isBusinessSession(s)); setSchoolOnly(isSchoolSession(s)); });
     return () => data.subscription.unsubscribe();
   }, []);
-  const unread = useUnread(business ? null : uid);
-  const me = useMe(business ? null : uid);
-  const sponsors = useSponsors(business ? null : uid);
+  const player = business || schoolOnly ? null : uid;
+  const unread = useUnread(player);
+  const me = useMe(player);
+  const sponsors = useSponsors(player);
+  const schoolContact = useSchoolContact(player);
   useEffect(() => {
-    if (!uid || business) return;
+    if (!player) return;
     track("open");
     const k = pageKind(path);
     if (k) track(k);
-  }, [uid, business, path]);
+  }, [player, path]);
   if (!uid) return <nav className="tabs" />;
   if (business) return (
     <nav className="tabs">
       <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !path.startsWith("/sponsor/profile") ? "on" : ""}>Sponsor a school</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
       <Link href="/sponsor/profile/" className={path?.startsWith("/sponsor/profile") ? "on" : ""}>Profile</Link>
+      <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
+    </nav>
+  );
+  if (schoolOnly) return (
+    <nav className="tabs">
+      <Link href="/school/" className={path?.startsWith("/school") ? "on" : ""}>Your school</Link>
+      <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
       <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
     </nav>
   );
@@ -109,7 +134,7 @@ export function Nav() {
       )}
     </Link>
     <nav className="tabs">
-      {[...TABS, ...(sponsors ? [["/sponsor/", "Business"]] : [])].map(([href, label]) => (
+      {[...TABS, ...(sponsors ? [["/sponsor/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
         <Link key={href} href={href} className={path === href || (href === "/sponsor/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
           {label}
           {href === "/chat/" && path !== href && unread.count > 0 &&

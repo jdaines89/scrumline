@@ -661,3 +661,23 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 .chips button.on { background: var(--panel-2); color: var(--text); border-color: var(--accent-dim); }
 .chips input { width: 96px; font-size: 13px; padding: 5px 10px; border-radius: 999px; }
 .legend2 .grp { grid-column: 1 / -1; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+/* Schools: their own page, the claim line on Your schools, the admin queue */
+.school-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 12px; }
+.school-stats > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.school-stats b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.pos { color: var(--accent); }
+.neg { color: var(--danger); }
+.share-text { background: var(--panel-2); border-radius: var(--radius); padding: 12px 14px; font-size: 14px; line-height: 1.45; margin: 0 0 12px; }
+.claim-line { margin: -4px 0 10px; line-height: 1.45; }
+.claim-line .linkish { margin-left: 6px; }
+.claim-line form { margin-top: 6px; }
+.task { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+.task:first-of-type { border-top: 0; padding-top: 0; }
+.task-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.task .row { margin-top: 6px; }
+.task .row input { flex: 1; min-width: 0; }
+.lookafter .stack { grid-template-columns: minmax(0, 1fr); }
+.lookafter .stack > * { min-width: 0; }
+.lookafter .row > select { flex: 1; min-width: 0; }
+.claim-line .linkish { color: inherit; font-size: inherit; font-weight: 500; text-decoration: underline; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Dashboard, Payout } from "./school";
 import type { PoolSponsor } from "./sponsor";
 
 // Sample-data preview: lets an admin see the sponsor features filled in
@@ -73,3 +74,18 @@ export function sampleDays(): { day: string; seen: number }[] {
   const weeks = [140, 190, 215, 180, 255, 304];
   return weeks.map((seen, i) => ({ day: new Date(Date.now() - (5 - i) * 7 * 864e5 - 864e5).toISOString().slice(0, 10), seen }));
 }
+
+/** A claimed school's page, filled in. */
+export const SAMPLE_DASHBOARD: Dashboard = {
+  emis: "sample", name: "Paul Roos Gymnasium", town: "Stellenbosch", no_fee: false,
+  partner_name: "Kayamandi Secondary School", partner_town: "Stellenbosch", players: 184,
+  raised_minor: 1660000, paid_minor: 1380000, confirmed_minor: 960000, waiting_minor: 280000,
+  sponsors: ["Die Bank Coffee", "Stellenbosch Physio", "Van Zyl Motors"], claim_status: "verified", review_reason: null,
+  notice_until: "2026-09-01T00:00:00Z", bank_name: "FNB", account_last4: "4417", account_name: "Paul Roos Gimnasium SGB",
+};
+
+export const SAMPLE_PAYOUTS: Payout[] = [
+  { id: -3, amount_minor: 420000, currency: "ZAR", status: "paid", created_at: "2026-10-01T06:00:00Z", paid_at: "2026-10-01T09:12:00Z", confirmed_at: null, note: null },
+  { id: -2, amount_minor: 560000, currency: "ZAR", status: "confirmed", created_at: "2026-09-01T06:00:00Z", paid_at: "2026-09-01T08:40:00Z", confirmed_at: "2026-09-02T07:15:00Z", note: null },
+  { id: -1, amount_minor: 400000, currency: "ZAR", status: "confirmed", created_at: "2026-08-01T06:00:00Z", paid_at: "2026-08-01T08:05:00Z", confirmed_at: "2026-08-01T12:30:00Z", note: null },
+];

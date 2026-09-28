@@ -27,6 +27,21 @@ Deno.serve(async (req) => {
   if (!same(await hmac512(secret, raw), given.toLowerCase())) return new Response("bad signature", { status: 401 });
 
   const event = JSON.parse(raw);
+  const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // A payout to a school landed, failed or came back.
+  if (/^transfer\.(success|failed|reversed)$/.test(event?.event ?? "")) {
+    const ref: string = event.data?.reference ?? "";
+    if (!ref.startsWith("slp-")) return new Response("not ours");
+    const ok = event.event === "transfer.success";
+    const { data, error } = await db.rpc("school_payout_result", {
+      p_reference: ref, p_ok: ok, p_transfer_code: event.data?.transfer_code ?? null,
+      p_failure: ok ? null : String(event.data?.reason ?? event.data?.gateway_response ?? event.event),
+    });
+    if (error) return new Response("retry", { status: 500 });
+    console.log(`payout ${ref}: ${data}`);
+    return new Response(String(data));
+  }
   if (event?.event !== "charge.success") return new Response("ignored");
   const reference: string = event.data?.reference ?? "";
   const m = /^slb-(\d+)-/.exec(reference);
@@ -39,7 +54,6 @@ Deno.serve(async (req) => {
   const tx = (await check.json().catch(() => null))?.data;
   if (!check.ok || tx?.status !== "success") return new Response("not settled", { status: 409 });
 
-  const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data, error } = await db.rpc("sponsor_booking_paid", {
     p_booking: Number(m[1]), p_provider: "paystack", p_ref: reference,
     p_amount_minor: tx.amount, p_currency: tx.currency,

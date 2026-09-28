@@ -4,13 +4,13 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
-import { isBusinessSession, isPublicPath } from "@/lib/account";
+import { isBusinessSession, isPublicPath, isSchoolSession } from "@/lib/account";
 import { clearCache } from "@/lib/cache";
 import { arrivedVia, configured, supabase } from "@/lib/supabase";
 
 /**
  * Nothing renders for anyone who isn't signed in. Players only get an account
- * from an invite email; businesses sign up at /business/. Either link lands
+ * from an invite email; businesses sign up at /business/ and schools at /schools/. Either link lands
  * here with a one-time session so the new account can choose a password.
  */
 export function AuthGate({ children }: { children: ReactNode }) {
@@ -35,7 +35,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (isPublicPath(path)) return <>{children}</>;
   if (session === undefined) return <p className="muted">Loading&hellip;</p>;
   if (!session) return <SignIn />;
-  if (mustSetPassword) return <SetPassword email={session.user.email ?? ""} reset={arrivedVia === "recovery"} business={isBusinessSession(session)} onDone={() => setMustSetPassword(false)} />;
+  if (mustSetPassword) return <SetPassword email={session.user.email ?? ""} reset={arrivedVia === "recovery"} business={isBusinessSession(session) || isSchoolSession(session)} onDone={() => setMustSetPassword(false)} />;
   return <>{children}</>;
 }
 
@@ -70,7 +70,8 @@ function SignIn() {
         <button type="button" className="linkish forgot" onClick={forgot}>Forgot your password?</button>
       </form>
       {msg && <p className="small muted" style={{ marginBottom: 0 }}>{msg}</p>}
-      <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link></p>
+      <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link>
+        <br />Run a school? <Link href="/schools/">Claim it</Link></p>
     </div>
   );
 }

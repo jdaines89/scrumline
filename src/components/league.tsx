@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type FormE
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SponsorTabs } from "@/components/sponsor-tabs";
-import { isBusinessSession, isPublicPath, isSponsorPath } from "@/lib/account";
+import { isBusinessSession, isPublicPath, isSchoolPath, isSchoolSession, isSponsorPath } from "@/lib/account";
 import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
 
@@ -75,8 +75,18 @@ function BusinessOnly({ children }: { children: ReactNode }) {
   return ok ? <>{children}</> : <p className="muted">Loading&hellip;</p>;
 }
 
+/** A school account only has its school's pages. */
+function SchoolOnly({ children }: { children: ReactNode }) {
+  const path = usePathname();
+  const router = useRouter();
+  const ok = isSchoolPath(path);
+  useEffect(() => { if (!ok) router.replace("/school/"); }, [ok, router]);
+  return ok ? <>{children}</> : <p className="muted">Loading&hellip;</p>;
+}
+
 function Loaded({ children }: { children: ReactNode }) {
   const [business, setBusiness] = useState(false);
+  const [schoolOnly, setSchoolOnly] = useState(false);
   const [base, setBase] = useState<Base | null>(null);
   const [seasonId, setSeasonId] = useState<string | null>(null);
   const [data, setData] = useState<SeasonData | null>(null);
@@ -103,6 +113,7 @@ function Loaded({ children }: { children: ReactNode }) {
       const { data: sess } = await supabase.auth.getSession();
       const uid = sess.session?.user.id;
       if (isBusinessSession(sess.session)) { setBusiness(true); return; }
+      if (isSchoolSession(sess.session)) { setSchoolOnly(true); return; }
       const [seasons, comps, teams, members] = await Promise.all([
         supabase.from("seasons").select("*").order("starts_on", { ascending: false, nullsFirst: false }),
         supabase.from("competitions").select("*"),
@@ -140,6 +151,7 @@ function Loaded({ children }: { children: ReactNode }) {
   useEffect(() => { loadSeason(); }, [loadSeason]);
 
   if (business) return <BusinessOnly>{children}</BusinessOnly>;
+  if (schoolOnly) return <SchoolOnly>{children}</SchoolOnly>;
   if (error) return <div className="notice">{error}</div>;
   if (!base || !seasonId || !data) return <p className="muted">Loading the league&hellip;</p>;
 
@@ -172,6 +184,7 @@ function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
   const path = usePathname() ?? "";
   if (isSponsorPath(path)) return <SponsorTabs />;
+  if (isSchoolPath(path) || path.startsWith("/admin")) return null;
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
