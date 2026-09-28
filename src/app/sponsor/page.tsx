@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useLeague } from "@/components/league";
 import { money, split } from "@/lib/sponsor";
+import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
 
@@ -22,7 +22,7 @@ const STATUS: Record<string, string> = {
 };
 
 export default function SponsorPage() {
-  const { season } = useLeague();
+  const { seasons, season, setSeason, loading } = useSponsorSeason();
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<School[]>([]);
   const [school, setSchool] = useState<School | null>(null);
@@ -46,7 +46,7 @@ export default function SponsorPage() {
 
   useEffect(() => {
     setSlots(null); setPick(null); setPartner(null);
-    if (!school) return;
+    if (!school || !season) return;
     supabase.rpc("sponsor_slots", { p_emis: school.emis, p_season: season.id }).then(({ data }) => {
       const ss = (data ?? []) as Slot[];
       setSlots(ss);
@@ -55,7 +55,7 @@ export default function SponsorPage() {
     });
     supabase.rpc("school_partner", { p_emis: school.emis })
       .then(({ data }) => setPartner(((data ?? []) as Partner[])[0] ?? null));
-  }, [school, season.id]);
+  }, [school, season?.id]);
 
   const label = (s: Slot) => s.kind === "school" ? "The whole school" : s.school_year ? `Class of ${s.school_year}` : s.pool_name;
   const what = (s: Slot) => s.kind === "school"
@@ -65,12 +65,23 @@ export default function SponsorPage() {
   const sp = pick ? split(pick.price) : null;
   const cur = pick?.slot.currency ?? "ZAR";
 
+  if (loading) return <div className="skeleton" style={{ height: 200 }} />;
+  if (!season) return <div className="card narrow"><h2>No tournament is open yet</h2><p className="sub">Check back when the next season is loaded.</p></div>;
+
   return (
     <>
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
         <p className="sub">Put your business in front of a school&apos;s former pupils for a whole {season.name} season. 40% of what you pay goes straight to schools.</p>
+        {seasons.length > 1 && (
+          <label className="sp-season">
+            <span className="small muted">Tournament</span>
+            <select value={season.id} onChange={(e) => setSeason(e.target.value)}>
+              {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </label>
+        )}
 
         {school ? (
           <div className="school-saved">
