@@ -105,7 +105,7 @@ export default function MePage() {
               Email me an hour before kickoff if I haven&apos;t called a score
             </label>
 
-            <p className="small muted" style={{ marginTop: 18 }}>Own a business? <Link href="/sponsor/">Sponsor a school</Link></p>
+            <p className="small muted" style={{ marginTop: 18 }}>Own a business? <Link href="/sponsor/">Sponsor a school</Link> · <Link href="/giving/">See what sponsors give</Link></p>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
           </div>
         </div>
