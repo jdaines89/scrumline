@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { MySchools } from "@/components/my-schools";
@@ -104,7 +105,17 @@ export default function MePage() {
               Email me an hour before kickoff if I haven&apos;t called a score
             </label>
 
-            <button type="button" className="ghost" style={{ marginTop: 18 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
+            <div className="me-biz">
+              <strong>Own a business?</strong>
+              <span className="small muted">Back a school, see what sponsors give, and set up your business profile.</span>
+              <div className="row"><Link className="btn" href="/sponsor/">Sponsor a school</Link><Link className="btn ghostlink" href="/sponsor/profile/">Business profile</Link></div>
+            </div>
+            <div className="me-biz">
+              <strong>Look after your school&apos;s account?</strong>
+              <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
+              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}</div>
+            </div>
+            <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => supabase.auth.signOut()}>Sign out</button>
           </div>
         </div>
       </div>

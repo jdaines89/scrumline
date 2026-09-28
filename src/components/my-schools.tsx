@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { useLeague } from "@/components/league";
+import { ROLE_NAME } from "@/lib/school";
 import { supabase } from "@/lib/supabase";
 import type { Member, School } from "@/lib/types";
 
@@ -148,6 +149,7 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
               ? `Confirmed by ${mine.vouches} schoolmates`
               : `Needs ${NEEDED - (mine?.vouches ?? 0)} more schoolmate${NEEDED - (mine?.vouches ?? 0) === 1 ? "" : "s"} to confirm you`}
           </p>
+          <ClaimLine emis={saved.emis} onMessage={onMessage} />
           {others.length > 0 && (
             <ul className="school-mates">
               {others.map((m) => {
@@ -208,6 +210,48 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
             <button type="submit" disabled={busy || !pick}>{busy ? "Saving…" : "Save"}</button>
           </div>
           <p className="small muted">You can change it until {day(saved ? fixedFrom(saved) : new Date(Date.now() + OPEN_DAYS * 864e5))}.</p>
+        </form>
+      )}
+    </div>
+  );
+}
+
+interface Claim { claim_id: number; contact_name: string; role: string; status: string; verified_at: string | null; notice_until: string | null; flagged_by_me: boolean }
+
+/** Who looks after the school's money, so players who went there can say if that's wrong. */
+function ClaimLine({ emis, onMessage }: { emis: string; onMessage: (ok: boolean, text: string) => void }) {
+  const [c, setC] = useState<Claim | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [why, setWhy] = useState("");
+  const load = useCallback(() => {
+    supabase.rpc("school_claim_info", { p_emis: emis }).then(({ data }) => setC(((data ?? []) as Claim[])[0] ?? null));
+  }, [emis]);
+  useEffect(() => { load(); }, [load]);
+  if (!c) return null;
+
+  async function flag(e: FormEvent) {
+    e.preventDefault();
+    const { error } = await supabase.rpc("flag_school_claim", { p_claim: c!.claim_id, p_reason: why });
+    if (error) return onMessage(false, error.message);
+    setAsking(false);
+    onMessage(true, "Thanks. Payouts to the school are on hold until we've checked.");
+    load();
+  }
+
+  const fresh = c.notice_until && new Date(c.notice_until) > new Date();
+  return (
+    <div className="claim-line small">
+      <span className="muted">
+        {c.status === "needs_review" ? "Being checked: " : fresh ? "New: " : ""}
+        {c.contact_name} ({ROLE_NAME[c.role]?.toLowerCase() ?? c.role}) receives sponsors&apos; money for the school.
+      </span>
+      {c.flagged_by_me
+        ? <span className="muted"> You flagged this.</span>
+        : !asking && <button type="button" className="linkish" onClick={() => setAsking(true)}>Not right?</button>}
+      {asking && (
+        <form onSubmit={flag} className="row">
+          <input required minLength={3} maxLength={200} placeholder="What's wrong?" value={why} onChange={(e) => setWhy(e.target.value)} />
+          <button type="submit">Flag</button>
         </form>
       )}
     </div>

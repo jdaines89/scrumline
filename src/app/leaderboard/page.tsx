@@ -6,6 +6,7 @@ import { HeadToHead } from "@/components/head-to-head";
 import { NeedsPool, useLeague } from "@/components/league";
 import { PoolRace } from "@/components/pool-race";
 import { PrizeLine } from "@/components/prize-line";
+import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { RoundRecap } from "@/components/round-recap";
 import { RoundTable } from "@/components/round-table";
 import { SchoolTable } from "@/components/school-table";
@@ -32,6 +33,7 @@ function Leaderboard() {
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
   const [prizes, reloadPrizes] = usePoolPrizes(pool!.id);
+  const sponsor = usePoolSponsor();
   useEffect(() => {
     setRows(readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
     supabase.from("pool_leaderboard").select("*").eq("pool_id", pool!.id)
@@ -43,8 +45,9 @@ function Leaderboard() {
     <div className="card">
       <h2>{view === "schools" ? "Schools" : pool!.name}</h2>
       <p className="sub">{season.name}. {view === "schools" ? "Every school in the league, not just this pool." : season.is_replay ? "Only rounds that are locked in count." : "Scores count once a match is played."}</p>
+      {view !== "schools" && <SponsorLine sponsor={sponsor} />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
-      {rows && view !== "schools" && <RoundRecap rows={rows} prizes={prizes} />}
+      {rows && view !== "schools" && <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />}
       <div className="seg" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
         <button type="button" role="tab" aria-selected={view === "round"} className={view === "round" ? "on" : ""} onClick={() => setView("round")}>By round</button>

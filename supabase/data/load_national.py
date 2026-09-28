@@ -62,7 +62,11 @@ def coords(a, b):
     return None, None
 
 
-def no_fee(v) -> bool:
+def no_fee(v, quintile: str) -> bool:
+    # Mpumalanga's 2025 list leaves the no-fee column empty; by national policy
+    # quintiles 1 to 3 are the no-fee schools, so fall back to that.
+    if not blank(v):
+        return quintile in ("Q1", "Q2", "Q3")
     return blank(v).lower() in {"no fee", "yes", "y"}
 
 
@@ -92,7 +96,7 @@ def main(path: str, out_dir: str) -> None:
         learners = num(get(r, "Learners2025"))
         by_prov.setdefault(prov, []).append({
             "emis": emis, "name": nice(blank(get(r, "Official_Institution_Name"))), "town": nice(town) or None,
-            "province": prov, "district": nice(blank(get(r, "EIDistrict"))) or None, "no_fee": no_fee(get(r, "NoFeeSchool")),
+            "province": prov, "district": nice(blank(get(r, "EIDistrict"))) or None, "no_fee": no_fee(get(r, "NoFeeSchool"), q),
             "quintile": int(q[1]) if re.fullmatch(r"Q[1-5]", q) else None,
             "offers_primary": primary, "offers_matric": matric, "lat": lat, "lon": lon,
             "learners": int(learners) if learners else None,
