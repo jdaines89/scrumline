@@ -73,6 +73,18 @@ export default function SponsorPage() {
 
   return (
     <>
+      {mine.length > 0 && (
+        <div className="card narrow">
+          <h2>Your sponsorships</h2>
+          <p className="sub">Tap one to see how often players saw your name and what reached the schools.</p>
+          {mine.map((m) => (
+            <Link key={m.booking_id} className="rowline" href={`/sponsor/results/?b=${m.booking_id}`}>
+              <span>{m.pool_name}{m.round ? `, round ${m.round}` : ""}<span className="small muted"> · {m.season_name}</span></span>
+              <span className="small muted">{STATUS[m.status] ?? m.status}</span>
+            </Link>
+          ))}
+        </div>
+      )}
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
@@ -163,17 +175,6 @@ export default function SponsorPage() {
         </div>
       )}
 
-      {mine.length > 0 && (
-        <div className="card narrow">
-          <h2>Your sponsorships</h2>
-          {mine.map((m) => (
-            <Link key={m.booking_id} className="rowline" href={`/sponsor/results/?b=${m.booking_id}`}>
-              <span>{m.pool_name}{m.round ? `, round ${m.round}` : ""}<span className="small muted"> · {m.season_name}</span></span>
-              <span className="small muted">{STATUS[m.status] ?? m.status}</span>
-            </Link>
-          ))}
-        </div>
-      )}
     </>
   );
 }
