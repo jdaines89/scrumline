@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { money, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
-import { SAMPLE_MINE, usePreview } from "@/lib/preview";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
 
@@ -13,14 +12,8 @@ interface Slot {
   price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null;
   next_round: number | null; round_price_minor: number | null; round_available: boolean | null;
 }
-interface Mine { booking_id: number; sponsor_name: string; pool_name: string; season_name: string; round: number | null; status: string; price_minor: number; currency: string }
 interface Partner { emis: string; name: string; town: string | null; distance_km: number | null }
 interface Pick { slot: Slot; round: number | null; price: number }
-
-const STATUS: Record<string, string> = {
-  held: "Waiting for payment", paid: "Paid · line being checked", live: "Live", ended: "Ended",
-  refund_due: "Being refunded", refunded: "Refunded",
-};
 
 export default function SponsorPage() {
   const { seasons, season, setSeason, loading } = useSponsorSeason();
@@ -30,11 +23,6 @@ export default function SponsorPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
-  const [realMine, setMine] = useState<Mine[]>([]);
-  const preview = usePreview();
-  const mine = preview ? [SAMPLE_MINE, ...realMine] : realMine;
-
-  useEffect(() => { supabase.rpc("my_sponsorships").then(({ data }) => setMine((data ?? []) as Mine[])); }, []);
 
   useEffect(() => {
     const text = q.trim();
@@ -73,18 +61,6 @@ export default function SponsorPage() {
 
   return (
     <>
-      {mine.length > 0 && (
-        <div className="card narrow">
-          <h2>Your sponsorships</h2>
-          <p className="sub">Tap one to see how often players saw your name and what reached the schools.</p>
-          {mine.map((m) => (
-            <Link key={m.booking_id} className="rowline" href={`/sponsor/results/?b=${m.booking_id}`}>
-              <span>{m.pool_name}{m.round ? `, round ${m.round}` : ""}<span className="small muted"> · {m.season_name}</span></span>
-              <span className="small muted">{STATUS[m.status] ?? m.status}</span>
-            </Link>
-          ))}
-        </div>
-      )}
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>

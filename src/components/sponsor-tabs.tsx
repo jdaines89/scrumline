@@ -4,16 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS: [string, string][] = [
+  ["/sponsor/results/", "Your results"],
   ["/sponsor/", "Sponsor a school"],
   ["/giving/", "Giving"],
-  ["/sponsor/profile/", "Business profile"],
+  ["/sponsor/profile/", "Profile"],
 ];
 
 /** The business pages, for a player who also sponsors (business accounts have these in the header). */
 export function SponsorTabs() {
   const path = usePathname() ?? "";
   const on = (href: string) => href === "/sponsor/"
-    ? path.startsWith("/sponsor") && !path.startsWith("/sponsor/profile")
+    ? path.startsWith("/sponsor") && !/^\/sponsor\/(profile|results)/.test(path)
     : path.startsWith(href);
   return (
     <nav className="subtabs" aria-label="Business">

@@ -9,6 +9,7 @@ import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { pageKind, track } from "@/lib/track";
 import type { Member } from "@/lib/types";
+import { usePreview } from "@/lib/preview";
 
 const TABS = [
   ["/", "Home"],
@@ -101,6 +102,7 @@ export function Nav() {
   const unread = useUnread(player);
   const me = useMe(player);
   const sponsors = useSponsors(player);
+  const preview = usePreview();
   const schoolContact = useSchoolContact(player);
   useEffect(() => {
     if (!player) return;
@@ -111,7 +113,8 @@ export function Nav() {
   if (!uid) return <nav className="tabs" />;
   if (business) return (
     <nav className="tabs">
-      <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !path.startsWith("/sponsor/profile") ? "on" : ""}>Sponsor a school</Link>
+      <Link href="/sponsor/results/" className={path?.startsWith("/sponsor/results") ? "on" : ""}>Your results</Link>
+      <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !/^\/sponsor\/(profile|results)/.test(path) ? "on" : ""}>Sponsor a school</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
       <Link href="/sponsor/profile/" className={path?.startsWith("/sponsor/profile") ? "on" : ""}>Profile</Link>
       <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
@@ -134,8 +137,8 @@ export function Nav() {
       )}
     </Link>
     <nav className="tabs">
-      {[...TABS, ...(sponsors ? [["/sponsor/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
-        <Link key={href} href={href} className={path === href || (href === "/sponsor/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
+      {[...TABS, ...(sponsors || preview ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
+        <Link key={href} href={href} className={path === href || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
           {label}
           {href === "/chat/" && path !== href && unread.count > 0 &&
             <span className={unread.tagged ? "count at" : "count"}>{unread.tagged ? "@" : unread.count}</span>}
