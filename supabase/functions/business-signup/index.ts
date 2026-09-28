@@ -1,8 +1,10 @@
-// A business signs itself up to sponsor a school.
+// A business signs itself up to sponsor a school, or a school's contact
+// signs up to claim it (kind = 'school').
 //
 // Public sign-up stays off; this function makes the account as service role,
-// marked kind = 'business', so the database turns it into a business account
-// (never a member). The link goes out in our own email through Brevo. The
+// marked kind = 'business' or 'school', so the database turns it into that
+// kind of account (never a member). An address that already plays gets the
+// school side added to its account instead. The link goes out in our own email through Brevo. The
 // reply is the same whether or not the address already has an account, so
 // the form can't be used to find out who plays.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -24,9 +26,11 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => ({}));
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const business = typeof body.business === "string" ? body.business.trim().replace(/\s+/g, " ") : "";
+  const school = body.kind === "school";
+  const name = (typeof (school ? body.contact : body.business) === "string" ? (school ? body.contact : body.business) : "").trim().replace(/\s+/g, " ");
+  const role = ["principal", "bursar", "sgb", "alumni"].includes(body.role) ? body.role : "sgb";
   if (!EMAIL.test(email) || email.length > 200) return json({ error: "Check the email address." }, 400);
-  if (business.length < 2 || business.length > 60) return json({ error: "Give the business name (2 to 60 characters)." }, 400);
+  if (name.length < 2 || name.length > 60) return json({ error: school ? "Give your name (2 to 60 characters)." : "Give the business name (2 to 60 characters)." }, 400);
 
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
     auth: { persistSession: false },
@@ -44,11 +48,12 @@ Deno.serve(async (req) => {
   await db.from("business_signups").insert({ email, ip });
 
   const site = Deno.env.get("SITE_URL") ?? "https://jdaines89.github.io/scrumline";
-  const redirectTo = `${site}/sponsor/`;
+  const redirectTo = school ? `${site}/school/` : `${site}/sponsor/`;
+  const data = school ? { kind: "school", contact_name: name, role } : { kind: "business", business_name: name };
 
   let existing = false;
   let link = await db.auth.admin.generateLink({
-    type: "invite", email, options: { redirectTo, data: { kind: "business", business_name: business } },
+    type: "invite", email, options: { redirectTo, data },
   });
   if (link.error && /already|registered|exists/i.test(link.error.message)) {
     existing = true;
@@ -57,7 +62,10 @@ Deno.serve(async (req) => {
   const url = link.data?.properties?.action_link;
   if (link.error || !url) return json({ error: "Couldn't start the sign-up. Try again in a minute." }, 502);
 
-  const sent = await db.rpc("send_business_link", { p_email: email, p_name: business, p_link: url, p_existing: existing });
+  if (existing && school && link.data?.user?.id) {
+    await db.rpc("add_school_account", { p_user: link.data.user.id, p_contact: name, p_role: role });
+  }
+  const sent = await db.rpc(school ? "send_school_link" : "send_business_link", { p_email: email, p_name: name, p_link: url, p_existing: existing });
   if (sent.error) return json({ error: "Couldn't send the email. Try again in a minute." }, 502);
   return json(SENT);
 });

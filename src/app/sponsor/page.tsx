@@ -156,7 +156,7 @@ export default function SponsorPage() {
             <span><i className="d" style={{ background: "var(--gold)" }} />Prizes for the players, with your name on them</span><b>{money(sp.prizes, cur)}</b>
             <span><i className="d" style={{ background: "#3b4a44" }} />Scrumline: the app, results, payments and support</span><b>{money(sp.scrumline, cur)}</b>
           </div>
-          <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice. You can add an extra donation at checkout, and all of it goes to the school.</p>
+          <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice. You can add an extra donation at checkout; we take nothing from it, only the 3.5% card fee.</p>
           <Link className="btn paybtn" href={`/sponsor/checkout/?pool=${pick.slot.pool_id}${pick.round ? `&round=${pick.round}` : ""}`}>
             Continue with {pick.round ? `round ${pick.round}` : pick.slot.kind === "school" ? "the whole school" : label(pick.slot)}
           </Link>

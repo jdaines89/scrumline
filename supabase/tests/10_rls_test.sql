@@ -1230,4 +1230,128 @@ exception when insufficient_privilege then raise notice 'ok: only the business e
 end $$;
 reset role;
 
+-- Schools claim themselves: bank name must match, a week's notice, then monthly payouts
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select emis as sch from public.school_allocations where booking_id = :ex and share = 'own' and emis is not null order by amount_minor desc limit 1 \gset
+select set_config('test.sch', :'sch', false);
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000c1', 'bursar@school.example.com', now(), '{"kind":"school","contact_name":"Mrs Dlamini","role":"bursar"}');
+select pg_temp.check((select contact_name = 'Mrs Dlamini' and role = 'bursar' from public.school_accounts where user_id = '00000000-0000-0000-0000-0000000000c1'),
+                     'the sign-up makes a school account, not a member');
+select pg_temp.check(not exists (select 1 from public.members where user_id = '00000000-0000-0000-0000-0000000000c1'), 'a school account is not a player');
+select pg_temp.check(public.school_name_words('Hoërskool Paul Roos Gimnasium SGB Trust') = '{paul,roos,gimnasium}', 'common school words do not count');
+select pg_temp.check(public.record_school_claim('00000000-0000-0000-0000-0000000000c1', 'FNB', '1234', 'X', true, 'RCP_x') = 'pick your school first',
+                     'a claim needs a school');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select public.set_school_account_school(:'sch');
+select pg_temp.check((select count(*) from public.members) = 0, 'a school account sees no players');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check(public.record_school_claim('00000000-0000-0000-0000-0000000000c1', 'FNB', '1234', 'Someone Else Trading', true, 'RCP_x') = 'needs_review',
+                     'an account in another name waits for a person');
+select id as cl from public.school_claims where emis = :'sch' \gset
+select pg_temp.check(public.record_school_claim('00000000-0000-0000-0000-0000000000c1', 'FNB', '1234', 'Someone', true, 'RCP_y') = 'already claimed by you',
+                     'one live claim per school');
+select public.review_school_claim(:cl, false, 'Not the school''s account');
+select pg_temp.check(public.record_school_claim('00000000-0000-0000-0000-0000000000c1', 'FNB', '5678',
+                     (select name from public.schools where emis = :'sch') || ' SGB', true, 'RCP_ok') = 'verified',
+                     'the school''s own name on a confirmed account is verified at once');
+select id as cl from public.school_claims where emis = :'sch' and status = 'verified' \gset
+select pg_temp.check((select notice_until > now() + interval '6 days' from public.school_claims where id = :cl), 'and goes on a week''s notice');
+update public.sponsor_bookings set paid_at = now() - interval '8 days' where id = :ex;
+select pg_temp.check(public.make_school_payouts() = 0, 'no payouts during the notice');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.check((select raised_minor > 0 and waiting_minor = raised_minor and claim_status = 'verified' and account_last4 = '5678'
+                      from public.school_dashboard()), 'the school sees what it raised and its claim');
+select pg_temp.check((select count(*) from public.school_claims) = 2, 'the school account sees only its own claims');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+-- A player from the school flags it; payouts stop until an admin looks.
+insert into public.member_schools (user_id, stage, emis)
+  select '00000000-0000-0000-0000-00000000000e', case when offers_matric then 'high' else 'primary' end, emis from public.schools where emis = :'sch'
+  on conflict (user_id, stage) do update set emis = excluded.emis;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select pg_temp.check((select contact_name = 'Mrs Dlamini' from public.school_claim_info(:'sch')), 'players from the school see who claimed it');
+select public.flag_school_claim(:cl, 'She left the school last year');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
+do $$ begin
+  perform public.flag_school_claim((select id from public.school_claims where emis = current_setting('test.sch') and status = 'needs_review'), 'Trouble');
+  raise exception 'FAILED: a stranger flagged another school';
+exception when insufficient_privilege then raise notice 'ok: only players from the school can flag it';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+update public.school_claims set notice_until = now() - interval '1 minute' where id = :cl;
+select pg_temp.check(public.make_school_payouts() = 0, 'a flagged claim is not paid');
+select pg_temp.check((select count(*) from public.admin_school_queue() where kind = 'review' and id = :cl) = 1, 'the flag lands in the admin queue');
+select public.review_school_claim(:cl, true, 'Called the school: she is the bursar');
+update public.school_claims set notice_until = now() - interval '1 minute' where id = :cl;
+select pg_temp.check(public.make_school_payouts() = 1, 'after the notice, the month''s payout is made');
+select id as po from public.school_payouts where claim_id = :cl \gset
+select pg_temp.check((select amount_minor from public.school_payouts where id = :po)
+                     = (select sum(amount_minor) from public.school_allocations where emis = :'sch' and payout_id = :po), 'it adds up the school''s shares');
+select pg_temp.check(public.make_school_payouts() = 0, 'and a share is paid out once');
+select reference as ref from public.school_payouts where id = :po \gset
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+do $$ begin
+  perform public.confirm_school_payout((select id from public.school_payouts limit 1));
+  raise exception 'FAILED: confirmed before the money arrived';
+exception when raise_exception then raise notice 'ok: a payment is confirmed only after it arrives';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check(public.school_payout_result(:'ref', false, 'TRF_1', 'Account closed') = 'failed', 'a failed transfer is recorded');
+select pg_temp.check(not exists (select 1 from public.school_allocations where payout_id = :po), 'and its shares wait for next month');
+select pg_temp.check(public.make_school_payouts() = 1, 'next month they are paid again');
+select id as po, reference as ref from public.school_payouts where claim_id = :cl and status = 'pending' \gset
+select pg_temp.check(public.school_payout_result(:'ref', true, 'TRF_2', null) = 'ok', 'a transfer that lands marks the shares paid');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select public.confirm_school_payout(:po);
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select bool_and(status = 'confirmed') from public.school_allocations where payout_id = :po), 'the school confirms it and Giving shows it');
+
+-- Schools looked after by a person: goods instead of cash, confirmed by WhatsApp
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select emis as nf from public.schools where no_fee and emis <> :'sch' and not exists (select 1 from public.school_claims c where c.emis = schools.emis) limit 1 \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.assisted_goods_claim((select emis from public.schools where no_fee limit 1), 'Mr Mthembu', 'principal', '+27 82 000 0000', 'xh');
+  raise exception 'FAILED: a player made an assisted claim';
+exception when insufficient_privilege then raise notice 'ok: only admins record schools they look after';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.assisted_goods_claim(:'nf', 'Mr Mthembu', 'principal', '+27 82 000 0000', 'xh') as gc \gset
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select status = 'verified' and payout_mode = 'goods' and language = 'xh' from public.school_claims where id = :gc),
+                     'an admin records a school that takes goods, in isiXhosa');
+insert into public.school_payouts (emis, claim_id, amount_minor, currency) values (:'nf', :gc, 50000, 'ZAR') returning id as gp \gset
+select pg_temp.check((select count(*) from public.admin_school_queue() where kind = 'deliver' and id = :gp) = 1, 'goods to buy show in the queue');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.record_goods_delivered(:gp, '15 rugby balls and a kit bag, delivered 3 Oct');
+select public.confirm_assisted_payout(:gp, 'WhatsApp photo from the principal');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select status = 'confirmed' and note like '15 rugby balls%Confirmed: WhatsApp photo%' from public.school_payouts where id = :gp),
+                     'delivery and the school''s confirmation are both on record');
+
+-- The money log: every change is written down and nothing can rub it out
+select pg_temp.check((select count(*) from public.money_log where entity = 'school_payouts' and entity_id = :gp) >= 3,
+                     'each step of a payout is in the money log');
+do $$ begin
+  delete from public.money_log;
+  raise exception 'FAILED: the money log was wiped';
+exception when insufficient_privilege then raise notice 'ok: nobody can delete from the money log';
+end $$;
+do $$ begin
+  update public.money_log set new = null where id = (select min(id) from public.money_log);
+  raise exception 'FAILED: the money log was edited';
+exception when insufficient_privilege then raise notice 'ok: nobody can edit the money log';
+end $$;
+-- Tidy two test shortcuts (a share marked confirmed by hand for Giving, a goods payout with no shares) before the sums.
+update public.school_allocations set status = 'due' where status <> 'due' and payout_id is null;
+delete from public.school_payouts where id = :gp;
+select pg_temp.check((select string_agg(check_name, '; ') from public.money_checks() where not ok) is null, 'every money sum holds to the cent');
+update public.school_allocations set amount_minor = amount_minor + 1 where id = (select min(id) from public.school_allocations where payout_id = :po);
+select pg_temp.check((select problems from public.money_checks() where check_name like 'Every rand%') = 1
+                     and (select not ok from public.money_checks() where check_name like 'Each payout%'), 'a cent out of place is caught');
+update public.school_allocations set amount_minor = amount_minor - 1 where id = (select min(id) from public.school_allocations where payout_id = :po);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.admin_money_checks()) = 0, 'only admins see the money checks');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+
 \echo ALL CHECKS PASSED
