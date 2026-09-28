@@ -1103,7 +1103,8 @@ select pg_temp.check(public.sponsor_booking_paid(:ex, 'paystack', 'ref-ex', (sel
 select pg_temp.check(public.sponsor_booking_paid(:ex, 'paystack', 'ref-ex', (select price_minor + 50000 from public.sponsor_bookings where id = :ex), 'ZAR') = 'ok',
                      'the price plus the donation is accepted');
 select pg_temp.check((select sum(amount_minor) from public.school_allocations where booking_id = :ex and share = 'own')
-                     = (select own_school_minor + 50000 from public.sponsor_bookings where id = :ex), 'the whole donation goes to the school');
+                     = (select own_school_minor + 50000 - 1750 from public.sponsor_bookings where id = :ex), 'the donation, less its 3.5% card fee, goes to the school');
+select pg_temp.check(public.extra_card_fee(1) = 1 and public.extra_card_fee(100000) = 3500, 'the card fee on a donation rounds up to the cent');
 select pg_temp.check((select scrumline_minor = price_minor - own_school_minor - partner_school_minor - prize_minor from public.sponsor_bookings where id = :ex),
                      'Scrumline''s share is the same with or without a donation');
 

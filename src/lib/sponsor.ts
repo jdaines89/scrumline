@@ -15,6 +15,11 @@ export function split(price: number) {
   return { own: part, partner: part, prizes: part, scrumline: price - 3 * part };
 }
 
+/** The card fee on an extra donation, 3.5% rounded up; the database works it out the same way. */
+export function extraFee(extra: number): number {
+  return Math.floor((extra * 35 + 999) / 1000);
+}
+
 /** Up to three letters for the sponsor's tile until logos are uploaded. */
 export function initials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
