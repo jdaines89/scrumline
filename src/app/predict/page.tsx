@@ -1,5 +1,6 @@
 "use client";
 
+import { AllSet, type NextStep } from "@/components/all-set";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { NeedsEntry, useLeague } from "@/components/league";
 import { RoundPicker } from "@/components/round-picker";
@@ -164,6 +165,42 @@ function Predict() {
   }) : null;
   const unlockedCalls = season.is_replay ? 0 : ms.filter((m) => preds.has(m.id) && !matchStarted(m) && !myLocks.has(m.id)).length;
 
+  // Every call in: say when it starts and offer the few things worth doing meanwhile.
+  const allIn = !done && !season.is_replay && ms.length > 0 && filled === ms.length && ready === `predict:${entry!.id}:${round}`;
+  const steps: NextStep[] = [];
+  if (allIn) {
+    const openIds = ms.filter((m) => !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
+    if (openIds.length) steps.push({
+      title: `Lock ${openIds.length === ms.length ? "your" : openIds.length} call${openIds.length === 1 ? "" : "s"} to see your mates'`,
+      detail: "You'll see what everyone who's locked the same games called. A lock can't be undone.",
+      onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after.`)) lockMatches(openIds); },
+    });
+    // The pool you're looking at, or your class or own pool when that one has no chat.
+    const talk = pool && (!pool.school_emis || pool.school_year) ? pool
+      : pools.find((p) => p.school_year && p.school_emis === pool?.school_emis) ?? pools.find((p) => !p.school_emis) ?? null;
+    if (talk) {
+      const bm = ms.find((m) => preds.get(m.id)?.is_banker);
+      const bp = bm && preds.get(bm.id)!;
+      const line = bm && bp
+        ? `My Banker for round ${round}: ${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}. Who's going against it?`
+        : `My calls are in for round ${round}. Who's going against me?`;
+      steps.push({
+        title: bm ? `Tell ${talk.name} your Banker` : `Tell ${talk.name} you're in`,
+        detail: bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the pool chat",
+        href: `/chat/?pool=${talk.id}&say=${encodeURIComponent(line)}`,
+      });
+    }
+    const after = rounds[rounds.indexOf(round) + 1];
+    const nextMs = matches.filter((m) => m.round === after);
+    if (after !== undefined && nextMs.length && !nextMs.some((m) => matchStarted(m))) {
+      steps.push({
+        title: `Get round ${after} in early`,
+        detail: `${nextMs.length} games, first on ${kickoff(nextMs.map((m) => m.kickoff_at).sort()[0])}`,
+        onClick: () => { setRound(after); window.scrollTo({ top: 0, behavior: "smooth" }); },
+      });
+    }
+  }
+
   async function save(matchId: string, rawH: string, rawA: string) {
     const h = scoreInput(rawH), a = scoreInput(rawA);
     touched.current.add(matchId);
@@ -311,6 +348,7 @@ function Predict() {
             </div>
           );
         })}
+        {allIn && <AllSet round={round} firstKick={firstKick} steps={steps} />}
         {scores.size > 0 && (
           <dl className="legend">
             {PARTS.map((p) => <div key={p.code}><dt><span className="pchip on">{p.code}</span></dt><dd>{p.what}, +{p.max}</dd></div>)}
@@ -328,7 +366,7 @@ function Predict() {
           <div className="roundactions">
             {!season.is_replay && (() => {
               const open = ms.filter((m) => preds.has(m.id) && !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
-              return open.length > 0 && (
+              return open.length > 0 && !allIn && (
                 <button type="button" onClick={() => {
                   if (window.confirm(`Lock ${open.length} call${open.length === 1 ? "" : "s"}? You can't change them after, but you'll see the calls of mates who've locked the same games.`)) lockMatches(open);
                 }}>Lock {open.length === ms.length ? "all" : open.length} call{open.length === 1 ? "" : "s"}</button>
