@@ -602,3 +602,11 @@ a.rowline:hover { text-decoration: none; background: var(--panel-2); }
 .spline b { color: var(--text); font-weight: 600; }
 .spline a { color: var(--muted); }
 .spline a:hover { color: var(--accent); }
+
+/* Business sign-up */
+.signin-biz { margin: 14px 0 0; }
+.tab-out { font: inherit; color: var(--muted); padding: 0 10px; }
+.sp-season { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
+.biz-points { display: grid; gap: 14px; }
+.biz-points > div { display: grid; gap: 2px; }
+.center { text-align: center; }

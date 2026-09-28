@@ -1123,4 +1123,39 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select name from public.school_partner('900000031')) = 'Near No-fee Secondary', 'a sponsor sees the partner by name');
 reset role;
 
+-- Business accounts: made by the sign-up function, sponsor pages only
+reset role;
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000b1', 'owner@specs.example.com', null, '{"kind":"business","business_name":"Specs Corner"}'),
+  ('00000000-0000-0000-0000-0000000000b2', 'selfmade@example.com', null, '{"kind":"business","business_name":"Sneaky"}');
+update auth.users set invited_at = now() where id = '00000000-0000-0000-0000-0000000000b1';
+select pg_temp.check((select business_name from public.business_accounts where user_id = '00000000-0000-0000-0000-0000000000b1') = 'Specs Corner'
+                     and not exists (select 1 from public.members where user_id = '00000000-0000-0000-0000-0000000000b1'),
+                     'a business account is made, and no member');
+select pg_temp.check(not exists (select 1 from public.business_accounts where user_id = '00000000-0000-0000-0000-0000000000b2'),
+                     'an account nobody created for a business is not one');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000b1');
+select pg_temp.check(public.is_business() and not public.is_member(), 'the business is a business, not a member');
+select pg_temp.check((select count(*) from public.schools) > 0 and (select count(*) from public.seasons) > 0, 'a business can find schools and tournaments');
+select pg_temp.check((select count(*) from public.members) = 0 and (select count(*) from public.pools) = 0
+                     and (select count(*) from public.predictions) = 0 and (select count(*) from public.chat_messages) = 0
+                     and (select count(*) from public.member_schools) = 0 and (select count(*) from public.matches) = 0,
+                     'a business sees no players, pools, calls, chat or schools people chose');
+select pg_temp.check((select count(*) from public.sponsor_slots('900000001', 'spon')) >= 1, 'a business sees what a school has open');
+select public.create_sponsor('ZA', 'Specs Corner', 'health', 'owner@specs.example.com') as specs \gset
+select pg_temp.check(public.manages_sponsor(:specs), 'a business can set up its sponsor');
+do $$ begin
+  insert into public.business_accounts (user_id, business_name) values (auth.uid(), 'Other');
+  raise exception 'FAILED: a business could write its own account row';
+exception when insufficient_privilege then raise notice 'ok: a business cannot write account rows';
+end $$;
+do $$ begin
+  perform public.send_business_link('x@example.com', 'X', 'https://example.com', false);
+  raise exception 'FAILED: anyone could send sign-up emails';
+exception when insufficient_privilege then raise notice 'ok: only the sign-up function sends its email';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.business_accounts) = 0, 'players cannot see business accounts');
+reset role;
+
 \echo ALL CHECKS PASSED

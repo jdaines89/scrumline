@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { isBusinessSession } from "@/lib/account";
 import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { pageKind, track } from "@/lib/track";
@@ -59,20 +60,27 @@ function useMe(uid: string | null): Member | undefined {
 export function Nav() {
   const path = usePathname();
   const [uid, setUid] = useState<string | null>(null);
+  const [business, setBusiness] = useState(false);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUid(data.session?.user.id ?? null));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setUid(s?.user.id ?? null));
+    supabase.auth.getSession().then(({ data }) => { setUid(data.session?.user.id ?? null); setBusiness(isBusinessSession(data.session)); });
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => { setUid(s?.user.id ?? null); setBusiness(isBusinessSession(s)); });
     return () => data.subscription.unsubscribe();
   }, []);
-  const unread = useUnread(uid);
-  const me = useMe(uid);
+  const unread = useUnread(business ? null : uid);
+  const me = useMe(business ? null : uid);
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || business) return;
     track("open");
     const k = pageKind(path);
     if (k) track(k);
-  }, [uid, path]);
+  }, [uid, business, path]);
   if (!uid) return <nav className="tabs" />;
+  if (business) return (
+    <nav className="tabs">
+      <Link href="/sponsor/" className={path?.startsWith("/sponsor") ? "on" : ""}>Sponsor a school</Link>
+      <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
+    </nav>
+  );
   return (
     <>
     <Link href="/me/" className={`melink${path === "/me/" ? " on" : ""}`} aria-label="Your profile">

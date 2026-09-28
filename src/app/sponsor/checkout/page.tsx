@@ -2,22 +2,22 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
-import { useLeague } from "@/components/league";
 import { CATEGORIES, initials, money, query, split } from "@/lib/sponsor";
+import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
 
 interface Quote { pool_id: number; pool_name: string; kind: string; players: number; price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null }
 interface Sponsor { id: number; name: string; category: string; email: string }
 
 export default function Checkout() {
-  const { season, me } = useLeague();
+  const { season } = useSponsorSeason();
   const [pool, setPool] = useState<number | null>(null);
   const [round, setRound] = useState<number | null>(null);
   const [quote, setQuote] = useState<Quote | null | undefined>(undefined);
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
-  const [email, setEmail] = useState(me.email);
+  const [email, setEmail] = useState("");
   const [offer, setOffer] = useState("");
   const [link, setLink] = useState("");
   const [prize, setPrize] = useState("");
@@ -33,7 +33,13 @@ export default function Checkout() {
       .then(({ data }) => {
         const s = (data?.[0] as Sponsor | undefined) ?? null;
         setSponsor(s);
-        if (s) { setName(s.name); setCategory(s.category); setEmail(s.email); }
+        if (s) { setName(s.name); setCategory(s.category); setEmail(s.email); return; }
+        // First time: start from the account's own email and, for a business, its name.
+        supabase.auth.getUser().then(({ data: u }) => {
+          const meta = u.user?.user_metadata ?? {};
+          setEmail((v) => v || u.user?.email || "");
+          if (meta.kind === "business" && typeof meta.business_name === "string") setName((v) => v || meta.business_name);
+        });
       });
   }, []);
 
@@ -81,7 +87,7 @@ export default function Checkout() {
   return (
     <form onSubmit={pay}>
       <div className="card narrow">
-        <p className="sp-kicker">{quote.pool_name}{round ? ` · round ${round}` : ""} · {season.name}</p>
+        <p className="sp-kicker">{quote.pool_name}{round ? ` · round ${round}` : ""}{season ? ` · ${season.name}` : ""}</p>
         <h2>Your sponsorship</h2>
         <div className="field"><label>Business name, as players will see it</label>
           <input required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} disabled={!!sponsor} /></div>
