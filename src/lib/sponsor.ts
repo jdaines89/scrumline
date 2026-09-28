@@ -12,7 +12,7 @@ export function money(minor: number, currency = "ZAR"): string {
 /** The published split, worked out the same way the database does. */
 export function split(price: number) {
   const part = Math.floor((price * 20) / 100);
-  return { own: part, twin: part, prizes: part, scrumline: price - 3 * part };
+  return { own: part, partner: part, prizes: part, scrumline: price - 3 * part };
 }
 
 /** Up to three letters for the sponsor's tile until logos are uploaded. */

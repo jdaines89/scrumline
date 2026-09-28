@@ -3,9 +3,9 @@ import { initials, money, split } from "../src/lib/sponsor";
 
 describe("sponsor money", () => {
   it("splits 20/20/20/40 with the remainder to Scrumline, like the database", () => {
-    expect(split(350000)).toEqual({ own: 70000, twin: 70000, prizes: 70000, scrumline: 140000 });
+    expect(split(350000)).toEqual({ own: 70000, partner: 70000, prizes: 70000, scrumline: 140000 });
     const odd = split(100001);
-    expect(odd.own + odd.twin + odd.prizes + odd.scrumline).toBe(100001);
+    expect(odd.own + odd.partner + odd.prizes + odd.scrumline).toBe(100001);
     expect(odd.scrumline).toBe(40001);
   });
   it("formats rand and rupees from cents", () => {

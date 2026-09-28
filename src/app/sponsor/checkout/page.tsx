@@ -104,7 +104,7 @@ export default function Checkout() {
       </div>
       <div className="card narrow">
         <div className="rowline first"><span>Advertising and prizes, tax invoice</span><b>{money(sp.prizes + sp.scrumline, cur)}</b></div>
-        <div className="rowline"><span>Donation to schools, 18A certificate</span><b>{money(sp.own + sp.twin, cur)}</b></div>
+        <div className="rowline"><span>Donation to schools, 18A certificate</span><b>{money(sp.own + sp.partner, cur)}</b></div>
         <div className="rowline"><b>Total today</b><b>{money(price, cur)}</b></div>
         <p className="small muted">One card payment, split automatically. You go live the moment your payment clears.</p>
         {msg && <p className="small" style={{ color: "var(--danger)" }}>{msg}</p>}

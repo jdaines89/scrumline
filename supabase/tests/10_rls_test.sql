@@ -851,7 +851,7 @@ insert into public.schools (emis, name, town, province, no_fee, offers_primary, 
   ('900000001', 'Sponsor High One', 'Stellenbosch', 'WC', false, false, true, 'test'),
   ('900000002', 'Sponsor High Two', 'Stellenbosch', 'WC', false, false, true, 'test'),
   ('900000011', 'No-fee Twin', 'Kayamandi', 'WC', true, false, true, 'test');
-insert into public.school_twins values ('900000001', '900000011');
+insert into public.school_partners (emis, partner_emis) values ('900000001', '900000011');
 delete from public.school_vouches where stage = 'high';
 delete from public.member_schools where stage = 'high';
 insert into public.member_schools (user_id, stage, emis, last_year) values
@@ -890,10 +890,10 @@ select pg_temp.check((select email from public.sponsors where id = :vz) = 'paul@
 select pg_temp.check((select players = 5 and kind = 'pool' and price_minor = 150000 and available
                       from public.sponsor_quote((select id from sp))), 'the quote shows players, kind and price');
 select public.hold_sponsor_slot(:vz, (select id from sp)) as bk \gset
-select pg_temp.check((select own_school_minor = 30000 and twin_school_minor = 30000 and prize_minor = 30000 and scrumline_minor = 60000
+select pg_temp.check((select own_school_minor = 30000 and partner_school_minor = 30000 and prize_minor = 30000 and scrumline_minor = 60000
                       from public.sponsor_bookings where id = :bk), 'the split is 20/20/20/40');
 select public.hold_sponsor_slot(:vz, (select id from sp), 1) as bk1 \gset
-select pg_temp.check((select own_school_minor + twin_school_minor + prize_minor + scrumline_minor = 100001 and scrumline_minor = 40001
+select pg_temp.check((select own_school_minor + partner_school_minor + prize_minor + scrumline_minor = 100001 and scrumline_minor = 40001
                       from public.sponsor_bookings where id = :bk1), 'an odd price still adds up, remainder to Scrumline');
 do $$ begin
   perform public.sponsor_booking_paid(1, 'paystack', 'x', 1, 'ZAR');
@@ -935,8 +935,8 @@ select pg_temp.check(public.sponsor_booking_paid(:bk, 'paystack', 'ref-1', 15000
 select pg_temp.check((select status from public.sponsor_bookings where id = :bk) = 'paid', 'paid but not live before the creative is approved');
 select pg_temp.check((select string_agg(coalesce(emis, 'fund') || ':' || share || ':' || amount_minor, ' ' order by share, emis nulls last)
                       from public.school_allocations where booking_id = :bk)
-                     = '900000001:own:12000 900000002:own:6000 fund:own:12000 900000011:twin:12000 fund:twin:18000',
-                     'schools get their players'' share, twins mirror it, no twin goes to the fund');
+                     = '900000001:own:12000 900000002:own:6000 fund:own:12000 900000011:partner:12000 fund:partner:18000',
+                     'schools get their players'' share, partners mirror it, no partner goes to the fund');
 select pg_temp.check(public.sponsor_booking_paid(:bk1, 'paystack', 'ref-2', 100001, 'ZAR') = 'ok', 'the round booking is paid');
 select pg_temp.check((select bool_and(t = 20000) from (select sum(amount_minor) t from public.school_allocations where booking_id = :bk1 group by share) x),
                      'uneven shares still add up to the cent');
@@ -1093,5 +1093,24 @@ select pg_temp.check((select seen_week = 2 and players_week = 2 and shares_week 
                       from notify.due_sponsor_reports() where booking_id = :bk), 'each live sponsor has a weekly results email due');
 insert into notify.sponsor_reports_sent (booking_id, week) select booking_id, week from notify.due_sponsor_reports() where booking_id = :bk;
 select pg_temp.check(not exists (select 1 from notify.due_sponsor_reports() where booking_id = :bk), 'and gets it once a week');
+
+-- Partner schools: nearest no-fee school at the same level, at most 3 each
+reset role;
+insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source, lat, lon) values
+  ('900000041', 'Near No-fee Secondary', 'Paarl', 'WC', true, false, true, 'test', -33.93, 18.86),
+  ('900000042', 'Far No-fee Secondary', 'Paarl', 'WC', true, false, true, 'test', -34.50, 19.50),
+  ('900000031', 'Fee High A', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
+  ('900000032', 'Fee High B', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
+  ('900000033', 'Fee High C', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
+  ('900000034', 'Fee High D', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87);
+select public.match_partner_schools(1000);
+select pg_temp.check((select string_agg(emis || '>' || partner_emis, ' ' order by emis) from public.school_partners where emis between '900000031' and '900000034')
+                     = '900000031>900000041 900000032>900000041 900000033>900000041 900000034>900000042',
+                     'each fee school gets the nearest no-fee partner, at most 3 per partner');
+select pg_temp.check((select distance_km between 1 and 2 from public.school_partners where emis = '900000031'), 'the distance is kept');
+select pg_temp.check(public.match_partner_schools(1000) = 0, 'matching again finds nothing left to do');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select name from public.school_partner('900000031')) = 'Near No-fee Secondary', 'a sponsor sees the partner by name');
+reset role;
 
 \echo ALL CHECKS PASSED
