@@ -1098,7 +1098,7 @@ select pg_temp.check(not exists (select 1 from notify.due_sponsor_reports() wher
 reset role;
 insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source, lat, lon) values
   ('900000041', 'Near No-fee Secondary', 'Paarl', 'WC', true, false, true, 'test', -33.93, 18.86),
-  ('900000042', 'Far No-fee Secondary', 'Paarl', 'WC', true, false, true, 'test', -34.50, 19.50),
+  ('900000042', 'Far No-fee Secondary', 'Paarl', 'WC', true, false, true, 'test', -34.20, 18.90),
   ('900000031', 'Fee High A', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
   ('900000032', 'Fee High B', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
   ('900000033', 'Fee High C', 'Paarl', 'WC', false, false, true, 'test', -33.94, 18.87),
@@ -1109,6 +1109,16 @@ select pg_temp.check((select string_agg(emis || '>' || partner_emis, ' ' order b
                      'each fee school gets the nearest no-fee partner, at most 3 per partner');
 select pg_temp.check((select distance_km between 1 and 2 from public.school_partners where emis = '900000031'), 'the distance is kept');
 select pg_temp.check(public.match_partner_schools(1000) = 0, 'matching again finds nothing left to do');
+insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source, lat, lon) values
+  ('900000051', 'Village No-fee Secondary', 'Village', 'WC', true, false, true, 'test', -33.000, 18.0),
+  ('900000052', 'Across Town High', 'Village', 'WC', false, false, true, 'test', -33.200, 18.0),
+  ('900000053', 'Next Door High 1', 'Village', 'WC', false, false, true, 'test', -33.001, 18.0),
+  ('900000054', 'Next Door High 2', 'Village', 'WC', false, false, true, 'test', -33.001, 18.0),
+  ('900000055', 'Next Door High 3', 'Village', 'WC', false, false, true, 'test', -33.001, 18.0);
+select public.match_partner_schools(1000);
+select pg_temp.check((select count(*) from public.school_partners where partner_emis = '900000051' and emis between '900000053' and '900000055') = 3
+                     and not exists (select 1 from public.school_partners where emis = '900000052' and partner_emis = '900000051'),
+                     'the closest schools are paired first, whatever order they were loaded in');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select name from public.school_partner('900000031')) = 'Near No-fee Secondary', 'a sponsor sees the partner by name');
 reset role;

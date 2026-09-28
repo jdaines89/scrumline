@@ -3,8 +3,8 @@
 -- "Twin" claimed two schools were equals, which they aren't, so the second
 -- 20% now goes to a partner school: the nearest no-fee school at the same
 -- level (matric, else primary), chosen by Scrumline, not claimed by either
--- school. No no-fee school partners more than 3 schools, so the money
--- spreads. A no-fee school that is sponsored itself keeps both shares.
+-- school, and within 50 km. No no-fee school partners more than 3 schools,
+-- so the money spreads. A no-fee school that is sponsored itself keeps both shares.
 --
 -- Matching runs by itself: match_partner_schools() pairs any fee-paying
 -- school without a partner, a batch at a time, on a 10-minute cron. Once
@@ -27,6 +27,10 @@ alter table public.school_allocations drop constraint school_allocations_share_c
 update public.school_allocations set share = 'partner' where share = 'twin';
 alter table public.school_allocations add constraint school_allocations_share_check check (share in ('own', 'partner'));
 
+-- Mpumalanga's 2025 list leaves the no-fee column empty; by national policy
+-- quintiles 1 to 3 are no-fee (the loader now does the same on reload).
+update public.schools set no_fee = true where province = 'MP' and not no_fee and quintile between 1 and 3;
+
 -- 2. Matching ----------------------------------------------------------------
 -- Straight-line km from coordinates (good enough to find the nearest school).
 create or replace function public.km(lat1 double precision, lon1 double precision, lat2 double precision, lon2 double precision)
@@ -43,35 +47,70 @@ security definer
 set search_path = public
 as $$
 declare
+  todo text[];
+  r record;
   f record;
   pick record;
   n int := 0;
 begin
-  for f in
-    select s.* from public.schools s
+  -- One run at a time (the cron and a manual run can overlap).
+  if not pg_try_advisory_xact_lock(hashtext('match_partner_schools')) then return 0; end if;
+  todo := array(
+    select s.emis from public.schools s
     where not s.no_fee and (s.offers_matric or s.offers_primary)
       and not exists (select 1 from public.school_partners p where p.emis = s.emis)
       and (s.partner_checked_at is null or s.partner_checked_at < now() - interval '1 day')
-    order by s.lat is null, s.emis  -- schools we can place on a map go first, so they get the truly nearest
-    limit p_limit
+    order by s.lat is null, s.emis
+    limit p_limit);
+
+  -- 1. Schools on the map: the closest pairs are made first, across the whole
+  --    batch, so a school next door isn't taken by one across town that
+  --    happened to be looked at earlier.
+  for r in
+    select fs.emis as fee, near.emis as nf, near.d
+    from public.schools fs
+    cross join lateral (
+      select ns.emis, public.km(fs.lat, fs.lon, ns.lat, ns.lon) as d
+      from public.schools ns
+      where ns.no_fee and ns.province = fs.province and ns.lat is not null
+        and case when fs.offers_matric then ns.offers_matric else ns.offers_primary end
+      order by 2 limit 15) near
+    where fs.emis = any(todo) and fs.lat is not null and near.d <= 50
+    order by near.d, fs.emis
   loop
-    -- The nearest no-fee school at the same level in the same province with
-    -- room left; without coordinates, the same district, then the same town.
+    continue when exists (select 1 from public.school_partners p where p.emis = r.fee);
+    continue when (select count(*) from public.school_partners p where p.partner_emis = r.nf) >= 3;
+    insert into public.school_partners (emis, partner_emis, distance_km) values (r.fee, r.nf, round(r.d::numeric, 1))
+    on conflict (emis) do nothing;
+    n := n + 1;
+  end loop;
+
+  -- 2. The rest (no coordinates, or every nearby school already has 3): the
+  --    nearest with room within 50 km; without coordinates, the same district,
+  --    then the same town. Further than that, the share goes to the fund.
+  for f in
+    select s.* from public.schools s
+    where s.emis = any(todo) and not exists (select 1 from public.school_partners p where p.emis = s.emis)
+    order by s.lat is null, s.emis
+  loop
     select c.emis, case when f.lat is not null and c.lat is not null then public.km(f.lat, f.lon, c.lat, c.lon) end as d
     into pick
     from public.schools c
     where c.no_fee and c.province = f.province and c.emis <> f.emis
       and case when f.offers_matric then c.offers_matric else c.offers_primary end
       and (select count(*) from public.school_partners p where p.partner_emis = c.emis) < 3
+      and (f.lat is null or c.lat is null or public.km(f.lat, f.lon, c.lat, c.lon) <= 50)
     order by case when f.lat is not null and c.lat is not null then public.km(f.lat, f.lon, c.lat, c.lon) end nulls last,
              (c.district is not distinct from f.district) desc, (c.town is not distinct from f.town) desc, c.emis
     limit 1;
-    update public.schools set partner_checked_at = now() where emis = f.emis;
     if pick.emis is not null then
-      insert into public.school_partners (emis, partner_emis, distance_km) values (f.emis, pick.emis, round(pick.d::numeric, 1));
+      insert into public.school_partners (emis, partner_emis, distance_km) values (f.emis, pick.emis, round(pick.d::numeric, 1))
+      on conflict (emis) do nothing;
       n := n + 1;
     end if;
   end loop;
+
+  update public.schools set partner_checked_at = now() where emis = any(todo);
   return n;
 end $$;
 revoke execute on function public.match_partner_schools(int) from public, anon, authenticated;
