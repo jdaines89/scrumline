@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { money, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
+import { SAMPLE_MINE, usePreview } from "@/lib/preview";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
 
@@ -29,7 +30,9 @@ export default function SponsorPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [pick, setPick] = useState<Pick | null>(null);
-  const [mine, setMine] = useState<Mine[]>([]);
+  const [realMine, setMine] = useState<Mine[]>([]);
+  const preview = usePreview();
+  const mine = preview ? [SAMPLE_MINE, ...realMine] : realMine;
 
   useEffect(() => { supabase.rpc("my_sponsorships").then(({ data }) => setMine((data ?? []) as Mine[])); }, []);
 

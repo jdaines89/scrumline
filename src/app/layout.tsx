@@ -4,6 +4,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { LeagueProvider } from "@/components/league";
 import { Nav } from "@/components/nav";
 import { Brand } from "@/components/logo";
+import { PreviewBar } from "@/components/preview-bar";
 
 export const metadata: Metadata = {
   title: "Scrumline",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Nav />
           </div>
         </header>
+        <PreviewBar />
         <main className="shell">
           <AuthGate>
             <LeagueProvider>{children}</LeagueProvider>

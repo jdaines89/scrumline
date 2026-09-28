@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
+import { sampleSponsor, usePreview } from "@/lib/preview";
 import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
@@ -27,7 +28,9 @@ export function usePoolSponsor(): PoolSponsor | null {
       writeCache(`sponsor:${id}`, s); setAll(s);
     });
   }, [id]);
+  const preview = usePreview();
   const round = currentRound(matches);
+  if (preview && !all.length && id) return sampleSponsor();
   return all.find((s) => s.round !== null && s.round === round) ?? all.find((s) => s.round === null) ?? null;
 }
 
