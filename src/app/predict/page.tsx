@@ -175,9 +175,7 @@ function Predict() {
       detail: "You'll see what everyone who's locked the same games called. A lock can't be undone.",
       onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after.`)) lockMatches(openIds); },
     });
-    // The pool you're looking at, or your class or own pool when that one has no chat.
-    const talk = pool && (!pool.school_emis || pool.school_year) ? pool
-      : pools.find((p) => p.school_year && p.school_emis === pool?.school_emis) ?? pools.find((p) => !p.school_emis) ?? null;
+    const talk = pool ?? pools[0] ?? null;
     if (talk) {
       const bm = ms.find((m) => preds.get(m.id)?.is_banker);
       const bp = bm && preds.get(bm.id)!;

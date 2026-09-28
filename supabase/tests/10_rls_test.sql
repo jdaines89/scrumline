@@ -493,12 +493,9 @@ select pg_temp.check((select count(*) from public.pools where school_emis = '200
                      'another class''s pool stays out of sight');
 select pg_temp.check(public.class_pool_name('Hoërskool Jan van Riebeeck Pretoria', 2017::smallint) = 'Hoërskool Jan van Riebeec… Class of 2017',
                      'long school names are shortened to fit');
-do $$ begin
-  insert into public.chat_messages (pool_id, author_id, body)
-  select id, auth.uid(), 'Hello everyone' from public.pools where school_emis = '200100823' and school_year is null limit 1;
-  raise exception 'FAILED: chatted in a whole-school pool';
-exception when insufficient_privilege then raise notice 'ok: whole-school pools have no chat';
-end $$;
+insert into public.chat_messages (pool_id, author_id, body)
+select id, auth.uid(), 'Hello everyone' from public.pools where school_emis = '200100823' and school_year is null limit 1;
+select pg_temp.check((select count(*) from public.chat_messages where body = 'Hello everyone') = 1, 'whole-school pools have chat too');
 insert into public.chat_messages (pool_id, author_id, body)
 select id, auth.uid(), 'Class of 98!' from public.pools where school_emis = '200100823' and school_year = 1998 limit 1;
 select pg_temp.check((select count(*) from public.chat_messages where body = 'Class of 98!') = 1, 'class pools have chat');
