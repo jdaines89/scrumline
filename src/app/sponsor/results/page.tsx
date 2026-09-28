@@ -12,7 +12,7 @@ interface Day { day: string; seen: number }
 
 const STATE: Record<string, string> = {
   held: "Waiting for payment. The slot is held for 30 minutes.",
-  paid: "Paid, thank you. You go live as soon as we've checked your name and line.",
+  paid: "Paid, thank you. Your line needs a quick check before it goes live.",
   live: "Live: players see your name now.",
   ended: "This sponsorship has ended.",
   refund_due: "Someone else paid for this slot a moment before you. Your money is being refunded in full.",
