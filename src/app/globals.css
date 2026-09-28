@@ -704,3 +704,21 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 /* Official school pools */
 svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; color: var(--accent); flex: none; }
 .nowrap { white-space: nowrap; }
+
+/* Moderation: held and reported messages, report and block prompts, chat bans */
+.bubble.held { background: transparent; border-style: dashed; color: var(--muted); font-size: 13px; font-style: italic; cursor: default; }
+.msg.mine .bubble.held { background: transparent; border-color: var(--line); }
+.msgactions { flex-wrap: wrap; }
+.modask { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.modask .msgactions { margin-top: 4px; }
+.modnote { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; margin: 10px 0 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); color: var(--text); }
+.modnote span { flex: 1; min-width: 180px; }
+.modnote button { padding: 6px 12px; font-size: 13px; }
+.composer.banned p { margin: 0; padding: 4px 0; }
+.modquote { margin: 4px 0; padding: 8px 12px; border-left: 3px solid var(--line); background: var(--panel-2); border-radius: 0 8px 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+.modphoto { display: block; max-width: 220px; max-height: 220px; border-radius: 10px; margin: 4px 0; }
+.modphoto.skeleton { width: 160px; height: 120px; }
+.modacts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.modacts button { flex: none; width: auto; padding: 8px 14px; font-size: 14px; }
+.modacts button.linkish { background: none; border: 0; color: var(--muted); padding: 8px 4px; text-decoration: underline; font-weight: 400; }
+.modacts button.linkish:hover { color: var(--text); background: none; }

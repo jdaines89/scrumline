@@ -13,7 +13,7 @@ export interface Match {
 }
 export interface Member { user_id: string; email: string; display_name: string; is_admin: boolean; email_reminders: boolean; push_mentions: boolean; reminder_by: "push" | "email"; avatar_path: string | null }
 export interface School { emis: string; name: string; town: string | null; no_fee: boolean }
-export interface ChatMessage { id: number; author_id: string; body: string; created_at: string; image_path?: string | null }
+export interface ChatMessage { id: number; author_id: string; body: string; created_at: string; image_path?: string | null; hidden_at?: string | null }
 export interface Entry { id: number; user_id: string; season: string; team_name: string }
 export interface Prediction { entry_id: number; match_id: string; home_score: number; away_score: number; is_banker: boolean }
 export interface StandingRow {
