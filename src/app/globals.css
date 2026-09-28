@@ -638,3 +638,13 @@ img.sp-tile.logo { object-fit: contain; background: #fff; padding: 2px; box-sizi
 label.btn.ghost { background: transparent; border-color: var(--line); color: var(--text); cursor: pointer; }
 .spline:has(.sp-about) { align-items: flex-start; }
 .give-list li.open .sp-tile, .give-list li.open .rank { margin-top: 2px; }
+
+/* Business pages for players who sponsor */
+.subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+.subtabs a { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); }
+.subtabs a.on { color: var(--text); background: var(--panel-2); }
+.subtabs a:hover { text-decoration: none; color: var(--text); }
+.me-biz { display: grid; gap: 6px; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.me-biz .row { display: flex; flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.me-biz .row .btn { flex: none; width: auto; }
+.btn.ghostlink { background: transparent; border-color: var(--line); color: var(--text); }

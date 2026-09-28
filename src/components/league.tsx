@@ -4,6 +4,7 @@ import { readCache, writeCache } from "@/lib/cache";
 import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { SponsorTabs } from "@/components/sponsor-tabs";
 import { isBusinessSession, isPublicPath, isSponsorPath } from "@/lib/account";
 import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
@@ -170,7 +171,7 @@ const POOL_SCREENS = ["/leaderboard", "/chat"];
 function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
   const path = usePathname() ?? "";
-  if (isSponsorPath(path)) return null;
+  if (isSponsorPath(path)) return <SponsorTabs />;
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">

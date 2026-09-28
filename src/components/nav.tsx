@@ -44,6 +44,21 @@ function useUnread(uid: string | null): Unread {
   return u;
 }
 
+/** Whether this player also runs a sponsoring business, for the Business tab. */
+function useSponsors(uid: string | null): boolean {
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    if (!uid) { setHas(false); return; }
+    try { setHas(localStorage.getItem(`sl:sponsor:${uid}`) === "1"); } catch { /* no storage */ }
+    supabase.from("sponsors").select("id").limit(1).then(({ data }) => {
+      const yes = Boolean(data?.length);
+      setHas(yes);
+      try { localStorage.setItem(`sl:sponsor:${uid}`, yes ? "1" : "0"); } catch { /* no storage */ }
+    });
+  }, [uid]);
+  return has;
+}
+
 /** You, for the picture in the corner: last visit's copy first, then the database's. */
 function useMe(uid: string | null): Member | undefined {
   const [me, setMe] = useState<Member | undefined>();
@@ -68,6 +83,7 @@ export function Nav() {
   }, []);
   const unread = useUnread(business ? null : uid);
   const me = useMe(business ? null : uid);
+  const sponsors = useSponsors(business ? null : uid);
   useEffect(() => {
     if (!uid || business) return;
     track("open");
@@ -93,8 +109,8 @@ export function Nav() {
       )}
     </Link>
     <nav className="tabs">
-      {TABS.map(([href, label]) => (
-        <Link key={href} href={href} className={path === href ? "on" : ""}>
+      {[...TABS, ...(sponsors ? [["/sponsor/", "Business"]] : [])].map(([href, label]) => (
+        <Link key={href} href={href} className={path === href || (href === "/sponsor/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
           {label}
           {href === "/chat/" && path !== href && unread.count > 0 &&
             <span className={unread.tagged ? "count at" : "count"}>{unread.tagged ? "@" : unread.count}</span>}
