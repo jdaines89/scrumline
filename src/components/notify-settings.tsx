@@ -57,15 +57,50 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
   return (
     <div className="card notify">
       <h2>Notifications</h2>
-      <p className="sub">{pushOn ? "On for this phone." : "Get a nudge before kickoff and when someone tags you."}</p>
+      <p className="sub">Choose how each one reaches you.</p>
 
-      {state === "off" && <button type="button" onClick={on} disabled={busy}>Turn on for this phone</button>}
-      {state === "on" && <button type="button" className="ghost" onClick={off} disabled={busy}>Turn off for this phone</button>}
-      {state === "blocked" && <p className="small muted">Notifications are blocked for Scrumline. Allow them in your phone&apos;s settings, then come back here.</p>}
-      {state === "unsupported" && <p className="small muted">This browser can&apos;t show notifications. Reminders come by email instead.</p>}
+      <div className="notify-prefs">
+        <div className="pref">
+          <div className="pref-text">
+            <strong>Kickoff reminders</strong>
+            <span className="small muted">An hour before kickoff, if you haven&apos;t called a score</span>
+          </div>
+          <div className="seg sm">
+            {([["off", "Off"], ["push", "Push"], ["email", "Email"]] as const).map(([v, l]) => (
+              <button key={v} type="button" className={remind === v ? "on" : ""} onClick={() => saveRemind(v)}>{l}</button>
+            ))}
+          </div>
+        </div>
+        {remind === "push" && !pushOn && <p className="small muted">Push isn&apos;t on for this phone yet, so these come by email for now.</p>}
+        <div className="pref">
+          <div className="pref-text">
+            <strong>Tagged in chat</strong>
+            <span className="small muted">When someone tags you in a pool&apos;s chat</span>
+          </div>
+          <div className="seg sm">
+            <button type="button" className={!tags || !pushOn ? "on" : ""} onClick={() => save("push_mentions", false, setTags)}>Off</button>
+            <button type="button" className={tags && pushOn ? "on" : ""} disabled={!pushOn} onClick={() => save("push_mentions", true, setTags)}>Push</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="phone-push">
+        <div className="pref-text">
+          <strong>Push on this phone</strong>
+          <span className="small muted">{{
+            on: "On. Anything set to Push comes here.",
+            off: "Off. Turn it on to use Push above.",
+            blocked: "Blocked in your phone's settings. Allow notifications for Scrumline there, then come back.",
+            unsupported: "This browser can't do push, so choose Email.",
+            "needs-home-screen": "Add Scrumline to your home screen first, as below.",
+          }[state ?? "off"]}</span>
+        </div>
+        {state === "off" && <button type="button" onClick={on} disabled={busy}>Turn on</button>}
+        {state === "on" && <button type="button" className="ghost" onClick={off} disabled={busy}>Turn off</button>}
+      </div>
       {state === "needs-home-screen" && (
         <div className="howto">
-          <p className="small">On iPhone, notifications work once Scrumline is on your home screen:</p>
+          <p className="small">On iPhone, push works once Scrumline is on your home screen:</p>
           <ol className="small muted">
             <li>Tap the Share button at the bottom of Safari</li>
             <li>Choose Add to Home Screen</li>
@@ -73,20 +108,6 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
           </ol>
         </div>
       )}
-
-      <div className="notify-prefs">
-        <span className="small">Kickoff reminders, an hour before if you haven&apos;t called a score</span>
-        <div className="seg sm">
-          {([["off", "Off"], ["push", "Phone"], ["email", "Email"]] as const).map(([v, l]) => (
-            <button key={v} type="button" className={remind === v ? "on" : ""} onClick={() => saveRemind(v)}>{l}</button>
-          ))}
-        </div>
-        {remind === "push" && !pushOn && <p className="small muted">Until notifications are on for this phone, these come by email.</p>}
-        <label className="small muted toggle">
-          <input type="checkbox" checked={tags} disabled={!pushOn} onChange={(e) => save("push_mentions", e.target.checked, setTags)} />
-          Tell me when someone tags me in chat{pushOn ? "" : " (needs notifications on)"}
-        </label>
-      </div>
 
       {!installed && installable && (
         <button type="button" className="ghost notify-install" onClick={async () => { await install(); }}>Install Scrumline on this phone</button>
