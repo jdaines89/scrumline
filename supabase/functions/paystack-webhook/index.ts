@@ -33,7 +33,14 @@ Deno.serve(async (req) => {
   if (/^transfer\.(success|failed|reversed)$/.test(event?.event ?? "")) {
     const ref: string = event.data?.reference ?? "";
     if (!ref.startsWith("slp-")) return new Response("not ours");
-    const ok = event.event === "transfer.success";
+    // As with charges, ask Paystack itself how the transfer ended.
+    const v = await fetch(`https://api.paystack.co/transfer/verify/${encodeURIComponent(ref)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const tr = (await v.json().catch(() => null))?.data;
+    if (!v.ok || !tr?.status) return new Response("not checked", { status: 409 });
+    if (tr.status !== "success" && tr.status !== "failed" && tr.status !== "reversed") return new Response("still pending", { status: 409 });
+    const ok = tr.status === "success";
     const { data, error } = await db.rpc("school_payout_result", {
       p_reference: ref, p_ok: ok, p_transfer_code: event.data?.transfer_code ?? null,
       p_failure: ok ? null : String(event.data?.reason ?? event.data?.gateway_response ?? event.event),
