@@ -8,6 +8,8 @@ import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
 
+interface Owed { emis: string; school: string; town: string | null; district: string | null; province: string | null; no_fee: boolean;
+  owed_minor: number; since: string; players: number; introduced_by: string | null }
 interface Check { check_name: string; ok: boolean; problems: number; detail: string }
 interface Task {
   kind: "review" | "deliver" | "confirm"; id: number; emis: string; school: string; town: string | null; no_fee: boolean;
@@ -21,12 +23,14 @@ export default function AdminSchools() {
   const { me } = useLeague();
   const [checks, setChecks] = useState<Check[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
+  const [owed, setOwed] = useState<Owed[] | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => {
-    const [c, t] = await Promise.all([supabase.rpc("admin_money_checks"), supabase.rpc("admin_school_queue")]);
+    const [c, t, o] = await Promise.all([supabase.rpc("admin_money_checks"), supabase.rpc("admin_school_queue"), supabase.rpc("admin_unclaimed_owed")]);
     setChecks((c.data ?? []) as Check[]);
     setTasks((t.data ?? []) as Task[]);
+    setOwed((o.data ?? []) as Owed[]);
   }, []);
   useEffect(() => { if (me.is_admin) load(); }, [me.is_admin, load]);
 
@@ -57,6 +61,20 @@ export default function AdminSchools() {
         {tasks === null && <div className="skeleton" style={{ height: 80 }} />}
         {tasks?.length === 0 && <p className="sub" style={{ marginBottom: 0 }}>Nothing. Every claim is sorted and every payment is confirmed.</p>}
         {tasks?.map((t) => <TaskRow key={`${t.kind}${t.id}`} t={t} run={run} />)}
+      </div>
+
+      <div className="card narrow">
+        <h2>Owed, with nobody to pay yet</h2>
+        <p className="sub">Schools sponsors have given money to that nobody has claimed, biggest first. After 12 months a school&apos;s share moves to its partner no-fee school.</p>
+        {owed === null && <div className="skeleton" style={{ height: 80 }} />}
+        {owed?.length === 0 && <p className="small muted" style={{ marginBottom: 0 }}>None. Every school that is owed money has someone to pay.</p>}
+        {owed?.map((o) => (
+          <div key={o.emis} className="task">
+            <div className="task-head"><strong>{o.school}</strong><b>{money(o.owed_minor)}</b></div>
+            <div className="small muted">{[o.town, o.district, o.province].filter(Boolean).join(", ")}{o.no_fee ? " · no-fee" : ""} · owed since {new Date(o.since).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}</div>
+            <div className="small">{o.introduced_by ? `Partner of ${o.introduced_by}` : o.players ? `${o.players} player${o.players === 1 ? "" : "s"} went here and can help` : "No contact yet"}</div>
+          </div>
+        ))}
       </div>
 
       <LookAfter onDone={(text) => { setMsg({ ok: true, text }); load(); }} />

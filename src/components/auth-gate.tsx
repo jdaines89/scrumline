@@ -50,7 +50,7 @@ function SignIn() {
     setBusy(true); setMsg(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) setMsg("That email and password don't match an invited account.");
+    if (error) setMsg("That email and password don't match an account.");
   }
 
   async function forgot() {
@@ -62,7 +62,7 @@ function SignIn() {
   return (
     <div className="card narrow">
       <h2>Sign in</h2>
-      <p className="sub">This league is invite-only. Use the email your invite went to.</p>
+      <p className="sub">Use the email your invite or sign-up link went to.</p>
       <form onSubmit={submit} className="stack">
         <input type="email" required placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" required placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />

@@ -1354,4 +1354,22 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select count(*) from public.admin_money_checks()) = 0, 'only admins see the money checks');
 reset role; select set_config('request.jwt.claim.sub', '', false);
 
+-- Outreach: schools owed money with nobody to pay, and a second contact told who looks after a school
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select count(*) from public.admin_unclaimed_owed() where emis = :'sch') = 0, 'a claimed school is not on the call list');
+update public.school_claims set status = 'revoked' where id = :cl;
+select pg_temp.check((select owed_minor > 0 from public.admin_unclaimed_owed() where emis = :'sch'), 'once nobody looks after it, what it is owed shows on the call list');
+update public.school_claims set status = 'verified' where id = :cl;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.admin_unclaimed_owed()) = 0, 'only admins see the call list');
+select pg_temp.check((select count(*) from public.school_claim_holder(:'sch')) = 0, 'players do not use the holder lookup');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000c2', 'principal@school.example.com', now(), '{"kind":"school","contact_name":"Mr Petersen","role":"principal"}');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.check((select contact_name = 'Mrs Dlamini' and role = 'bursar' from public.school_claim_holder(:'sch')), 'a second contact is told who looks after the school');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.check((select count(*) from public.school_claim_holder(:'sch')) = 0, 'the holder is not told about themselves');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+
 \echo ALL CHECKS PASSED
