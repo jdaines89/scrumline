@@ -39,13 +39,27 @@ export default function BusinessSignUp() {
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
-        <p className="sub">Your name in front of a school&apos;s former pupils all season, on their pool, their table and the round cards they share. 40% of what you pay goes to schools: half to the school you pick and half to a no-fee school nearby.</p>
+        <p className="sub">Your name in front of a school&apos;s former pupils all season, on their pool, their table and the round cards they share.</p>
         <form onSubmit={submit} className="stack">
           <input required minLength={2} maxLength={60} placeholder="Business name" autoComplete="organization" value={business} onChange={(e) => setBusiness(e.target.value)} />
           <input type="email" required placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button type="submit" disabled={busy}>{busy ? "Sending…" : "Email me a sign-up link"}</button>
         </form>
         {msg && <p className="small" style={{ color: "var(--danger)", marginBottom: 0 }}>{msg}</p>}
+      </div>
+      <div className="card narrow">
+        <h2>Where every rand goes</h2>
+        <div className="split">
+          <i style={{ width: "20%", background: "var(--accent)" }} /><i style={{ width: "20%", background: "var(--accent-dim)" }} />
+          <i style={{ width: "20%", background: "var(--gold)" }} /><i style={{ width: "40%", background: "#3b4a44" }} />
+        </div>
+        <div className="legend2">
+          <span><i className="d" style={{ background: "var(--accent)" }} />The school you pick</span><b>20%</b>
+          <span><i className="d" style={{ background: "var(--accent-dim)" }} />A no-fee school near it</span><b>20%</b>
+          <span><i className="d" style={{ background: "var(--gold)" }} />Prizes for the players, in your name</span><b>20%</b>
+          <span><i className="d" style={{ background: "#3b4a44" }} />Scrumline: the app, results, payments and support</span><b>40%</b>
+        </div>
+        <p className="small muted" style={{ marginBottom: 0 }}>Schools are paid monthly. Your results page shows each payment and when the school confirms it.</p>
       </div>
       <div className="card narrow biz-points">
         <div><strong>No calls, no forms</strong><span className="small muted">Pick a school, see the price and pay by card. It goes live straight away.</span></div>
