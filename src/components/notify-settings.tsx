@@ -54,6 +54,8 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
   }
 
   const pushOn = state === "on";
+  // Without push on this phone, a saved "push" choice is delivered by email, so show it as Email.
+  const shownRemind = remind === "push" && !pushOn ? "email" : remind;
   return (
     <div className="card notify">
       <h2>Notifications</h2>
@@ -67,11 +69,10 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
           </div>
           <div className="seg sm">
             {([["off", "Off"], ["push", "Push"], ["email", "Email"]] as const).map(([v, l]) => (
-              <button key={v} type="button" className={remind === v ? "on" : ""} onClick={() => saveRemind(v)}>{l}</button>
+              <button key={v} type="button" className={shownRemind === v ? "on" : ""} disabled={v === "push" && !pushOn} onClick={() => saveRemind(v)}>{l}</button>
             ))}
           </div>
         </div>
-        {remind === "push" && !pushOn && <p className="small muted">Push isn&apos;t on for this phone yet, so these come by email for now.</p>}
         <div className="pref">
           <div className="pref-text">
             <strong>Tagged in chat</strong>
@@ -89,7 +90,7 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
           <strong>Push on this phone</strong>
           <span className="small muted">{{
             on: "On. Anything set to Push comes here.",
-            off: "Off. Turn it on to use Push above.",
+            off: "Off. Turn it on to choose Push above.",
             blocked: "Blocked in your phone's settings. Allow notifications for Scrumline there, then come back.",
             unsupported: "This browser can't do push, so choose Email.",
             "needs-home-screen": "Add Scrumline to your home screen first, as below.",
