@@ -77,8 +77,9 @@ export function Nav() {
   if (!uid) return <nav className="tabs" />;
   if (business) return (
     <nav className="tabs">
-      <Link href="/sponsor/" className={path?.startsWith("/sponsor") ? "on" : ""}>Sponsor a school</Link>
+      <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !path.startsWith("/sponsor/profile") ? "on" : ""}>Sponsor a school</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
+      <Link href="/sponsor/profile/" className={path?.startsWith("/sponsor/profile") ? "on" : ""}>Profile</Link>
       <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
     </nav>
   );

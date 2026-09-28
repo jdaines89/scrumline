@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
-import { CATEGORIES, initials, money, query, split } from "@/lib/sponsor";
+import { SponsorTile } from "@/components/sponsor-tile";
+import { CATEGORIES, money, query, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
 
 interface Quote { pool_id: number; pool_name: string; kind: string; players: number; price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null }
-interface Sponsor { id: number; name: string; category: string; email: string }
+interface Sponsor { id: number; name: string; category: string; email: string; logo_path?: string | null }
 
 export default function Checkout() {
   const { season } = useSponsorSeason();
@@ -29,7 +30,7 @@ export default function Checkout() {
     if (!p) { setQuote(null); return; }
     setPool(p); setRound(r || null);
     supabase.rpc("sponsor_quote", { p_pool: p, p_round: r || null }).then(({ data }) => setQuote(((data ?? []) as Quote[])[0] ?? null));
-    supabase.from("sponsors").select("id, name, category, email").order("created_at", { ascending: false }).limit(1)
+    supabase.from("sponsors").select("id, name, category, email, logo_path").order("created_at", { ascending: false }).limit(1)
       .then(({ data }) => {
         const s = (data?.[0] as Sponsor | undefined) ?? null;
         setSponsor(s);
@@ -97,8 +98,8 @@ export default function Checkout() {
             {CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select></div>}
         <div className="field"><label>Logo</label>
-          <div className="logo-drop"><div className="sp-tile">{initials(name || "?")}</div>
-            <div className="small muted">Shown small, never as a banner. Your initials show until logo upload arrives.</div></div></div>
+          <div className="logo-drop"><SponsorTile name={name} logo={sponsor?.logo_path ?? null} />
+            <div className="small muted">Shown small, never as a banner. {sponsor?.logo_path ? "Change it" : "Add it"}, with a few lines about you, on <Link href="/sponsor/profile/">your profile</Link>.</div></div></div>
         <div className="field"><label>One line for players (optional)</label>
           <input maxLength={80} placeholder="Paul Roos alumni: 15% off your next service" value={offer} onChange={(e) => setOffer(e.target.value)} /></div>
         <div className="field"><label>Link (optional)</label>

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
-import { initials, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
+import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
+import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
 /** The round being played now: the first with a match still to come, else the last. */
@@ -32,16 +33,23 @@ export function usePoolSponsor(): PoolSponsor | null {
 
 /** One quiet line under the pool name. Nothing at all when the pool has no sponsor. */
 export function SponsorLine({ sponsor }: { sponsor: PoolSponsor | null }) {
+  const [open, setOpen] = useState(false);
   useEffect(() => { if (sponsor) sponsorEvent(sponsor.booking_id, "seen"); }, [sponsor]);
   if (!sponsor) return null;
+  const more = Boolean(sponsor.about || sponsor.website);
   return (
     <div className="spline">
-      <div className="sp-tile">{initials(sponsor.display_name)}</div>
+      <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
       <div>
-        <div>{sponsor.round ? `Round ${sponsor.round} sponsored by` : "Sponsored by"} <b>{sponsor.display_name}</b></div>
+        <div>{sponsor.round ? `Round ${sponsor.round} sponsored by` : "Sponsored by"}{" "}
+          {more
+            ? <button type="button" className="linkish sp-name" aria-expanded={open} onClick={() => setOpen(!open)}><b>{sponsor.display_name}</b></button>
+            : <b>{sponsor.display_name}</b>}
+        </div>
         {sponsor.offer && (sponsor.link
           ? <a href={sponsor.link} target="_blank" rel="noopener sponsored" onClick={() => sponsorEvent(sponsor.booking_id, "tap")}>{sponsor.offer} ›</a>
           : <div>{sponsor.offer}</div>)}
+        {open && <SponsorAbout about={sponsor.about} website={sponsor.website} onTap={() => sponsorEvent(sponsor.booking_id, "tap")} />}
       </div>
     </div>
   );
