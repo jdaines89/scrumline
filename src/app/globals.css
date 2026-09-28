@@ -735,3 +735,7 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .nextstep:hover, button.nextstep:hover { background: none; color: var(--accent); text-decoration: none; }
 .nextstep strong { font-weight: 600; font-size: 15px; }
 .nextstep .chev { color: var(--muted); font-size: 22px; line-height: 1; }
+
+/* Recruiter credit */
+.recruiter { margin: 4px 0 10px; }
+.recruited { margin: -4px 0 12px; }

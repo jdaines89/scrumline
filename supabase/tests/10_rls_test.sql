@@ -1666,4 +1666,39 @@ delete from public.member_blocks;
 select pg_temp.check(exists (select 1 from public.chat_messages where author_id = '00000000-0000-0000-0000-00000000000a'), 'unblocking brings them back');
 reset role; select set_config('request.jwt.claim.sub', '', false);
 
+-- Recruiter credit: only invitees who go on to make a call count.
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(public.my_recruits() = 0, 'an invitee who hasn''t played yet doesn''t count');
+reset role;
+select id as rseason from public.seasons order by id limit 1 \gset
+select id as rmatch from public.matches where season = :'rseason' order by id limit 1 \gset
+insert into public.entries (user_id, season, team_name) values ('00000000-0000-0000-0000-0000000000d1', :'rseason', 'Newbie XV')
+on conflict (user_id, season) do nothing;
+insert into public.predictions (entry_id, match_id, home_score, away_score)
+select id, :'rmatch', 20, 10 from public.entries where user_id = '00000000-0000-0000-0000-0000000000d1' and season = :'rseason';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(public.my_recruits() = 1, 'once they make a call, the inviter is credited');
+reset role;
+select pm.pool_id as rpool from public.pool_members pm
+where pm.user_id = '00000000-0000-0000-0000-00000000000a'
+  and exists (select 1 from public.pool_members o where o.pool_id = pm.pool_id and o.user_id = '00000000-0000-0000-0000-00000000000b')
+limit 1 \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select brought_in = 1 and this_month = 1 from public.pool_recruits(:rpool)
+                      where user_id = '00000000-0000-0000-0000-00000000000a'), 'pool mates see who brought people in this month');
+reset role;
+select pm.pool_id as opool from public.pools p join public.pool_members pm on pm.pool_id = p.id
+where pm.user_id = '00000000-0000-0000-0000-00000000000a'
+  and not exists (select 1 from public.pool_members o where o.pool_id = p.id and o.user_id = '00000000-0000-0000-0000-0000000000d1')
+  and not exists (select 1 from public.pool_members o where o.pool_id = p.id and o.user_id = '00000000-0000-0000-0000-0000000000d1')
+limit 1 \gset
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000d1');
+select pg_temp.check((select count(*) from public.pool_recruits(:opool)) = 0, 'outsiders see nothing for a pool they''re not in');
+do $$ begin
+  perform public.recruit_counts();
+  raise exception 'FAILED: called recruit_counts directly';
+exception when insufficient_privilege then raise notice 'ok: the full recruit list is private';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+
 \echo ALL CHECKS PASSED
