@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 export const isPublicPath = (path: string | null) => (path ?? "").startsWith("/business");
 
 /** Pages a business account may open; everything else is for players. */
-export const isSponsorPath = (path: string | null) => (path ?? "").startsWith("/sponsor");
+export const isSponsorPath = (path: string | null) => /^\/(sponsor|giving)/.test(path ?? "");
 
 /**
  * Whether this account was made for a business. Only steers which screens

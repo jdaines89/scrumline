@@ -1158,4 +1158,31 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select count(*) from public.business_accounts) = 0, 'players cannot see business accounts');
 reset role;
 
+-- Giving: money to schools per school and per sponsor, for players and businesses
+reset role;
+update public.school_allocations set status = 'confirmed' where id = (select min(a.id) from public.school_allocations a
+  join public.sponsor_bookings b on b.id = a.booking_id and b.status in ('paid', 'live', 'ended'));
+select sum(a.amount_minor) as want, sum(a.amount_minor) filter (where a.status = 'confirmed') as want_ok,
+       count(distinct b.sponsor_id) as want_sp
+from public.school_allocations a join public.sponsor_bookings b on b.id = a.booking_id and b.status in ('paid', 'live', 'ended') \gset
+select pg_temp.check(:want > 0, 'giving test has paid sponsorships to count');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select committed_minor = :want and confirmed_minor = :want_ok and sponsors = :want_sp from public.giving_totals()),
+                     'a player sees every rand committed to schools and what schools confirmed');
+select pg_temp.check((select sum(committed_minor) from public.giving_schools()) = :want, 'the schools list adds up to the total');
+select pg_temp.check((select sum(to_schools_minor) from public.giving_sponsors()) = :want, 'the sponsors list adds up to the total');
+select pg_temp.check((select bool_and(v >= coalesce(nxt, 0)) from (select to_schools_minor v, lead(to_schools_minor) over () nxt from public.giving_sponsors()) x),
+                     'sponsors are ranked by what they gave schools');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000b1');
+select pg_temp.check((select committed_minor from public.giving_totals()) = :want, 'a business sees the same totals');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+select pg_temp.check((select committed_minor from public.giving_totals()) = 0 and not exists (select 1 from public.giving_schools()),
+                     'an account that is neither player nor business sees nothing');
+do $$ begin
+  perform * from public.giving_rows(null, 'ZAR');
+  raise exception 'FAILED: the raw giving rows are open';
+exception when insufficient_privilege then raise notice 'ok: the raw giving rows stay closed';
+end $$;
+reset role;
+
 \echo ALL CHECKS PASSED

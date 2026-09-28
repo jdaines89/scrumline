@@ -610,3 +610,16 @@ a.rowline:hover { text-decoration: none; background: var(--panel-2); }
 .biz-points { display: grid; gap: 14px; }
 .biz-points > div { display: grid; gap: 2px; }
 .center { text-align: center; }
+
+/* Giving */
+.give-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+.give-stats > div { display: grid; gap: 2px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
+.give-stats b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.give-stats span { font-size: 12px; color: var(--muted); }
+.give-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.give-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.give-list li:first-child { border-top: 0; }
+.give-list .rank { width: 20px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.give-list .who { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.give-list .amt { display: grid; justify-items: end; gap: 2px; text-align: right; }
+.give-list .amt b { font-variant-numeric: tabular-nums; }

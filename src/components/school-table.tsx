@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
@@ -88,6 +89,7 @@ export function SchoolTable() {
         can beat a big one but three sharp callers can't carry a big school. A school is ranked once {RANKED_AT} of its
         players have been confirmed by schoolmates on their profiles.
       </p>
+      <p className="small" style={{ marginTop: 8 }}><Link href="/giving/">See what sponsors have given each school</Link></p>
     </>
   );
 }
