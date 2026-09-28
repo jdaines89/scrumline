@@ -18,6 +18,9 @@ alter table public.school_partners
   add column distance_km numeric(6,1),
   add column matched_at  timestamptz not null default now();
 create index school_partners_partner on public.school_partners (partner_emis);
+-- When matching last looked at a school, so one with no possible partner
+-- (none at its level in its province) is retried daily, not every run.
+alter table public.schools add column partner_checked_at timestamptz;
 
 alter table public.sponsor_bookings rename column twin_school_minor to partner_school_minor;
 alter table public.school_allocations drop constraint school_allocations_share_check;
@@ -48,6 +51,7 @@ begin
     select s.* from public.schools s
     where not s.no_fee and (s.offers_matric or s.offers_primary)
       and not exists (select 1 from public.school_partners p where p.emis = s.emis)
+      and (s.partner_checked_at is null or s.partner_checked_at < now() - interval '1 day')
     order by s.lat is null, s.emis  -- schools we can place on a map go first, so they get the truly nearest
     limit p_limit
   loop
@@ -62,6 +66,7 @@ begin
     order by case when f.lat is not null and c.lat is not null then public.km(f.lat, f.lon, c.lat, c.lon) end nulls last,
              (c.district is not distinct from f.district) desc, (c.town is not distinct from f.town) desc, c.emis
     limit 1;
+    update public.schools set partner_checked_at = now() where emis = f.emis;
     if pick.emis is not null then
       insert into public.school_partners (emis, partner_emis, distance_km) values (f.emis, pick.emis, round(pick.d::numeric, 1));
       n := n + 1;
