@@ -3,8 +3,9 @@
  *
  * Badges are the crests TheSportsDB publishes for each team (strBadge on
  * search_all_teams.php?l=Currie Cup). They are hotlinked, never copied into
- * the repo, and switched off with SHOW_OFFICIAL_LOGOS=0 -- the unions own
- * these marks, so keep them to internal use until there is a licence.
+ * the repo. The app never shows them unless it is built with
+ * NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=1 (see src/components/team.tsx) -- the
+ * unions own these marks, so they stay off until there is a licence.
  *
  * Colours: the Bulls pair is TheSportsDB's strColour1/2; it has no colours on
  * file for the other seven, so those are each union's traditional jersey
@@ -35,6 +36,3 @@ export function teamBrand(id: string): TeamBrand {
   return TEAM_BRAND[id] ?? FALLBACK;
 }
 
-export function showOfficialLogos(): boolean {
-  return process.env.SHOW_OFFICIAL_LOGOS !== "0";
-}

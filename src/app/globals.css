@@ -132,7 +132,7 @@ input[type="number"] { width: 76px; }
 
 footer.foot { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
 
-/* Team crests: official badge image or a jersey-colour disc with initials. */
+/* Team crests: a jersey-colour disc with initials (official badges only with a licence). */
 .crest { display: inline-block; flex: 0 0 auto; object-fit: contain; vertical-align: middle; }
 .crest.disc {
   display: inline-grid; place-items: center; border-radius: 50%;
