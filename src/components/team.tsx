@@ -3,11 +3,17 @@
 import { useState } from "react";
 import type { Team as TeamRow } from "@/lib/types";
 
-/** The union's official badge, or its jersey colour with initials if the badge won't load. */
+/**
+ * The unions' badges are their trademarks, so the app shows each team as its
+ * jersey colour with initials. Official badges only come back with
+ * NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=1 at build time, once there is a licence.
+ */
+const OFFICIAL_LOGOS = process.env.NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS === "1";
+
 export function Crest({ team, size = 26 }: { team: TeamRow; size?: number }) {
   const [failed, setFailed] = useState(false);
   const style = { width: size, height: size };
-  if (team.badge_url && !failed) {
+  if (OFFICIAL_LOGOS && team.badge_url && !failed) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img className="crest" src={team.badge_url} alt="" style={style} loading="lazy" onError={() => setFailed(true)} />;
   }
