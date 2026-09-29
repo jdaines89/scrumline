@@ -82,6 +82,9 @@ interface InstallPrompt extends Event { prompt: () => Promise<void>; userChoice:
 let deferred: InstallPrompt | null = null;
 const listeners = new Set<() => void>();
 export function watchInstallPrompt() {
+  // The layout's inline script catches the event if it fires before this code loads.
+  const early = (window as { __bip?: InstallPrompt }).__bip;
+  if (early && !deferred) { deferred = early; listeners.forEach((f) => f()); }
   window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e as InstallPrompt; listeners.forEach((f) => f()); });
   window.addEventListener("appinstalled", () => { deferred = null; listeners.forEach((f) => f()); });
 }
