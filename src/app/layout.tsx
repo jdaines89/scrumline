@@ -20,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        {/* Chrome fires "beforeinstallprompt" once, often before the app's code has loaded. */}
+        <script dangerouslySetInnerHTML={{ __html: "addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e})" }} />
         <PwaSetup />
         <header className="top">
           <div className="shell">

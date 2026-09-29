@@ -569,9 +569,8 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 .notify .seg button:disabled { opacity: .4; }
 .notify .notify-prefs p { margin: -4px 0 10px; }
 .notify .phone-push button { flex: none; width: auto; }
-.notify .howto p { margin: 0 0 6px; }
-.notify .howto ol { margin: 0; padding-left: 20px; line-height: 1.7; }
-.notify .notify-install { margin-top: 14px; }
+.notify .install { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 0; border-top: 1px solid var(--line); }
+.notify .install button { flex: none; width: auto; }
 /* Invite link card (Pools) and the join page */
 .invite .row input { font-size: 14px; color: var(--muted); }
 .invite .invite-foot { margin: 10px 0 0; }

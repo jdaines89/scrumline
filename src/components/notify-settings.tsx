@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { canInstall, install, isInstalled, onInstallChange, pushState, turnOff, turnOn, type PushState } from "@/lib/push";
+import { installHow, type InstallHow } from "@/lib/install";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
 
@@ -16,11 +17,14 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
   const [tags, setTags] = useState(me.push_mentions);
   const [installable, setInstallable] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [how, setHow] = useState<InstallHow | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     pushState().then(setState);
     setInstalled(isInstalled());
     setInstallable(canInstall());
+    setHow(installHow(navigator.userAgent, navigator.platform, navigator.maxTouchPoints));
     return onInstallChange(() => { setInstallable(canInstall()); setInstalled(isInstalled()); });
   }, []);
 
@@ -93,25 +97,36 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
             off: "Off. Turn it on to choose Push above.",
             blocked: "Blocked in your phone's settings. Allow notifications for Scrumline there, then come back.",
             unsupported: "This browser can't do push, so choose Email.",
-            "needs-home-screen": "Add Scrumline to your home screen first, as below.",
+            "needs-home-screen": "Push needs Scrumline on your home screen first, as below.",
           }[state ?? "off"]}</span>
         </div>
         {state === "off" && <button type="button" onClick={on} disabled={busy}>Turn on</button>}
         {state === "on" && <button type="button" className="ghost" onClick={off} disabled={busy}>Turn off</button>}
       </div>
-      {state === "needs-home-screen" && (
-        <div className="howto">
-          <p className="small">On iPhone, push works once Scrumline is on your home screen:</p>
-          <ol className="small muted">
-            <li>Tap the Share button at the bottom of Safari</li>
-            <li>Choose Add to Home Screen</li>
-            <li>Open Scrumline from your home screen and come back here</li>
-          </ol>
-        </div>
-      )}
 
-      {!installed && installable && (
-        <button type="button" className="ghost notify-install" onClick={async () => { await install(); }}>Install Scrumline on this phone</button>
+      {how && (
+        <div className="install">
+          <div className="pref-text">
+            <strong>Scrumline on your home screen</strong>
+            <span className="small muted">
+              {installed ? "Installed. You're using the app."
+                : installable ? "Opens full screen, like any other app."
+                : {
+                  "in-app": "This page is open inside another app, which can't install it. Open it in Chrome or Safari, then come back here.",
+                  "ios-safari": "Tap the Share button at the bottom of Safari, choose Add to Home Screen, then open Scrumline from your home screen.",
+                  "ios-other": "Tap the Share button next to the address bar and choose Add to Home Screen. If it isn't there, open this page in Safari.",
+                  android: "Open your browser's menu (the three dots) and tap Install app or Add to Home screen.",
+                  desktop: "Open this page on your phone to add it to your home screen.",
+                }[how]}
+            </span>
+          </div>
+          {!installed && installable && <button type="button" onClick={async () => { await install(); }}>Install</button>}
+          {!installed && !installable && how === "in-app" && (
+            <button type="button" className="ghost" onClick={async () => {
+              try { await navigator.clipboard.writeText(location.href); setCopied(true); } catch { /* copy blocked; the words still say what to do */ }
+            }}>{copied ? "Copied" : "Copy link"}</button>
+          )}
+        </div>
       )}
     </div>
   );
