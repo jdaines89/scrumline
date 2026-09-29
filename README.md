@@ -5,7 +5,7 @@ free tiers only.
 
 - **App:** Next.js 15 (React, TypeScript), exported as a static site and served
   from GitHub Pages. Screens: score predictions (with a double-points Banker each round), fixtures, the log
-  and the leaderboard. Each union shows as its jersey colour with initials.
+  and the leaderboard. Each union shows its official badge and jersey colour.
 - **Data:** Supabase (Postgres + Auth). Four layers, raw feed payloads to core
   tables to league tables to scoring views, with every rule (four picks, one
   captain, round locks) and every permission enforced in the database. See
@@ -32,7 +32,6 @@ Every push to `main` builds and publishes to GitHub Pages
 
 ## Team badges
 
-The official badges are the unions' trademarks, so the app shows every team as
-its jersey colour with initials. The badge links stay in the database, and a
-build with `NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=1` shows them again once there is a
-licence.
+The official badges are the unions' trademarks, used without a licence for
+now. A build with `NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=0` shows every team as its
+jersey colour with initials instead.
