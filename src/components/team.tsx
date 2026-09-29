@@ -4,11 +4,11 @@ import { useState } from "react";
 import type { Team as TeamRow } from "@/lib/types";
 
 /**
- * The unions' badges are their trademarks, so the app shows each team as its
- * jersey colour with initials. Official badges only come back with
- * NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=1 at build time, once there is a licence.
+ * The unions' official badges, or each team's jersey colour with initials.
+ * The badges are the unions' trademarks: build with
+ * NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=0 to switch every player to the colours.
  */
-const OFFICIAL_LOGOS = process.env.NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS === "1";
+const OFFICIAL_LOGOS = process.env.NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS !== "0";
 
 export function Crest({ team, size = 26 }: { team: TeamRow; size?: number }) {
   const [failed, setFailed] = useState(false);

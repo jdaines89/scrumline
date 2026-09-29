@@ -3,9 +3,8 @@
  *
  * Badges are the crests TheSportsDB publishes for each team (strBadge on
  * search_all_teams.php?l=Currie Cup). They are hotlinked, never copied into
- * the repo. The app never shows them unless it is built with
- * NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=1 (see src/components/team.tsx) -- the
- * unions own these marks, so they stay off until there is a licence.
+ * the repo. Building with NEXT_PUBLIC_SHOW_OFFICIAL_LOGOS=0 swaps them for
+ * jersey colours (see src/components/team.tsx) -- the unions own these marks.
  *
  * Colours: the Bulls pair is TheSportsDB's strColour1/2; it has no colours on
  * file for the other seven, so those are each union's traditional jersey
