@@ -104,13 +104,12 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
         {state === "on" && <button type="button" className="ghost" onClick={off} disabled={busy}>Turn off</button>}
       </div>
 
-      {how && (
+      {how && !installed && (
         <div className="install">
           <div className="pref-text">
             <strong>Scrumline on your home screen</strong>
             <span className="small muted">
-              {installed ? "Installed. You're using the app."
-                : installable ? "Opens full screen, like any other app."
+              {installable ? "Opens full screen, like any other app."
                 : {
                   "in-app": "This page is open inside another app, which can't install it. Open it in Chrome or Safari, then come back here.",
                   "ios-safari": "Tap the Share button at the bottom of Safari, choose Add to Home Screen, then open Scrumline from your home screen.",
@@ -120,8 +119,8 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
                 }[how]}
             </span>
           </div>
-          {!installed && installable && <button type="button" onClick={async () => { await install(); }}>Install</button>}
-          {!installed && !installable && how === "in-app" && (
+          {installable && <button type="button" onClick={async () => { await install(); }}>Install</button>}
+          {!installable && how === "in-app" && (
             <button type="button" className="ghost" onClick={async () => {
               try { await navigator.clipboard.writeText(location.href); setCopied(true); } catch { /* copy blocked; the words still say what to do */ }
             }}>{copied ? "Copied" : "Copy link"}</button>
