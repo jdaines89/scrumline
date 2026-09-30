@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
+import { PrizeDetail } from "@/components/prize-detail";
 import { shrinkPhoto } from "@/lib/photo";
 import { prizePhotoUrl, trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
@@ -33,6 +34,8 @@ export function PrizeSetup() {
   const [businesses, setBusinesses] = useState<Business[] | null>(null);
   const [sponsorId, setSponsorId] = useState<number | null>(null);
   const [prize, setPrize] = useState("");
+  const [details, setDetails] = useState("");
+  const [openPrize, setOpenPrize] = useState<PoolPrize | null>(null);
   const [every, setEvery] = useState(false);
   const [photo, setPhoto] = useState<{ blob: Blob; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,7 +65,7 @@ export function PrizeSetup() {
       image_path = path;
     }
     const { error } = await supabase.from("round_prizes")
-      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor_id: business.id, prize: prize.trim(), image_path })));
+      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor_id: business.id, prize: prize.trim(), details: details.trim() || null, image_path })));
     setBusy(false);
     if (error) {
       if (image_path) await supabase.storage.from("prize-photos").remove([image_path]);
@@ -70,7 +73,7 @@ export function PrizeSetup() {
         : "That didn't go through. Prizes can only go on rounds that haven't kicked off, in pools of up to 50, and not while a prize you offered is still waiting to be marked received.");
       return;
     }
-    setPrize(""); setEvery(false); clearPhoto(); reload();
+    setPrize(""); setDetails(""); setEvery(false); clearPhoto(); reload();
   }
 
   async function pickPhoto(e: ChangeEvent<HTMLInputElement>) {
@@ -117,6 +120,9 @@ export function PrizeSetup() {
             ) : <span id="prize-sponsor" className="prize-biz">From {business?.name}</span>}
             <input id="prize-what" required maxLength={60} placeholder="Prize, e.g. R200 bar tab" value={prize} onChange={(e) => setPrize(e.target.value)} />
           </div>
+          <textarea id="prize-details" className="prize-details-in" maxLength={280} rows={2}
+            placeholder="Details (optional), e.g. any size, collect at our Stellenbosch shop"
+            value={details} onChange={(e) => setDetails(e.target.value)} />
           <div className="prize-photo-pick">
             {photo ? (
               <>
@@ -136,7 +142,7 @@ export function PrizeSetup() {
         <>
           <ul className="prizelist">
             {prizes.map((p) => (
-              <li key={p.round}>
+              <li key={p.round} className="tap" onClick={() => setOpenPrize(p)}>
                 <span className="pl-round">R{p.round}</span>
                 {p.image_path && <img className="prize-thumb small" src={prizePhotoUrl(p.image_path)} alt="" />}
                 <span className="pl-what">
@@ -144,12 +150,13 @@ export function PrizeSetup() {
                   <span className="prize-meta">{p.sponsor}{p.winners?.length ? ` · ${whoWon(p, nameOf)}` : ""}</span>
                 </span>
                 {p.status === "upcoming" && p.offered_by === me.user_id
-                  ? <button type="button" className="ghost prize-btn" onClick={() => withdraw(p.round)}>Withdraw</button>
+                  ? <button type="button" className="ghost prize-btn" onClick={(e) => { e.stopPropagation(); withdraw(p.round); }}>Withdraw</button>
                   : <span className={p.status === "not delivered" ? "pl-st bad" : "pl-st"}>{STATUS[p.status]}</span>}
               </li>
             ))}
           </ul>
           {rec.decided > 0 && <p className="prize-meta" style={{ marginTop: 10 }}>Delivered {rec.delivered} of {rec.decided}</p>}
+          {openPrize && <PrizeDetail prize={openPrize} nameOf={(id) => nameOf(id).toLowerCase() === "you" ? "you" : nameOf(id)} onClose={() => setOpenPrize(null)} />}
         </>
       )}
     </div>

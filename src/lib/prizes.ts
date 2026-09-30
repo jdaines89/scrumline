@@ -8,6 +8,7 @@ export type PrizeStatus = "upcoming" | "in play" | "no winner" | "awaiting" | "d
 export interface PoolPrize {
   round: number; sponsor: string; prize: string; offered_by: string; status: PrizeStatus;
   winners: string[] | null; received: string[]; due_at: string | null; image_path: string | null;
+  details: string | null; sponsor_about: string | null; sponsor_website: string | null; sponsor_logo: string | null;
 }
 
 /** A prize photo's address: they sit in a public bucket, like business logos. */

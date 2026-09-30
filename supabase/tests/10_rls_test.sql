@@ -785,10 +785,19 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok: a prize can''t be edited';
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path)
-select pp.id, 3, biz.id, 'Cool Folks shirt', biz.id || '/shirt.jpg' from pp, biz where biz.name = 'Cool Folks';
+insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path, details)
+select pp.id, 3, biz.id, 'Cool Folks shirt', biz.id || '/shirt.jpg', '  Any size, collect in Stellenbosch  ' from pp, biz where biz.name = 'Cool Folks';
 select pg_temp.check((select image_path from public.pool_prizes((select id from pp)) where round = 3) like '%/shirt.jpg',
                      'a prize can carry a photo of itself');
+select pg_temp.check((select details = 'Any size, collect in Stellenbosch' and sponsor = 'Cool Folks'
+                      from public.pool_prizes((select id from pp)) where round = 3),
+                     'a prize carries its details, trimmed, with the business behind it');
+do $$ begin
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize, details)
+  select pp.id, 2, biz.id, 'A shirt', 'Bonus bets on us' from pp, biz where biz.name = 'Cool Folks';
+  raise exception 'FAILED: prize details slipped past the word check';
+exception when invalid_parameter_value then raise notice 'ok: prize details go through the word check';
+end $$;
 do $$ begin
   insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path)
   select pp.id, 2, c.id, 'A shirt', j.id || '/shirt.jpg' from pp, biz c, biz j where c.name = 'Cool Folks' and j.name = 'Joe''s Pub';
