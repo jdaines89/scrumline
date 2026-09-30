@@ -8,7 +8,7 @@ import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { photoUrl, shrinkPhoto } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, Member } from "@/lib/types";
-import { PoolName } from "@/components/pool-name";
+import { PoolName, poolLabel } from "@/components/pool-name";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -21,7 +21,7 @@ export default function ChatPage() {
 }
 
 function Chat() {
-  const { me, members: everyone, pool } = useLeague();
+  const { me, members: everyone, pool, pools, setPool } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
@@ -303,8 +303,18 @@ function Chat() {
 
   return (
     <div className="card chat">
-      <h2><PoolName pool={pool!} /></h2>
-      <SponsorLine sponsor={sponsor} />
+      <div className="chat-head">
+        {pools.length > 1
+          ? <label className="chat-pool">
+              <h2><PoolName pool={pool!} /></h2>
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch pool">
+                {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
+              </select>
+            </label>
+          : <h2><PoolName pool={pool!} /></h2>}
+        <SponsorLine sponsor={sponsor} compact />
+      </div>
       <div className="chatlog" ref={log} onScroll={(e) => {
         const el = e.currentTarget;
         atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;

@@ -103,17 +103,17 @@ export default function SponsorProfile() {
           <div className="field"><label>Business name</label>
             <input required minLength={2} maxLength={40} value={name} onChange={(e) => setName(e.target.value)} /></div>
           {!sponsor && <>
-            <div className="field"><label>What kind of business</label>
+            <div className="field"><label>Industry</label>
               <select required value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="">Choose one</option>
+                <option value="">Select an industry</option>
                 {CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select></div>
             <div className="field"><label>Email for your results</label>
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
           </>}
-          <div className="field"><label>About you ({280 - about.length} characters left)</label>
-            <textarea rows={4} maxLength={280} placeholder="Who you are, where to find you, what you're known for." value={about} onChange={(e) => setAbout(e.target.value)} /></div>
-          <div className="field"><label>Website</label>
+          <div className="field"><label>Company description ({280 - about.length} characters left)</label>
+            <textarea rows={4} maxLength={280} placeholder="What the business offers, where it operates and what sets it apart. For example: Family-owned butchery in Stellenbosch since 1998, supplying restaurants and home cooks across the Winelands." value={about} onChange={(e) => setAbout(e.target.value)} /></div>
+          <div className="field"><label>Website (optional)</label>
             <input inputMode="url" placeholder="yourbusiness.co.za" value={website} onChange={(e) => setWebsite(e.target.value)} /></div>
           <button type="submit" className="paybtn" disabled={busy}>{busy ? "Saving…" : "Save profile"}</button>
         </form>

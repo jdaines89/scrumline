@@ -26,11 +26,12 @@ export function initials(name: string): string {
   return (words.length > 1 ? words.map((w) => w[0]).join("") : name.slice(0, 3)).slice(0, 3).toUpperCase();
 }
 
+/** Industries, A to Z, with Other last. */
 export const CATEGORIES: [string, string][] = [
-  ["motoring", "Motoring"], ["food_drink", "Food and drink"], ["health", "Health and fitness"],
-  ["retail", "Retail"], ["services", "Professional services"], ["property", "Property"],
-  ["finance", "Finance and insurance"], ["telecoms", "Telecoms and tech"], ["education", "Education"],
-  ["sport", "Sport"], ["other", "Something else"],
+  ["education", "Education"], ["finance", "Finance and insurance"], ["food_drink", "Food and beverage"],
+  ["health", "Health and fitness"], ["motoring", "Motoring"], ["services", "Professional services"],
+  ["property", "Property"], ["retail", "Retail"], ["sport", "Sport"], ["telecoms", "Telecoms and technology"],
+  ["other", "Other"],
 ];
 
 /** Counts a view once a day per device (the database also dedupes per player), and taps/shares every time. */

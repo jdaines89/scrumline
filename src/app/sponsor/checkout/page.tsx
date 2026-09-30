@@ -97,9 +97,9 @@ export default function Checkout() {
         <h2>Your sponsorship</h2>
         <div className="field"><label>Business name, as players will see it</label>
           <input required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} disabled={!!sponsor} /></div>
-        {!sponsor && <div className="field"><label>What the business does</label>
+        {!sponsor && <div className="field"><label>Industry</label>
           <select required value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="" disabled>Pick one</option>
+            <option value="" disabled>Select an industry</option>
             {CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select></div>}
         <div className="field"><label>Logo</label>

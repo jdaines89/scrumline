@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { randsToMinor } from "@/lib/projects";
-import { money } from "@/lib/sponsor";
+import { CATEGORIES, money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
 interface Row {
@@ -71,7 +71,7 @@ function Application({ r, decide }: { r: Row; decide: (r: Row, d: "approve" | "d
         <span className="price">{money(r.amount_minor, r.currency)}</span>
       </div>
       <div className="small muted">
-        {r.season_name} · {slotName(r.round)} · reserve {money(r.reserve_minor, r.currency)} · {r.category.replace("_", " ")} · {r.email}
+        {r.season_name} · {slotName(r.round)} · reserve {money(r.reserve_minor, r.currency)} · {CATEGORIES.find(([v]) => v === r.category)?.[1] ?? r.category} · {r.email}
         {r.rivals > 0 && ` · ${r.rivals} other offer${r.rivals === 1 ? "" : "s"} for this slot`}
       </div>
       {r.offer && <div className="small">Line: {r.offer}{r.link ? ` (${r.link})` : ""}</div>}

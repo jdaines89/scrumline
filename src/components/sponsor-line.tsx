@@ -34,12 +34,34 @@ export function usePoolSponsor(): PoolSponsor | null {
   return all.find((s) => s.round !== null && s.round === round) ?? all.find((s) => s.round === null) ?? null;
 }
 
-/** One quiet line under the pool name. Nothing at all when the pool has no sponsor. */
-export function SponsorLine({ sponsor }: { sponsor: PoolSponsor | null }) {
+/**
+ * One quiet line under the pool name. Nothing at all when the pool has no
+ * sponsor. Compact (the chat header) is just the logo and name, sitting beside
+ * the pool name; a tap opens the offer and profile.
+ */
+export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (sponsor) sponsorEvent(sponsor.booking_id, "seen"); }, [sponsor]);
   if (!sponsor) return null;
   const more = Boolean(sponsor.about || sponsor.website);
+  if (compact) return (
+    <div className="spline compact">
+      <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
+        aria-label={`Sponsored by ${sponsor.display_name}`}>
+        <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
+        <b>{sponsor.display_name}</b>
+      </button>
+      {open && (
+        <div className="sp-pop">
+          <div>{sponsor.round ? `Round ${sponsor.round} sponsored by` : "Sponsored by"} <b>{sponsor.display_name}</b></div>
+          {sponsor.offer && (sponsor.link
+            ? <a href={sponsor.link} target="_blank" rel="noopener sponsored" onClick={() => sponsorEvent(sponsor.booking_id, "tap")}>{sponsor.offer} ›</a>
+            : <div>{sponsor.offer}</div>)}
+          <SponsorAbout about={sponsor.about} website={sponsor.website} onTap={() => sponsorEvent(sponsor.booking_id, "tap")} />
+        </div>
+      )}
+    </div>
+  );
   return (
     <div className="spline">
       <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />

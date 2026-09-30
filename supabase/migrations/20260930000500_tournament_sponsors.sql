@@ -80,6 +80,11 @@ create table public.tournament_sponsor_daily (
   primary key (tsponsor_id, day)
 );
 revoke all on public.tournament_sponsor_sightings, public.tournament_sponsor_daily from anon, authenticated;
+-- Read and written only through the functions below.
+alter table public.tournament_reserves enable row level security;
+alter table public.tournament_sponsors enable row level security;
+alter table public.tournament_sponsor_sightings enable row level security;
+alter table public.tournament_sponsor_daily enable row level security;
 
 -- Whether a slot can still be sold: the tournament is live (not a replay),
 -- and a round slot's round hasn't kicked off; the whole tournament can be
