@@ -772,3 +772,4 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .proj-line strong { font-size: 16px; }
 .proj-line .small:last-child { color: var(--accent); }
 .proj-backers .linkish { font-weight: 400; color: var(--muted); text-decoration: underline; }
+.proj-cost { margin: 2px 0 0; }

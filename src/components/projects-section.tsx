@@ -34,7 +34,7 @@ export function ProjectsSection() {
       <div className="card narrow">
         <p className="sp-kicker">School projects</p>
         <h2>Things schools need, at a fixed price</h2>
-        <p className="sub">Each project is one thing a school needs, like match balls or a water tank, at a supplier&apos;s fixed price. Businesses and players pledge until the full amount is covered. Only then does anyone pay. The Foundation buys the items and posts a photo when they arrive.</p>
+        <p className="sub">Each project is one thing a school needs, like match balls or a water tank, at a supplier&apos;s fixed price. Businesses and players pledge until the full amount is covered. Only then does anyone pay. The items are bought and a photo is posted when they arrive. Each project shows the supplier&apos;s price and Scrumline&apos;s project fee separately.</p>
         {projects === null && <div className="skeleton" style={{ height: 80 }} />}
         {projects?.length === 0 && <p className="muted" style={{ marginBottom: 0 }}>No projects yet. The first ones are on their way.</p>}
       </div>

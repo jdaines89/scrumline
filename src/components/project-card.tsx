@@ -39,6 +39,7 @@ export function ProjectCard({ p, businesses, asMe, onChange }: {
       </div>
       <p className="proj-why">{p.why}</p>
       <p className="small">{p.items} <span className="muted">· from {p.supplier}</span></p>
+      <p className="small muted proj-cost">{money(p.price_minor, p.currency)} for the items + {money(p.fee_minor, p.currency)} Scrumline project fee ({p.fee_bps / 100}%)</p>
 
       <div className="proj-bar" aria-label={`${pct}% pledged`}><span style={{ width: `${pct}%` }} /></div>
       <div className="proj-nums small">
@@ -122,7 +123,7 @@ function PledgeForm({ p, left, businesses, asMe, onDone }: {
         </select>
         <button type="submit" disabled={busy}>{busy ? "Pledging…" : "Pledge"}</button>
       </div>
-      <p className="small muted">Nobody pays until the whole {money(p.target_minor, p.currency)} is pledged. Then the Foundation sends each backer payment details, buys the items from {p.supplier} and posts a photo when they arrive.</p>
+      <p className="small muted">Nobody pays until the whole {money(p.target_minor, p.currency)} is pledged. Then each backer gets payment details, the items are bought from {p.supplier}, and a photo is posted when they arrive. The project fee pays for sourcing, ordering and the proof.</p>
       {msg && <p className="small" style={{ color: "var(--danger)" }}>{msg}</p>}
     </form>
   );
