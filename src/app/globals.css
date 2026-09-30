@@ -796,3 +796,28 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .proj-line .small:last-child { color: var(--accent); }
 .proj-backers .linkish { font-weight: 400; color: var(--muted); text-decoration: underline; }
 .proj-cost { margin: 2px 0 0; }
+/* Round prize details, over the page; a sheet from the bottom on phones. */
+button.prize-open { all: unset; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
+button.prize-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+.prize-more { font-size: 18px; color: var(--muted); padding-left: 4px; }
+.pz-back { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .7); backdrop-filter: blur(2px); display: grid; place-items: center; padding: 16px; }
+.pz-sheet { position: relative; width: min(420px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+.pz-close { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 22px; line-height: 1;
+  background: rgba(0, 0, 0, .45); color: #fff; border: 0; z-index: 1; }
+.pz-photo { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--panel-2); border-bottom: 1px solid var(--line); }
+.pz-body { display: grid; gap: 6px; padding: 16px 18px 18px; }
+.pz-sheet:not(:has(.pz-photo)) .pz-body { padding-top: 20px; padding-right: 48px; }
+.pz-body h3 { margin: 0; font-size: 19px; line-height: 1.25; }
+.pz-details { margin: 2px 0 0; font-size: 14px; line-height: 1.45; white-space: pre-line; }
+.pz-biz { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pz-biz > div { display: grid; min-width: 0; }
+.pz-biz small { font-size: 12px; color: var(--muted); }
+.pz-biz b { font-size: 15px; overflow-wrap: anywhere; }
+.pz-body .sp-about { margin-top: 2px; }
+.prizelist li.tap { cursor: pointer; }
+.prize-details-in { width: 100%; resize: vertical; min-height: 56px; font: inherit; }
+@media (max-width: 560px) {
+  .pz-back { place-items: end stretch; padding: 0; }
+  .pz-sheet { width: 100%; border-radius: 16px 16px 0 0; border-bottom: 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom); }
+}
+.pz-body p.prize-meta { margin: 0; }
