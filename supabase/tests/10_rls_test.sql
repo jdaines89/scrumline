@@ -742,21 +742,62 @@ select u, 'prize', 'Team' from unnest(array['00000000-0000-0000-0000-00000000000
                                              '00000000-0000-0000-0000-00000000000c']::uuid[]) u;
 create temp table pp as select id from public.pools where name = 'Prize pool';
 grant select on pp to authenticated;
+-- a runs Joe's Pub on Scrumline and b runs Cool Folks
+insert into public.pool_members (pool_id, user_id, joined_at) select id, '00000000-0000-0000-0000-00000000000a', now() - interval '30 days' from pp
+on conflict (pool_id, user_id) do update set joined_at = excluded.joined_at;
+insert into public.sponsors (country, name, category, email, created_by) values
+  ('ZA', 'Joe''s Pub', 'food_drink', 'joe@example.com', '00000000-0000-0000-0000-00000000000a'),
+  ('ZA', 'Cool Folks', 'retail', 'cool@example.com', '00000000-0000-0000-0000-00000000000b');
+insert into public.sponsor_managers (sponsor_id, user_id)
+select id, created_by from public.sponsors where name in ('Joe''s Pub', 'Cool Folks');
+create temp table biz as select name, id from public.sponsors where name in ('Joe''s Pub', 'Cool Folks');
+grant select on biz to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  insert into public.round_prizes (pool_id, round, sponsor, prize) select id, 2, 'Me', 'A beer' from pp;
+  raise exception 'FAILED: a prize went up with no business behind it';
+exception when insufficient_privilege then raise notice 'ok: a prize needs a business';
+end $$;
+do $$ begin
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize)
+  select pp.id, 2, biz.id, 'A beer' from pp, biz where biz.name = 'Joe''s Pub';
+  raise exception 'FAILED: offered a prize in the name of someone else''s business';
+exception when insufficient_privilege then raise notice 'ok: only in the name of a business you run';
+end $$;
+select pg_temp.check((select count(*) from public.my_businesses()) = 1 and (select name from public.my_businesses()) = 'Cool Folks',
+                     'you see only the businesses you run');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-insert into public.round_prizes (pool_id, round, sponsor, prize) select id, 1, 'Joe''s Pub', 'R200 bar tab' from pp;
-select pg_temp.check((select offered_by from public.round_prizes where round = 1 and pool_id = (select id from pp)) = '00000000-0000-0000-0000-00000000000a',
-                     'the creator puts up a prize, in their own name');
+insert into public.round_prizes (pool_id, round, sponsor_id, sponsor, prize)
+select pp.id, 1, biz.id, 'Somebody Else', 'R200 bar tab' from pp, biz where biz.name = 'Joe''s Pub';
+select pg_temp.check((select offered_by = '00000000-0000-0000-0000-00000000000a' and sponsor = 'Joe''s Pub'
+                      from public.round_prizes where round = 1 and pool_id = (select id from pp)),
+                     'a member puts up a prize in their business''s name, and the pool sees the business''s own name');
 do $$ begin
   update public.round_prizes set prize = 'Nothing' where round = 1;
   raise exception 'FAILED: a prize was edited';
 exception when insufficient_privilege then raise notice 'ok: a prize can''t be edited';
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.round_prizes (pool_id, round, sponsor_id, prize)
+select pp.id, 3, biz.id, 'Cool Folks shirt' from pp, biz where biz.name = 'Cool Folks';
+select pg_temp.check((select offered_by from public.round_prizes where round = 3 and pool_id = (select id from pp)) = '00000000-0000-0000-0000-00000000000b',
+                     'any member of a mates'' pool can offer a prize, not only its creator');
 do $$ begin
-  insert into public.round_prizes (pool_id, round, sponsor, prize) select id, 2, 'Me', 'A beer' from pp;
-  raise exception 'FAILED: someone who didn''t start the pool offered a prize';
-exception when insufficient_privilege then raise notice 'ok: only the pool''s creator offers prizes';
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize)
+  select pp.id, 2, biz.id, 'Free bets' from pp, biz where biz.name = 'Cool Folks';
+  raise exception 'FAILED: a betting prize went up';
+exception when invalid_parameter_value then raise notice 'ok: prize lines go through the word check';
 end $$;
+delete from public.round_prizes where round = 3;
+select pg_temp.check(not exists (select 1 from public.round_prizes where round = 3), 'whoever offered it can take it back before kickoff');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+do $$ begin
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize)
+  select pp.id, 3, biz.id, 'A shirt' from pp, biz where biz.name = 'Cool Folks';
+  raise exception 'FAILED: an outsider offered a prize';
+exception when insufficient_privilege then raise notice 'ok: outsiders can''t offer a prize';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select status from public.pool_prizes((select id from pp)) where round = 1) = 'upcoming', 'before kickoff the prize is upcoming');
 -- Round 1 kicks off; c only joins after kickoff
 reset role;
@@ -799,7 +840,7 @@ insert into public.prize_receipts (pool_id, round) select id, 1 from pp;
 select pg_temp.check((select status from public.pool_prizes((select id from pp)) where round = 1) = 'delivered', 'the winner marks it received: delivered');
 -- A prize nobody confirms goes on the record, and blocks new prizes
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-insert into public.round_prizes (pool_id, round, sponsor, prize) select id, 2, 'Joe''s Pub', 'R200 bar tab' from pp;
+insert into public.round_prizes (pool_id, round, sponsor_id, prize) select pp.id, 2, biz.id, 'R200 bar tab' from pp, biz where biz.name = 'Joe''s Pub';
 reset role;
 insert into public.predictions (entry_id, match_id, home_score, away_score)
 select e.id, 'p2a', case when e.user_id = '00000000-0000-0000-0000-00000000000b' then 24 else 10 end, 17 from public.entries e where e.season = 'prize';
@@ -807,17 +848,17 @@ update public.matches set kickoff_at = now() - interval '20 days', status = 'FT'
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select pg_temp.check((select status from public.pool_prizes((select id from pp)) where round = 2) = 'not delivered',
                      'unconfirmed 14 days after the round: not delivered');
-select pg_temp.check(not public.can_offer_prize((select id from pp), 3), 'a creator who owes a prize can''t offer another');
+select pg_temp.check(not public.can_offer_prize((select id from pp), 3, (select id from biz where name = 'Joe''s Pub')), 'a creator who owes a prize can''t offer another');
 do $$ begin
-  insert into public.round_prizes (pool_id, round, sponsor, prize) select id, 3, 'Joe''s Pub', 'R200' from pp;
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize) select pp.id, 3, biz.id, 'R200' from pp, biz where biz.name = 'Joe''s Pub';
   raise exception 'FAILED: offered a prize while owing one';
 exception when insufficient_privilege then raise notice 'ok: owing a prize blocks a new one';
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 insert into public.prize_receipts (pool_id, round) select id, 2 from pp;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check(public.can_offer_prize((select id from pp), 3), 'once it''s received, the creator can offer again');
-select pg_temp.check(not public.can_offer_prize((select id from pp), 2), 'no prize for a round that has started');
+select pg_temp.check(public.can_offer_prize((select id from pp), 3, (select id from biz where name = 'Joe''s Pub')), 'once it''s received, the creator can offer again');
+select pg_temp.check(not public.can_offer_prize((select id from pp), 2, (select id from biz where name = 'Joe''s Pub')), 'no prize for a round that has started');
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
 select pg_temp.check((select count(*) from public.pool_prizes((select id from pp))) = 0, 'outsiders see no prizes');
 reset role;

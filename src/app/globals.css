@@ -549,6 +549,7 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 .prizeform { display: grid; gap: 10px; }
 .prizefields { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 8px; }
 @media (max-width: 560px) { .prizefields { grid-template-columns: 1fr; } }
+.prize-biz { display: flex; align-items: center; font-size: 15px; color: var(--muted); padding: 0 2px; }
 .prizelist { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--line); }
 .prizelist li { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .pl-round { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
