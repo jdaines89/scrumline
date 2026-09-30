@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS: [string, string][] = [
-  ["/sponsor/results/", "Your results"],
-  ["/sponsor/", "Sponsor a school"],
-  ["/sponsor/tournament/", "Sponsor a tournament"],
+  ["/sponsor/", "Schools"],
+  ["/sponsor/tournament/", "Tournaments"],
+  ["/sponsor/results/", "Results"],
   ["/giving/", "Giving"],
   ["/sponsor/profile/", "Profile"],
 ];
