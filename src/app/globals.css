@@ -684,9 +684,11 @@ label.btn.ghost { background: transparent; border-color: var(--line); color: var
 .give-list li.open .sp-tile, .give-list li.open .rank { margin-top: 2px; }
 
 /* Business pages for players who sponsor */
-.subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
-.subtabs a { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); }
-.subtabs a.on { color: var(--text); background: var(--panel-2); }
+/* The business pages: one quiet row of text tabs, the current one underlined. */
+.subtabs { display: flex; gap: 18px; margin: 0 0 16px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.subtabs::-webkit-scrollbar { display: none; }
+.subtabs a { flex: none; padding: 4px 0 10px; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.subtabs a.on { color: var(--text); border-bottom-color: var(--accent); }
 .subtabs a:hover { text-decoration: none; color: var(--text); }
 .me-biz { display: grid; gap: 6px; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
 .me-biz .row { display: flex; flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
