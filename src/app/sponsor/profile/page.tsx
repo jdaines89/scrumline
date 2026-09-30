@@ -18,6 +18,9 @@ export default function SponsorProfile() {
   const [about, setAbout] = useState("");
   const [website, setWebsite] = useState("");
   const [logo, setLogo] = useState<string | null>(null);
+  // A picked logo waits on the phone until Save, so it works before the business exists.
+  const [picked, setPicked] = useState<{ blob: Blob; url: string } | null>(null);
+  const [logoMsg, setLogoMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -48,20 +51,20 @@ export default function SponsorProfile() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    setBusy(true); setMsg(null);
+    setLogoMsg(null);
     try {
-      if (!name.trim() || (!sponsor && !category)) throw new Error("Fill in the business name and type first.");
-      const id = await ensureSponsor();
       const blob = await squareLogo(file);
-      const path = `${id}/${crypto.randomUUID()}.png`;
-      const up = await supabase.storage.from("sponsor-logos").upload(path, blob, { contentType: "image/png" });
-      if (up.error) throw new Error("Couldn't upload that logo. Try a smaller picture.");
-      setLogo(path);
-      setMsg({ ok: true, text: "Logo ready. Save to show it." });
+      if (picked) URL.revokeObjectURL(picked.url);
+      setPicked({ blob, url: URL.createObjectURL(blob) });
+      setLogoMsg({ ok: true, text: "Looks good. Tap Save profile to keep it." });
     } catch (err) {
-      setMsg({ ok: false, text: (err as Error).message });
+      setLogoMsg({ ok: false, text: (err as Error).message });
     }
-    setBusy(false);
+  }
+
+  function removeLogo() {
+    if (picked) URL.revokeObjectURL(picked.url);
+    setPicked(null); setLogo(null); setLogoMsg(null);
   }
 
   async function save(e: FormEvent) {
@@ -70,12 +73,20 @@ export default function SponsorProfile() {
     const site = website.trim() && !/^https:\/\//i.test(website.trim()) ? `https://${website.trim().replace(/^http:\/\//i, "")}` : website.trim();
     try {
       const id = await ensureSponsor();
-      const { error } = await supabase.rpc("save_sponsor_profile", { p_sponsor: id, p_name: name, p_about: about, p_website: site, p_logo_path: logo });
+      let path = logo;
+      if (picked) {
+        path = `${id}/${crypto.randomUUID()}.png`;
+        const up = await supabase.storage.from("sponsor-logos").upload(path, picked.blob, { contentType: "image/png" });
+        if (up.error) throw new Error("Couldn't upload that logo. Try a smaller picture.");
+      }
+      const { error } = await supabase.rpc("save_sponsor_profile", { p_sponsor: id, p_name: name, p_about: about, p_website: site, p_logo_path: path });
       if (error) throw new Error(error.message.includes("reword") ? error.message : error.message.includes("check") ? "Check the website address, and keep the description to 280 characters." : error.message);
       const old = sponsor?.logo_path;
-      if (old && old !== logo) await supabase.storage.from("sponsor-logos").remove([old]);
+      if (old && old !== path) await supabase.storage.from("sponsor-logos").remove([old]);
+      if (picked) { URL.revokeObjectURL(picked.url); setPicked(null); }
+      setLogo(path); setLogoMsg(null);
       setWebsite(site);
-      setSponsor((s) => (s ? { ...s, name, about: about || null, website: site || null, logo_path: logo } : s));
+      setSponsor((s) => (s ? { ...s, name, about: about || null, website: site || null, logo_path: path } : s));
       setMsg({ ok: true, text: "Saved. Players see this when they tap your name." });
     } catch (err) {
       setMsg({ ok: false, text: (err as Error).message });
@@ -93,13 +104,14 @@ export default function SponsorProfile() {
         <p className="sub">Players see this when they tap your name on their pool or on the Giving page. Keep it short and friendly.</p>
         <form onSubmit={save}>
           <div className="profile-logo">
-            <SponsorTile name={name} logo={logo} big />
+            {picked ? <img className="sp-tile logo big" src={picked.url} alt="" /> : <SponsorTile name={name} logo={logo} big />}
             <label className="btn ghost">
-              {logo ? "Change logo" : "Add your logo"}
+              {logo || picked ? "Change logo" : "Add your logo"}
               <input type="file" accept="image/*" hidden onChange={pickLogo} disabled={busy} />
             </label>
-            {logo && <button type="button" className="linkish small muted" onClick={() => setLogo(null)}>Remove</button>}
+            {(logo || picked) && <button type="button" className="linkish small muted" onClick={removeLogo}>Remove</button>}
           </div>
+          {logoMsg && <p className="small" style={{ margin: "6px 0 0", color: logoMsg.ok ? "var(--accent)" : "var(--danger)" }}>{logoMsg.text}</p>}
           <div className="field"><label>Business name</label>
             <input required minLength={2} maxLength={40} value={name} onChange={(e) => setName(e.target.value)} /></div>
           {!sponsor && <>
@@ -124,7 +136,7 @@ export default function SponsorProfile() {
         <div className="card narrow">
           <p className="small muted" style={{ marginTop: 0 }}>What players see</p>
           <div className="spline">
-            <SponsorTile name={name} logo={logo} />
+            {picked ? <img className="sp-tile logo" src={picked.url} alt="" /> : <SponsorTile name={name} logo={logo} />}
             <div>
               <div>Sponsored by <b>{name}</b></div>
               <SponsorAbout about={about || null} website={website ? (/^https:\/\//i.test(website) ? website : `https://${website}`) : null} />
