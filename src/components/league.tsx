@@ -187,14 +187,15 @@ function Loaded({ children }: { children: ReactNode }) {
 }
 
 // Only these screens show one pool's view; everywhere else the pool picker is noise.
-const POOL_SCREENS = ["/leaderboard", "/chat"];
+const POOL_SCREENS = ["/leaderboard"];
 
 /** Which tournament you're looking at, and on pool screens which pool. */
 function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
   const path = usePathname() ?? "";
   if (isSponsorPath(path)) return <SponsorTabs />;
-  if (isSchoolPath(path) || path.startsWith("/admin")) return null;
+  // Chat picks its pool in its own header, so the conversation gets the screen.
+  if (isSchoolPath(path) || path.startsWith("/admin") || path.startsWith("/chat")) return null;
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
