@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
@@ -10,10 +11,13 @@ const STATUS: Record<PoolPrize["status"], string> = {
   delivered: "Delivered", "not delivered": "Not delivered",
 };
 
+interface Business { id: number; name: string }
+
 /**
- * For a pool's creator: put up a prize for a round. It's your promise, in
- * your name: it locks at the round's first kickoff, the winner marks it
- * received, and the pool sees your track record.
+ * For any member of a mates' pool who runs a business on Scrumline: put up a
+ * prize for a round, in the business's name. It's your promise: it locks at
+ * the round's first kickoff, the winner marks it received, and the pool sees
+ * the track record.
  */
 export function PrizeSetup() {
   const { pool, me, members, matches, season } = useLeague();
@@ -25,28 +29,35 @@ export function PrizeSetup() {
     return [...first].filter(([, k]) => k > now).map(([r]) => r).sort((a, b) => a - b);
   }, [matches]);
   const [round, setRound] = useState<number | null>(null);
-  const [sponsor, setSponsor] = useState("");
+  const [businesses, setBusinesses] = useState<Business[] | null>(null);
+  const [sponsorId, setSponsorId] = useState<number | null>(null);
   const [prize, setPrize] = useState("");
   const [every, setEvery] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
 
-  if (!pool || pool.school_emis || pool.created_by !== me.user_id || season.is_replay) return null;
+  useEffect(() => {
+    supabase.rpc("my_businesses").then(({ data }) => setBusinesses((data ?? []) as Business[]));
+  }, []);
+
+  if (!pool || pool.school_emis || season.is_replay) return null;
+  const business = businesses?.find((b) => b.id === sponsorId) ?? businesses?.[0] ?? null;
   const pick = round ?? open.find((r) => !prizes.some((p) => p.round === r)) ?? open[0] ?? null;
   const rec = trackRecord(prizes);
 
   async function offer(e: FormEvent) {
     e.preventDefault(); setMsg(null);
-    if (pick === null) return;
+    if (pick === null || !business) return;
     const rounds = (every ? open.filter((r) => r >= pick) : [pick]).filter((r) => !prizes.some((p) => p.round === r));
     if (!rounds.length) { setMsg("There's already a prize on that round."); return; }
     const { error } = await supabase.from("round_prizes")
-      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor: sponsor.trim(), prize: prize.trim() })));
+      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor_id: business.id, prize: prize.trim() })));
     if (error) {
-      setMsg("That didn't go through. Prizes can only go on rounds that haven't kicked off, in pools of up to 50, and not while a prize you offered is still waiting to be marked received.");
+      setMsg(error.message.includes("reword") ? error.message
+        : "That didn't go through. Prizes can only go on rounds that haven't kicked off, in pools of up to 50, and not while a prize you offered is still waiting to be marked received.");
       return;
     }
-    setSponsor(""); setPrize(""); setEvery(false); reload();
+    setPrize(""); setEvery(false); reload();
   }
 
   async function withdraw(r: number) {
@@ -58,14 +69,20 @@ export function PrizeSetup() {
   return (
     <div className="card">
       <h2>Round prize for {pool.name}</h2>
-      <p className="sub">For the round&apos;s top caller, in your name. It locks at kickoff, and the winner confirms it arrived.</p>
-      {open.length === 0 ? <p className="muted">Every round has kicked off, so there&apos;s nothing left to put a prize on.</p> : (
+      <p className="sub">For the round&apos;s top caller, from your business. It locks at kickoff, and the winner confirms it arrived.</p>
+      {businesses === null ? null : businesses.length === 0 ? (
+        <p className="small muted">Prizes come from a business, so everyone knows who&apos;s behind them. <Link href="/sponsor/profile/">Set up your business profile</Link> and come back here.</p>
+      ) : open.length === 0 ? <p className="muted">Every round has kicked off, so there&apos;s nothing left to put a prize on.</p> : (
         <form className="prizeform" onSubmit={offer}>
           <div className="prizefields">
             <select id="prize-round" value={pick ?? ""} onChange={(e) => setRound(Number(e.target.value))} aria-label="Round">
               {open.map((r) => <option key={r} value={r}>Round {r}</option>)}
             </select>
-            <input id="prize-sponsor" required maxLength={40} placeholder="Sponsor, e.g. Joe's Pub" value={sponsor} onChange={(e) => setSponsor(e.target.value)} />
+            {businesses.length > 1 ? (
+              <select id="prize-sponsor" value={business?.id ?? ""} onChange={(e) => setSponsorId(Number(e.target.value))} aria-label="Business">
+                {businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            ) : <span id="prize-sponsor" className="prize-biz">From {business?.name}</span>}
             <input id="prize-what" required maxLength={60} placeholder="Prize, e.g. R200 bar tab" value={prize} onChange={(e) => setPrize(e.target.value)} />
           </div>
           <label className="small"><input id="prize-every" type="checkbox" checked={every} onChange={(e) => setEvery(e.target.checked)} /> Every round after that too</label>
