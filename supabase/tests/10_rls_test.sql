@@ -778,8 +778,16 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok: a prize can''t be edited';
 end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-insert into public.round_prizes (pool_id, round, sponsor_id, prize)
-select pp.id, 3, biz.id, 'Cool Folks shirt' from pp, biz where biz.name = 'Cool Folks';
+insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path)
+select pp.id, 3, biz.id, 'Cool Folks shirt', biz.id || '/shirt.jpg' from pp, biz where biz.name = 'Cool Folks';
+select pg_temp.check((select image_path from public.pool_prizes((select id from pp)) where round = 3) like '%/shirt.jpg',
+                     'a prize can carry a photo of itself');
+do $$ begin
+  insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path)
+  select pp.id, 2, c.id, 'A shirt', j.id || '/shirt.jpg' from pp, biz c, biz j where c.name = 'Cool Folks' and j.name = 'Joe''s Pub';
+  raise exception 'FAILED: a prize used another business''s photo';
+exception when check_violation then raise notice 'ok: a prize photo comes from its own business''s folder';
+end $$;
 select pg_temp.check((select offered_by from public.round_prizes where round = 3 and pool_id = (select id from pp)) = '00000000-0000-0000-0000-00000000000b',
                      'any member of a mates'' pool can offer a prize, not only its creator');
 do $$ begin

@@ -4,10 +4,15 @@ import { supabase } from "@/lib/supabase";
 
 export type PrizeStatus = "upcoming" | "in play" | "no winner" | "awaiting" | "delivered" | "not delivered";
 
-/** A round prize a pool's creator put up, with how it turned out. */
+/** A round prize a member's business put up, with how it turned out. */
 export interface PoolPrize {
   round: number; sponsor: string; prize: string; offered_by: string; status: PrizeStatus;
-  winners: string[] | null; received: string[]; due_at: string | null;
+  winners: string[] | null; received: string[]; due_at: string | null; image_path: string | null;
+}
+
+/** A prize photo's address: they sit in a public bucket, like business logos. */
+export function prizePhotoUrl(path: string): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/prize-photos/${path}`;
 }
 
 /** A pool's prizes, last visit's copy first. */
