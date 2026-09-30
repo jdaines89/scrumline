@@ -64,7 +64,7 @@ export default function SponsorPage() {
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
-        <p className="sub">Put your business in front of a school&apos;s former pupils for a whole {season.name} season. You see where every rand goes before you pay, and <Link href="/giving/">what every sponsor has given</Link>. Tell players about yourself on <Link href="/sponsor/profile/">your profile</Link>.</p>
+        <p className="sub">Put your business in front of a school&apos;s former pupils for a whole {season.name} season. You see where every rand goes before you pay, and <Link href="/giving/">what every sponsor has given</Link>. Tell players about yourself on <Link href="/sponsor/profile/">your profile</Link>. To reach every player in the tournament instead, <Link href="/sponsor/tournament/">sponsor the tournament or a round</Link>. To give a prize in a pool you play in, offer a round prize on the Pools page.</p>
         {seasons.length > 1 && (
           <label className="sp-season">
             <span className="small muted">Tournament</span>

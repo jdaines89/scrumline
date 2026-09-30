@@ -658,6 +658,7 @@ img.sp-tile.logo { object-fit: contain; background: #fff; padding: 2px; box-sizi
   padding: 8px 10px; width: 100%; box-sizing: border-box; resize: vertical; }
 label.btn.ghost { background: transparent; border-color: var(--line); color: var(--text); cursor: pointer; }
 .spline:has(.sp-about) { align-items: flex-start; }
+.card p + .spline { margin-top: 12px; }
 .give-list li.open .sp-tile, .give-list li.open .rank { margin-top: 2px; }
 
 /* Business pages for players who sponsor */

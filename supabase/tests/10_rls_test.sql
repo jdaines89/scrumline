@@ -1872,4 +1872,68 @@ exception when raise_exception then raise notice 'ok: a missed project takes no 
 end $$;
 reset role;
 
+-- Tournament sponsors: a reserve, an admin approves one per slot, live once paid.
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('ts-r9', '2027', 9, now() + interval '5 days', '142072', '142073', 'SCHEDULED', 'test');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select reserve_minor from public.tournament_slots('2027') where round is null) = 2500000
+                     and (select reserve_minor from public.tournament_slots('2027') where round = 9) = 250000,
+                     'slots show the default reserves');
+select pg_temp.check(not exists (select 1 from public.tournament_slots('2027') where round = 1), 'a round that has kicked off is not for sale');
+do $$ begin
+  perform public.apply_tournament_sponsor('2027', null, (select id from biz where name = 'Cool Folks'), 50000, 'Shirts', null, null);
+  raise exception 'FAILED: R500 for the whole tournament was accepted';
+exception when raise_exception then raise notice 'ok: an offer under the reserve is refused';
+end $$;
+do $$ begin
+  perform public.apply_tournament_sponsor('2027', 9, (select id from biz where name = 'Joe''s Pub'), 300000, null, null, null);
+  raise exception 'FAILED: applied in the name of someone else''s business';
+exception when insufficient_privilege then raise notice 'ok: only for a business you run';
+end $$;
+do $$ begin
+  perform public.apply_tournament_sponsor('2027', 1, (select id from biz where name = 'Cool Folks'), 300000, null, null, null);
+  raise exception 'FAILED: applied for a round already under way';
+exception when raise_exception then raise notice 'ok: a started round is closed';
+end $$;
+select public.apply_tournament_sponsor('2027', 9, (select id from biz where name = 'Cool Folks'), 300000, 'Win a Cool Folks tee', 'https://coolfolks.example', 'First go') as ts_b \gset
+do $$ begin
+  perform public.admin_decide_tournament_sponsor((select max(id) from public.my_tournament_sponsors()), 'approve', null);
+  raise exception 'FAILED: a business approved itself';
+exception when insufficient_privilege then raise notice 'ok: only an admin approves';
+end $$;
+select pg_temp.check((select status from public.my_tournament_sponsors() where id = :ts_b) = 'applied', 'the business sees its application waiting');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.apply_tournament_sponsor('2027', 9, (select id from biz where name = 'Joe''s Pub'), 400000, null, null, null) as ts_a \gset
+select pg_temp.check(not exists (select 1 from public.my_tournament_sponsors() where id = :ts_b), 'a business can''t see a rival''s offer');
+select pg_temp.check((select rivals from public.admin_tournament_sponsors() where id = :ts_b) = 1, 'the admin sees both offers for the slot');
+select public.admin_decide_tournament_sponsor(:ts_b, 'approve', 'Welcome aboard');
+do $$ begin
+  perform public.admin_decide_tournament_sponsor((select max(id) from public.admin_tournament_sponsors() where sponsor = 'Joe''s Pub'), 'approve', null);
+  raise exception 'FAILED: two sponsors approved for one round';
+exception when raise_exception then raise notice 'ok: one sponsor per slot';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select own_school_minor + partner_school_minor + prize_minor + scrumline_minor = amount_minor and scrumline_minor = 120000
+                      from public.tournament_sponsors where id = :ts_b), 'approval fixes the 20/20/20/40 split');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) from public.season_sponsors('2027')) = 0, 'approved but unpaid is not on air');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.admin_decide_tournament_sponsor(:ts_b, 'paid');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select display_name from public.season_sponsors('2027') where round = 9) = 'Cool Folks', 'paid: every player sees the round sponsor');
+select public.tournament_sponsor_event(:ts_b, 'seen');
+select public.tournament_sponsor_event(:ts_b, 'seen');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select players_seen from public.my_tournament_sponsors() where id = :ts_b) = 1, 'a player counts once a day');
+do $$ begin
+  perform public.withdraw_tournament_sponsor((select id from public.my_tournament_sponsors() where status = 'live'));
+  raise exception 'FAILED: withdrew a paid sponsorship';
+exception when raise_exception then raise notice 'ok: a paid sponsorship can''t be withdrawn';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check((select count(*) from public.tournament_sponsors where status = 'applied' and id = :ts_a) = 1, 'the other offer stays on file');
+select public.admin_set_tournament_reserve('2027', 5000000, 500000);
+select pg_temp.check(public.tournament_reserve('2027', null) = 5000000, 'an admin can raise a tournament''s reserve');
+
 \echo ALL CHECKS PASSED

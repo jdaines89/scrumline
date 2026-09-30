@@ -8,6 +8,8 @@ import { Crowd, type CrowdRow } from "@/components/crowd";
 import { RoundDigest } from "@/components/round-digest";
 import { PrizeLine } from "@/components/prize-line";
 import { usePoolPrizes } from "@/lib/prizes";
+import { TournamentLine } from "@/components/tournament-line";
+import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { Form } from "@/components/form";
 import { buildDigest } from "@/lib/digest";
 import { Crest } from "@/components/team";
@@ -61,6 +63,7 @@ function Predict() {
   const { locked, isLocked, matchStarted, reload: reloadLocks } = useRoundLocks(entry!.id, season, matches);
   const [round, setRound] = useState<number | null>(null);
   const [prizes, reloadPrizes] = usePoolPrizes(pool?.id);
+  const backers = useSeasonSponsors(season.id);
   const [preds, setPreds] = useState<Map<string, Prediction>>(new Map());
   const [draft, setDraft] = useState<Record<string, [string, string]>>({});
   const [scores, setScores] = useState<Map<string, PredScore>>(new Map());
@@ -273,6 +276,7 @@ function Predict() {
           {done ? <>You scored <strong>{total}</strong> this round.</>
             : <>{filled} of {ms.length} called{hasBanker ? ", Banker picked" : ", no Banker yet"}.</>}
         </p>
+        <TournamentLine sponsors={backers} seasonName={season.name} round={round} title={false} />
         {round !== null && prizes.some((p) => p.round === round) && <PrizeLine prizes={prizes.filter((p) => p.round === round)} round={round} onChange={reloadPrizes} compact />}
         {digest && <RoundDigest d={digest} round={round} open={unlockedCalls} teamsOf={(id) => {
           const m = ms.find((x) => x.id === id)!;

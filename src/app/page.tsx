@@ -8,10 +8,13 @@ import { kickoff } from "@/lib/format";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { StandingRow } from "@/lib/types";
+import { TournamentLine } from "@/components/tournament-line";
+import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 
 export default function Home() {
   const { season, matches, teams, me, entry } = useLeague();
   const [log, setLog] = useState<StandingRow[]>([]);
+  const backers = useSeasonSponsors(season.id);
   useEffect(() => {
     setLog(readCache<StandingRow[]>(`toplog:${season.id}`) ?? []);
     supabase.from("standings").select("*").eq("season", season.id).order("position").limit(6)
@@ -50,6 +53,7 @@ export default function Home() {
         {entry
           ? <p style={{ margin: 0 }}>Your team is <strong>{entry.team_name}</strong>.{nudge && <> {nudge}</>}</p>
           : <p style={{ margin: 0 }}><Link href="/predict/">Name your team</Link> to start playing.</p>}
+        <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
       <div className="grid2">
         {nextRound !== null && (

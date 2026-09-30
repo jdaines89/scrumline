@@ -9,7 +9,7 @@ import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
 /** The round being played now: the first with a match still to come, else the last. */
-function currentRound(matches: { round: number; kickoff_at: string }[]): number | null {
+export function currentRound(matches: { round: number; kickoff_at: string }[]): number | null {
   const soon = Date.now() - 3 * 36e5;
   const open = matches.filter((m) => new Date(m.kickoff_at).getTime() > soon).map((m) => m.round);
   return open.length ? Math.min(...open) : matches.length ? Math.max(...matches.map((m) => m.round)) : null;

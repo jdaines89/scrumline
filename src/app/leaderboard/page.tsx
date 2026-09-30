@@ -6,7 +6,9 @@ import { HeadToHead } from "@/components/head-to-head";
 import { NeedsPool, useLeague } from "@/components/league";
 import { PoolRace } from "@/components/pool-race";
 import { PrizeLine } from "@/components/prize-line";
-import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
+import { currentRound, SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
+import { TournamentLine } from "@/components/tournament-line";
+import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { RoundRecap } from "@/components/round-recap";
 import { RoundTable } from "@/components/round-table";
 import { SchoolTable } from "@/components/school-table";
@@ -26,7 +28,7 @@ export default function LeaderboardPage() {
 }
 
 function Leaderboard() {
-  const { pool, me, season } = useLeague();
+  const { pool, me, season, matches } = useLeague();
   // null while the first copy loads; last visit's table shows instantly if this device has one.
   const [rows, setRows] = useState<LeaderRow[] | null>(() => readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
   const [picked, setPicked] = useState<string | null>(null);
@@ -36,6 +38,7 @@ function Leaderboard() {
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
   const [prizes, reloadPrizes] = usePoolPrizes(pool!.id);
   const sponsor = usePoolSponsor();
+  const backers = useSeasonSponsors(season.id);
   const recruits = usePoolRecruits(pool!.id);
   const broughtIn = new Map(recruits.map((r) => [r.user_id, r.brought_in]));
   const top = pool!.school_emis ? topRecruiters(recruits) : null;
@@ -50,6 +53,7 @@ function Leaderboard() {
     <div className="card">
       <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
       <p className="sub">{season.name}. {view === "schools" ? "Every school in the league, not just this pool." : season.is_replay ? "Only rounds that are locked in count." : "Scores count once a match is played."}</p>
+      <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} />
       {view !== "schools" && <SponsorLine sponsor={sponsor} />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
       {rows && view !== "schools" && <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />}
