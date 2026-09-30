@@ -798,6 +798,27 @@ do $$ begin
   raise exception 'FAILED: prize details slipped past the word check';
 exception when invalid_parameter_value then raise notice 'ok: prize details go through the word check';
 end $$;
+select public.edit_round_prize((select id from pp), 3, 'Cool Folks hoodie', 'Any size', (select id from biz where name = 'Cool Folks') || '/hoodie.jpg');
+select pg_temp.check((select prize = 'Cool Folks hoodie' and details = 'Any size' and image_path like '%/hoodie.jpg' and edit_until < now() + interval '14 days'
+                      from public.pool_prizes((select id from pp)) where round = 3),
+                     'the business changes its prize more than 48 hours before kickoff');
+do $$ begin
+  perform public.edit_round_prize((select id from pp), 3, 'Bonus bets', null, null);
+  raise exception 'FAILED: an edited prize slipped past the word check';
+exception when invalid_parameter_value then raise notice 'ok: edits go through the word check';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform public.edit_round_prize((select id from pp), 3, 'Nothing', null, null);
+  raise exception 'FAILED: someone else changed a business''s prize';
+exception when insufficient_privilege then raise notice 'ok: only the business that offered it can change a prize';
+end $$;
+do $$ begin
+  perform public.edit_round_prize((select id from pp), 1, 'Half a beer', null, null);
+  raise exception 'FAILED: a prize changed inside 48 hours of kickoff';
+exception when insufficient_privilege then raise notice 'ok: prizes lock 48 hours before kickoff';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 do $$ begin
   insert into public.round_prizes (pool_id, round, sponsor_id, prize, image_path)
   select pp.id, 2, c.id, 'A shirt', j.id || '/shirt.jpg' from pp, biz c, biz j where c.name = 'Cool Folks' and j.name = 'Joe''s Pub';
