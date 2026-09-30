@@ -563,7 +563,7 @@ select pg_temp.check((select count(*) from public.chat_messages c join public.po
   'a newcomer sees what''s said after they join');
 reset role;
 
--- School table: average points of confirmed players, ranked once a school has 3
+-- School table: each round, the average of a school's best 20 confirmed players, counted once 10 played
 reset role;
 insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source, learners) values
   ('200100777', 'Table High School', 'Gqeberha', 'EC', false, false, true, 'test', 250);
@@ -583,7 +583,7 @@ insert into public.school_vouches (voucher_id, member_id, stage, emis)
        unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b']::uuid[]) m
   where v <> m;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check((select members = 3 and confirmed = 0 and average is null from public.school_table('2026', 'high')
+select pg_temp.check((select members = 3 and confirmed = 0 and score is null from public.school_table('2026', 'high')
                       where emis = '200100777'), 'one vouch each confirms nobody, so the school is unranked');
 reset role;
 insert into public.school_vouches (voucher_id, member_id, stage, emis)
@@ -592,32 +592,55 @@ insert into public.school_vouches (voucher_id, member_id, stage, emis)
 insert into public.school_vouches (voucher_id, member_id, stage, emis) values
   ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000c', 'high', '200100777');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check((select confirmed = 2 and average is null and points is null from public.school_table('2026', 'high')
-                      where emis = '200100777'), 'two confirmed players: points withheld');
+select pg_temp.check((select confirmed = 2 and score is null from public.school_table('2026', 'high')
+                      where emis = '200100777'), 'two confirmed players: no score');
 reset role;
 insert into public.school_vouches (voucher_id, member_id, stage, emis) values
   ('00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c', 'high', '200100777');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-select pg_temp.check((select confirmed = 3 and mine and average = round(points::numeric / 3, 1)
-                      from public.school_table('2026', 'high') where emis = '200100777'), 'three confirmed players: ranked on their average');
-select pg_temp.check((select points from public.school_table('2026', 'high') where emis = '200100777')
-                     = (select coalesce(sum(s.total_pts), 0) from public.prediction_scores s join public.entries e on e.id = s.entry_id
-                        where e.season = '2026' and e.user_id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
-                                                                   '00000000-0000-0000-0000-00000000000c')),
-                     'school points are its confirmed players'' points');
+select pg_temp.check((select confirmed = 3 and mine and score is null and rounds_counted = 0
+                      from public.school_table('2026', 'high') where emis = '200100777'),
+                     'three confirmed players: no round reaches 10, so the school is unranked');
 select pg_temp.check((select count(*) from public.school_table('2026', 'primary') where emis = '200100777') = 0, 'a high school isn''t in the primary table');
-select pg_temp.check((select seats = 3 from public.school_table('2026', 'high') where emis = '200100777'), 'a 250-learner school fields 3');
 reset role;
-select pg_temp.check(public.school_seats(null) = 5 and public.school_seats(80) = 3 and public.school_seats(546) = 6
-                     and public.school_seats(1000) = 10 and public.school_seats(2400) = 15, 'team size: 1 per 100 learners, 3 to 15, 5 if unknown');
-update public.schools set learners = 1500 where emis = '200100777';
-select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-select pg_temp.check((select seats = 15 and average = round(points::numeric / 15, 1) from public.school_table('2026', 'high')
-                      where emis = '200100777'), 'a big school with 3 players leaves 12 empty seats on 0');
+
+-- A bigger school: 25 old pupils, all confirmed, plus one unconfirmed sharpshooter
+insert into public.seasons (id, name, is_replay, competition_id, feed_season) values ('sch', 'School test', false, '5069', 'sch');
+insert into public.schools (emis, name, town, province, no_fee, offers_primary, offers_matric, source, learners) values
+  ('200100888', 'Big High School', 'Gqeberha', 'EC', false, false, true, 'test', 300);
+insert into auth.users (id, email, invited_at, raw_user_meta_data)
+select ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid, 'big' || i || '@example.com', now(),
+       jsonb_build_object('display_name', 'Big ' || i)
+from generate_series(1, 26) i;
+insert into public.member_schools (user_id, stage, emis, last_year)
+select ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid, 'high', '200100888', 2005 from generate_series(1, 26) i;
+insert into public.school_vouches (voucher_id, member_id, stage, emis)
+select ('00000000-0000-0000-0000-0000000e00' || lpad((((i + k - 1) % 25) + 1)::text, 2, '0'))::uuid,
+       ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid, 'high', '200100888'
+from generate_series(1, 25) i, generate_series(1, 2) k;
+insert into public.entries (user_id, season, team_name)
+select ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid, 'sch', 'Team' from generate_series(1, 26) i;
+-- round 1: all 25 play, scoring 1..25 (best 20 average 15.5); round 2: only 9 play; round 3: 12 play on 10 each
+insert into public.entry_round_totals (entry_id, season, round, total_pts, matches)
+select e.id, 'sch', 1, i, 4 from generate_series(1, 25) i
+join public.entries e on e.season = 'sch' and e.user_id = ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid;
+insert into public.entry_round_totals (entry_id, season, round, total_pts, matches)
+select e.id, 'sch', 2, 50, 4 from generate_series(1, 9) i
+join public.entries e on e.season = 'sch' and e.user_id = ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid;
+insert into public.entry_round_totals (entry_id, season, round, total_pts, matches)
+select e.id, 'sch', 3, 10, 4 from generate_series(1, 12) i
+join public.entries e on e.season = 'sch' and e.user_id = ('00000000-0000-0000-0000-0000000e00' || lpad(i::text, 2, '0'))::uuid;
+insert into public.entry_round_totals (entry_id, season, round, total_pts, matches)
+select e.id, 'sch', r, 99, 4 from generate_series(1, 3) r
+join public.entries e on e.season = 'sch' and e.user_id = '00000000-0000-0000-0000-0000000e0026';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000e0001');
+select pg_temp.check((select confirmed = 25 and members = 26 from public.school_table('sch', 'high') where emis = '200100888'),
+                     'confirmed counts only vouched players with a team');
+select pg_temp.check((select score = 25.5 and rounds_counted = 2 and best_turnout = 25 and mine
+                      from public.school_table('sch', 'high') where emis = '200100888'),
+                     'each round counts its best 20 players; a round with fewer than 10 counts for nothing; an unconfirmed player never counts');
 reset role;
-update public.schools set learners = 250 where emis = '200100777';
-select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-reset role;
+delete from public.entry_round_totals where season = 'sch';  -- hand-made totals, not from real calls
 set role anon;
 do $$ begin
   perform 1 from public.school_table('2026', 'high');
