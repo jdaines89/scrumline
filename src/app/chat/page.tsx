@@ -168,6 +168,28 @@ function Chat() {
     if (atBottom.current && log.current) log.current.scrollTop = log.current.scrollHeight;
   }, []);
   useLayoutEffect(toBottom, [msgs, reactions, toBottom]);
+  // Things that settle after the first paint (pictures, avatars, the sponsor in
+  // the header) change sizes without a scroll: keep the box fitted and pinned.
+  useEffect(() => {
+    const el = log.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => toBottom());
+    Array.from(el.children).forEach((c) => ro.observe(c));
+    const head = el.parentElement?.querySelector(".chat-head");
+    const ho = new ResizeObserver(() => fitRef.current());
+    if (head) ho.observe(head);
+    return () => { ro.disconnect(); ho.disconnect(); };
+  }, [msgs, toBottom]);
+  const hasMsgs = msgs.length > 0;
+  // Opening a pool always starts at the newest message, once fonts and layout have settled.
+  useEffect(() => {
+    atBottom.current = true;
+    const again = () => { atBottom.current = true; fitRef.current(); toBottom(); };
+    const t = [requestAnimationFrame(again)];
+    const late = setTimeout(again, 400);
+    document.fonts?.ready.then(again);
+    return () => { t.forEach(cancelAnimationFrame); clearTimeout(late); };
+  }, [poolId, hasMsgs, toBottom]);
 
   // Mark the newest read.
   const lastId = msgs.length ? msgs[msgs.length - 1].id : 0;
