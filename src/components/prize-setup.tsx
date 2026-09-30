@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
-import { trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
+import { shrinkPhoto } from "@/lib/photo";
+import { prizePhotoUrl, trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
 
 const STATUS: Record<PoolPrize["status"], string> = {
@@ -33,6 +34,8 @@ export function PrizeSetup() {
   const [sponsorId, setSponsorId] = useState<number | null>(null);
   const [prize, setPrize] = useState("");
   const [every, setEvery] = useState(false);
+  const [photo, setPhoto] = useState<{ blob: Blob; preview: string } | null>(null);
+  const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
 
@@ -50,14 +53,43 @@ export function PrizeSetup() {
     if (pick === null || !business) return;
     const rounds = (every ? open.filter((r) => r >= pick) : [pick]).filter((r) => !prizes.some((p) => p.round === r));
     if (!rounds.length) { setMsg("There's already a prize on that round."); return; }
+    setBusy(true);
+    let image_path: string | null = null;
+    if (photo) {
+      const path = `${business.id}/${crypto.randomUUID()}.jpg`;
+      const up = await supabase.storage.from("prize-photos").upload(path, photo.blob, { contentType: "image/jpeg" });
+      if (up.error) { setBusy(false); setMsg("Couldn't upload that photo. Try another one."); return; }
+      image_path = path;
+    }
     const { error } = await supabase.from("round_prizes")
-      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor_id: business.id, prize: prize.trim() })));
+      .insert(rounds.map((r) => ({ pool_id: pool!.id, round: r, sponsor_id: business.id, prize: prize.trim(), image_path })));
+    setBusy(false);
     if (error) {
+      if (image_path) await supabase.storage.from("prize-photos").remove([image_path]);
       setMsg(error.message.includes("reword") ? error.message
         : "That didn't go through. Prizes can only go on rounds that haven't kicked off, in pools of up to 50, and not while a prize you offered is still waiting to be marked received.");
       return;
     }
-    setPrize(""); setEvery(false); reload();
+    setPrize(""); setEvery(false); clearPhoto(); reload();
+  }
+
+  async function pickPhoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setMsg(null);
+    try {
+      const blob = await shrinkPhoto(file);
+      clearPhoto();
+      setPhoto({ blob, preview: URL.createObjectURL(blob) });
+    } catch (err) {
+      setMsg((err as Error).message);
+    }
+  }
+
+  function clearPhoto() {
+    if (photo) URL.revokeObjectURL(photo.preview);
+    setPhoto(null);
   }
 
   async function withdraw(r: number) {
@@ -85,8 +117,18 @@ export function PrizeSetup() {
             ) : <span id="prize-sponsor" className="prize-biz">From {business?.name}</span>}
             <input id="prize-what" required maxLength={60} placeholder="Prize, e.g. R200 bar tab" value={prize} onChange={(e) => setPrize(e.target.value)} />
           </div>
+          <div className="prize-photo-pick">
+            {photo ? (
+              <>
+                <img className="prize-thumb" src={photo.preview} alt="Prize photo" />
+                <button type="button" className="ghost prize-btn" onClick={clearPhoto}>Remove photo</button>
+              </>
+            ) : (
+              <label className="btn ghostlink prize-btn">Add a photo<input type="file" accept="image/*" hidden onChange={pickPhoto} /></label>
+            )}
+          </div>
           <label className="small"><input id="prize-every" type="checkbox" checked={every} onChange={(e) => setEvery(e.target.checked)} /> Every round after that too</label>
-          <div><button type="submit">Offer prize</button></div>
+          <div><button type="submit" disabled={busy}>{busy ? "Offering…" : "Offer prize"}</button></div>
         </form>
       )}
       {msg && <p className="small" style={{ marginTop: 10 }}>{msg}</p>}
@@ -96,6 +138,7 @@ export function PrizeSetup() {
             {prizes.map((p) => (
               <li key={p.round}>
                 <span className="pl-round">R{p.round}</span>
+                {p.image_path && <img className="prize-thumb small" src={prizePhotoUrl(p.image_path)} alt="" />}
                 <span className="pl-what">
                   {p.prize}
                   <span className="prize-meta">{p.sponsor}{p.winners?.length ? ` · ${whoWon(p, nameOf)}` : ""}</span>

@@ -552,6 +552,10 @@ button.prize-btn { padding: 6px 12px; font-size: 13px; }
 .prize-biz { display: flex; align-items: center; font-size: 15px; color: var(--muted); padding: 0 2px; }
 .prizelist { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--line); }
 .prizelist li { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.prizelist li:has(.prize-thumb) { grid-template-columns: 36px 40px 1fr auto; }
+.prize-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; display: block; border: 1px solid var(--line); background: var(--panel); }
+.prize-thumb.small { width: 40px; height: 40px; border-radius: 8px; }
+.prize-photo-pick { display: flex; align-items: center; gap: 10px; margin: 10px 0 6px; }
 .pl-round { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pl-what { display: flex; flex-direction: column; gap: 2px; font-size: 15px; min-width: 0; }
 .pl-st { font-size: 13px; color: var(--muted); white-space: nowrap; }

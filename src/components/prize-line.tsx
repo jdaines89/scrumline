@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useLeague } from "@/components/league";
-import type { PoolPrize } from "@/lib/prizes";
+import { prizePhotoUrl, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
 
 /**
  * The pool's round prize as one small panel: what it is, who's behind it,
- * and, for a winner, the button to say it arrived. Always the creator's
- * offer, never Scrumline's.
+ * and, for a winner, the button to say it arrived. Always a member's
+ * business's offer, never Scrumline's.
  */
 export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes: PoolPrize[]; round?: number; onChange?: () => void; compact?: boolean }) {
   const { members, me, pool } = useLeague();
@@ -35,6 +35,9 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
     <div className="prize">
       {shown && (
         <div className="prize-row">
+          {shown.image_path && (
+            <a href={prizePhotoUrl(shown.image_path)} target="_blank" rel="noreferrer"><img className="prize-thumb" src={prizePhotoUrl(shown.image_path)} alt={shown.prize} /></a>
+          )}
           <div className="prize-text">
             <span className="prize-label">Round {shown.round} prize</span>
             <strong>{shown.prize}</strong>
