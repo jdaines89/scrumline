@@ -766,6 +766,13 @@ exception when insufficient_privilege then raise notice 'ok: only in the name of
 end $$;
 select pg_temp.check((select count(*) from public.my_businesses()) = 1 and (select name from public.my_businesses()) = 'Cool Folks',
                      'you see only the businesses you run');
+insert into storage.objects (bucket_id, name) select 'prize-photos', id || '/tee.jpg' from biz where name = 'Cool Folks';
+select pg_temp.check(true, 'a business uploads a prize photo into its own folder');
+do $$ begin
+  insert into storage.objects (bucket_id, name) select 'prize-photos', id || '/fake.jpg' from biz where name = 'Joe''s Pub';
+  raise exception 'FAILED: uploaded a prize photo for someone else''s business';
+exception when insufficient_privilege then raise notice 'ok: not into another business''s folder';
+end $$;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into public.round_prizes (pool_id, round, sponsor_id, sponsor, prize)
 select pp.id, 1, biz.id, 'Somebody Else', 'R200 bar tab' from pp, biz where biz.name = 'Joe''s Pub';
