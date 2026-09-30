@@ -1780,4 +1780,95 @@ select notify.send_reminders();
 select pg_temp.check((select body from notify.push_outbox where tag = 'kickoff' and user_id = '00000000-0000-0000-0000-00000000000a')
                      like '%It locks at kickoff.', 'an ended booking isn''t named');
 
+-- School projects: fixed-price things a school needs, pledged in full before anyone pays
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.admin_create_project('200100823', 'Match balls', 'Ours are worn out', '20 size-5 match balls', 'Sport Supplier', 400000, current_date + 30);
+  raise exception 'FAILED: a player listed a project';
+exception when insufficient_privilege then raise notice 'ok: only the Foundation lists projects';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform public.admin_create_project('200100823', 'Ablutions', 'Need toilets', 'A new toilet block', 'Builder', 9000000, current_date + 30);
+  raise exception 'FAILED: a project over the cap was listed';
+exception when check_violation then raise notice 'ok: projects are capped at R25,000';
+end $$;
+select public.admin_create_project('200100823', 'Match balls', 'Ours are worn out', '20 size-5 match balls', 'Sport Supplier', 400000, current_date + 30) as projid \gset
+reset role;
+create temp table projref as select :projid::bigint as id, null::bigint as pledge, null::bigint as missed;
+grant select on projref to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select state from public.school_projects_list() where id = :projid) = 'open', 'a new project is open');
+-- b backs it through Cool Folks; a stranger with no business can't
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.pledge_project(:projid, 250000, (select id from public.my_businesses() limit 1)) as pl1 \gset
+do $$ begin
+  perform public.pledge_project((select id from projref), 250000, null);
+  raise exception 'FAILED: pledged past the target';
+exception when invalid_parameter_value then raise notice 'ok: nobody can pledge past the target';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+do $$ begin
+  perform public.pledge_project((select id from projref), 10000, null);
+  raise exception 'FAILED: an uninvited account pledged';
+exception when insufficient_privilege then raise notice 'ok: only players and businesses can pledge';
+end $$;
+select pg_temp.check((select count(*) from public.school_projects_list()) = 0, 'outsiders see no projects');
+do $$ begin
+  perform 1 from public.project_pledges;
+  raise exception 'FAILED: read pledges directly';
+exception when insufficient_privilege then raise notice 'ok: pledges are only read through the list';
+end $$;
+-- a (a player too) pledges the rest in their own name, then the project is funded
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.pledge_project(:projid, 150000, null) as pl2 \gset
+reset role;
+update projref set pledge = :pl2;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select state = 'funded' and pledged_minor = 400000 and jsonb_array_length(backers) = 2
+                      and backers->0->>'name' = 'Cool Folks' from public.school_projects_list() where id = :projid),
+                     'fully pledged: funded, with every backer named');
+do $$ begin
+  perform public.withdraw_pledge((select pledge from projref));
+  raise exception 'FAILED: withdrew a locked pledge';
+exception when raise_exception then raise notice 'ok: pledges lock once a project is fully backed';
+end $$;
+do $$ begin
+  perform public.admin_advance_project((select id from projref), 'ordered');
+  raise exception 'FAILED: ordered before being paid';
+exception when raise_exception then raise notice 'ok: nothing is ordered until every pledge is paid';
+end $$;
+-- b's pledge lapses: the project reopens for the gap, and the record shows it
+select public.admin_settle_pledge(:pl1, 'lapsed');
+select public.admin_settle_pledge(:pl2, 'paid');
+select pg_temp.check((select state = 'open' and pledged_minor = 150000 and backers->0->>'status' = 'lapsed'
+                      from public.school_projects_list() where id = :projid),
+                     'an unpaid pledge shows as lapsed and opens its amount again');
+select public.pledge_project(:projid, 250000, null) as pl3 \gset
+select public.admin_settle_pledge(:pl3, 'paid');
+select public.admin_advance_project(:projid, 'ordered');
+do $$ begin
+  perform public.admin_advance_project((select id from projref), 'delivered');
+  raise exception 'FAILED: delivered without proof';
+exception when raise_exception then raise notice 'ok: delivered needs a delivery photo';
+end $$;
+select public.admin_add_evidence(:projid, 'delivery', 'Handed to the coach', :projid || '/balls.jpg');
+select public.admin_advance_project(:projid, 'delivered');
+select pg_temp.check((select state = 'delivered' and paid_minor = 400000 and jsonb_array_length(evidence) = 1
+                      from public.school_projects_list() where id = :projid), 'delivered, with its photo on the record');
+-- a short project that nobody fully backs costs nobody anything
+reset role;
+insert into public.school_projects (emis, title, why, items, supplier, target_minor, deadline, created_by)
+values ('200100823', 'Tackle bags', 'For practice', '6 tackle bags', 'Sport Supplier', 300000, current_date - 1, '00000000-0000-0000-0000-00000000000a');
+update projref set missed = (select id from public.school_projects where title = 'Tackle bags');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select state from public.school_projects_list() where title = 'Tackle bags') = 'missed', 'past its deadline unfunded: missed');
+do $$ begin
+  perform public.pledge_project((select missed from projref), 10000, null);
+  raise exception 'FAILED: pledged to a closed project';
+exception when raise_exception then raise notice 'ok: a missed project takes no pledges';
+end $$;
+reset role;
+
 \echo ALL CHECKS PASSED

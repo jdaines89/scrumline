@@ -125,7 +125,7 @@ export default function MePage() {
             <div className="me-biz">
               <strong>Look after your school&apos;s account?</strong>
               <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
-              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/moderation/">Moderation{held ? ` · ${held} to review` : ""}</Link>}</div>
+              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/projects/">Projects admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/moderation/">Moderation{held ? ` · ${held} to review` : ""}</Link>}</div>
             </div>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
           </div>

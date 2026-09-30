@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ProjectsSection } from "@/components/projects-section";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
 import { SAMPLE_GIVING, usePreview } from "@/lib/preview";
@@ -109,6 +110,7 @@ export default function GivingPage() {
             </ol>
           )}
       </div>
+      <ProjectsSection />
       <p className="small muted center">Every sponsorship includes a donation of 40% of its price, half to the school and half to a no-fee school near it, and sponsors can add more on top. Scrumline takes nothing from donations. <Link href="/sponsor/">Back a school</Link></p>
     </>
   );

@@ -744,3 +744,31 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 /* Recruiter credit */
 .recruiter { margin: 4px 0 10px; }
 .recruited { margin: -4px 0 12px; }
+
+/* School projects */
+.project h3 { margin: 0 0 2px; font-size: 17px; }
+.proj-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.proj-state { font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 3px; }
+.proj-state.funded, .proj-state.delivered { color: var(--accent); }
+.proj-why { margin: 10px 0 4px; font-size: 15px; }
+.proj-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 12px 0 6px; }
+.proj-bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.proj-nums { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.proj-backers { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.proj-backers li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.proj-backers li > span:first-child { flex: 1; min-width: 0; }
+.proj-backers li.lapsed > span:first-child { text-decoration: line-through; color: var(--muted); }
+.proj-proof { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+.proj-proof figure { margin: 0; display: grid; gap: 4px; }
+.proj-proof img, .proj-proof .skeleton { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+.proj-proof p { grid-column: 1 / -1; margin: 0; }
+.proj-pledge { margin-top: 14px; }
+.proj-pledge .row { flex-wrap: wrap; }
+.proj-amt { display: flex; align-items: center; gap: 4px; flex: 0 0 120px; }
+.proj-amt span { color: var(--muted); }
+.proj-amt input { width: 100%; }
+.proj-pledge p { margin: 8px 0 0; }
+.proj-line { display: grid; gap: 2px; text-decoration: none; color: inherit; }
+.proj-line strong { font-size: 16px; }
+.proj-line .small:last-child { color: var(--accent); }
+.proj-backers .linkish { font-weight: 400; color: var(--muted); text-decoration: underline; }
