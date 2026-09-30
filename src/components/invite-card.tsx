@@ -9,17 +9,17 @@ interface Mine { code: string; used: number; cap: number }
 export function InviteCard() {
   const [mine, setMine] = useState<Mine | null>(null);
   const [copied, setCopied] = useState(false);
-  const [school, setSchool] = useState<string | null>(null);
+  const [schools, setSchools] = useState<string[]>([]);
 
   useEffect(() => {
     supabase.rpc("my_invite").then(({ data }) => setMine(((data ?? []) as Mine[])[0] ?? null));
-    // Your high school if you've saved one, else your primary: the one your invites help.
+    // Both your schools count: every mate who plays can take a seat in your high school's team and your primary's.
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase.from("member_schools").select("stage, schools(name)").eq("user_id", user.id).then(({ data }) => {
         const rows = (data ?? []) as unknown as { stage: string; schools: { name: string } | null }[];
-        const pick = rows.find((r) => r.stage === "high") ?? rows[0];
-        setSchool(pick?.schools?.name ?? null);
+        const order = (r: { stage: string }) => (r.stage === "high" ? 0 : 1);
+        setSchools([...rows].sort((a, b) => order(a) - order(b)).map((r) => r.schools?.name).filter((n): n is string => !!n));
       });
     });
   }, []);
@@ -27,11 +27,12 @@ export function InviteCard() {
   if (!mine) return null;
   const link = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/join/?c=${mine.code}`;
   const full = mine.used >= mine.cap;
+  const named = schools.length ? schools.join(" and ") : null;
 
   async function share() {
-    const text = school
-      ? `Join me on Scrumline and play for ${school}. Rugby prediction pools with your mates and your school: ${link}`
-      : `Join me on Scrumline, rugby prediction pools with your mates and your school: ${link}`;
+    const text = named
+      ? `I'm calling every weekend's rugby on Scrumline for ${named}. Come play for our schools, back your calls against the mates and climb the table: ${link}`
+      : `I'm calling every weekend's rugby on Scrumline. Come back your calls against the mates, play for your old school and climb the table: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else { await navigator.clipboard.writeText(link); setCopied(true); }
@@ -47,11 +48,11 @@ export function InviteCard() {
 
   return (
     <div className="card invite">
-      <h2>Invite mates to Scrumline</h2>
+      <h2>Bring your mates into the game</h2>
       <p className="sub">
-        {school
-          ? <>Every mate who joins and plays makes <strong>{school}</strong> stronger on the schools table, and a school with more players is worth more to sponsors. Your link lets them play straight away, and if they went there too, it confirms them.</>
-          : "Your own link. Whoever joins through it plays straight away, and if you went to the same school it counts as your confirmation for them."}
+        {named
+          ? <>Every old schoolmate who plays can earn a seat in the team for <strong>{named}</strong> and push your schools up the table. More players means more bragging rights, and more that sponsors put back into your schools. Your link gets them straight in, and confirms anyone who went where you did.</>
+          : "Your link gets them straight in, calling scores with you this weekend. Save your schools on your profile and every mate who plays helps push them up the schools table."}
       </p>
       <div className="row">
         <input readOnly value={link} onFocus={(e) => e.target.select()} aria-label="Your invite link" />
