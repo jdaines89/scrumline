@@ -11,7 +11,7 @@ export interface Evidence { kind: "quote" | "order" | "delivery" | "note"; note:
 export interface Project {
   id: number; emis: string; school: string; town: string | null; no_fee: boolean;
   title: string; why: string; items: string; supplier: string;
-  target_minor: number; currency: string; deadline: string; state: ProjectState;
+  price_minor: number; fee_minor: number; fee_bps: number; target_minor: number; currency: string; deadline: string; state: ProjectState;
   pledged_minor: number; paid_minor: number; funded_once: boolean; my_school: boolean;
   backers: Backer[]; evidence: Evidence[];
 }

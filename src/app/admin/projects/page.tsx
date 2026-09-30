@@ -42,7 +42,7 @@ function NewProject({ say }: { say: Say }) {
     const target = randsToMinor(price);
     if (!school || target === null) { say(false, "Pick a school and type the supplier's price in rands."); return; }
     const { error } = await supabase.rpc("admin_create_project", {
-      p_emis: school.emis, p_title: title, p_why: why, p_items: items, p_supplier: supplier, p_target_minor: target, p_deadline: deadline,
+      p_emis: school.emis, p_title: title, p_why: why, p_items: items, p_supplier: supplier, p_price_minor: target, p_deadline: deadline,
     });
     if (error) { say(false, error.message.includes("check") ? "Check every field. The price must be between R100 and R25,000." : error.message); return; }
     setSchool(null); setTitle(""); setWhy(""); setItems(""); setSupplier(""); setPrice("");
@@ -53,7 +53,7 @@ function NewProject({ say }: { say: Say }) {
     <form className="card narrow stack" onSubmit={create}>
       <p className="sp-kicker">Admin</p>
       <h2>List a school project</h2>
-      <p className="sub">Only fixed-price items from a supplier&apos;s quote, up to R25,000. No building work.</p>
+      <p className="sub">Only fixed-price items from a supplier&apos;s quote, up to R25,000. No building work. A 15% Scrumline project fee is added on top and shown on the card.</p>
       {school
         ? <div className="row"><strong className="grow">{school.name}</strong><button type="button" className="ghost" onClick={() => setSchool(null)}>Change</button></div>
         : <SchoolSearch onPick={setSchool} placeholder="Find the school" />}
@@ -62,9 +62,12 @@ function NewProject({ say }: { say: Say }) {
       <input required maxLength={280} placeholder="Exactly what's bought, e.g. 20 Gilbert size-5 match balls" value={items} onChange={(e) => setItems(e.target.value)} />
       <input required maxLength={80} placeholder="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
       <div className="row">
-        <input required inputMode="decimal" placeholder="Price incl. delivery (R)" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <input required inputMode="decimal" placeholder="Supplier price incl. delivery (R)" value={price} onChange={(e) => setPrice(e.target.value)} />
         <input required type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} aria-label="Closes on" />
       </div>
+      {randsToMinor(price) !== null && (
+        <p className="small muted" style={{ margin: 0 }}>Backers pledge {money(Math.round(randsToMinor(price)! * 1.15))}: {money(randsToMinor(price)!)} for the items + {money(Math.round(randsToMinor(price)! * 0.15))} project fee.</p>
+      )}
       <div><button type="submit">List project</button></div>
     </form>
   );

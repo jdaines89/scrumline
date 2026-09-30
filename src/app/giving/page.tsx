@@ -111,7 +111,7 @@ export default function GivingPage() {
           )}
       </div>
       <ProjectsSection />
-      <p className="small muted center">Every sponsorship includes a donation of 40% of its price, half to the school and half to a no-fee school near it, and sponsors can add more on top. Scrumline takes nothing from donations. <Link href="/sponsor/">Back a school</Link></p>
+      <p className="small muted center">Every sponsorship includes a donation of 40% of its price, half to the school and half to a no-fee school near it, and sponsors can add more on top. Scrumline takes nothing from donations. School projects show the supplier&apos;s price and Scrumline&apos;s project fee as separate amounts. <Link href="/sponsor/">Back a school</Link></p>
     </>
   );
 }

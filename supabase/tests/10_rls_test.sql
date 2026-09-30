@@ -1799,7 +1799,8 @@ reset role;
 create temp table projref as select :projid::bigint as id, null::bigint as pledge, null::bigint as missed;
 grant select on projref to authenticated;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check((select state from public.school_projects_list() where id = :projid) = 'open', 'a new project is open');
+select pg_temp.check((select state = 'open' and price_minor = 400000 and fee_minor = 60000 and target_minor = 460000 from public.school_projects_list() where id = :projid),
+                     'a new project is open, its 15% project fee on top of the supplier''s price');
 -- b backs it through Cool Folks; a stranger with no business can't
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select public.pledge_project(:projid, 250000, (select id from public.my_businesses() limit 1)) as pl1 \gset
@@ -1822,11 +1823,11 @@ exception when insufficient_privilege then raise notice 'ok: pledges are only re
 end $$;
 -- a (a player too) pledges the rest in their own name, then the project is funded
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select public.pledge_project(:projid, 150000, null) as pl2 \gset
+select public.pledge_project(:projid, 210000, null) as pl2 \gset
 reset role;
 update projref set pledge = :pl2;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-select pg_temp.check((select state = 'funded' and pledged_minor = 400000 and jsonb_array_length(backers) = 2
+select pg_temp.check((select state = 'funded' and pledged_minor = 460000 and jsonb_array_length(backers) = 2
                       and backers->0->>'name' = 'Cool Folks' from public.school_projects_list() where id = :projid),
                      'fully pledged: funded, with every backer named');
 do $$ begin
@@ -1842,7 +1843,7 @@ end $$;
 -- b's pledge lapses: the project reopens for the gap, and the record shows it
 select public.admin_settle_pledge(:pl1, 'lapsed');
 select public.admin_settle_pledge(:pl2, 'paid');
-select pg_temp.check((select state = 'open' and pledged_minor = 150000 and backers->0->>'status' = 'lapsed'
+select pg_temp.check((select state = 'open' and pledged_minor = 210000 and backers->0->>'status' = 'lapsed'
                       from public.school_projects_list() where id = :projid),
                      'an unpaid pledge shows as lapsed and opens its amount again');
 select public.pledge_project(:projid, 250000, null) as pl3 \gset
@@ -1855,11 +1856,11 @@ exception when raise_exception then raise notice 'ok: delivered needs a delivery
 end $$;
 select public.admin_add_evidence(:projid, 'delivery', 'Handed to the coach', :projid || '/balls.jpg');
 select public.admin_advance_project(:projid, 'delivered');
-select pg_temp.check((select state = 'delivered' and paid_minor = 400000 and jsonb_array_length(evidence) = 1
+select pg_temp.check((select state = 'delivered' and paid_minor = 460000 and jsonb_array_length(evidence) = 1
                       from public.school_projects_list() where id = :projid), 'delivered, with its photo on the record');
 -- a short project that nobody fully backs costs nobody anything
 reset role;
-insert into public.school_projects (emis, title, why, items, supplier, target_minor, deadline, created_by)
+insert into public.school_projects (emis, title, why, items, supplier, price_minor, deadline, created_by)
 values ('200100823', 'Tackle bags', 'For practice', '6 tackle bags', 'Sport Supplier', 300000, current_date - 1, '00000000-0000-0000-0000-00000000000a');
 update projref set missed = (select id from public.school_projects where title = 'Tackle bags');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
