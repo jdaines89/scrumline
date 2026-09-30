@@ -21,7 +21,7 @@ export default function ChatPage() {
 }
 
 function Chat() {
-  const { me, members: everyone, pool, pools, setPool } = useLeague();
+  const { me, members: everyone, pool, pools, setPool, season, seasons, setSeason } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
@@ -304,15 +304,27 @@ function Chat() {
   return (
     <div className="card chat">
       <div className="chat-head">
-        {pools.length > 1
-          ? <label className="chat-pool">
-              <h2><PoolName pool={pool!} /></h2>
+        {/* Which pool, and always which tournament it belongs to: two pools can share a name. */}
+        <div className="chat-where">
+          <label className={`chat-pool${pools.length > 1 ? "" : " one"}`}>
+            <h2><PoolName pool={pool!} /></h2>
+            {pools.length > 1 && <>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch pool">
                 {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
               </select>
-            </label>
-          : <h2><PoolName pool={pool!} /></h2>}
+            </>}
+          </label>
+          <label className={`chat-season${seasons.length > 1 ? "" : " one"}`}>
+            <span>{season.name}</span>
+            {seasons.length > 1 && <>
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Switch tournament">
+                {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
+              </select>
+            </>}
+          </label>
+        </div>
         <SponsorLine sponsor={sponsor} compact />
       </div>
       <div className="chatlog" ref={log} onScroll={(e) => {
@@ -331,7 +343,7 @@ function Chat() {
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
             <div key={m.id} data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
-              {!grouped && !mine && <Avatar member={who} />}
+              {!grouped && !mine && <Avatar member={who} size={28} />}
               <div className="msgbody">
                 {!grouped && (
                   <div className="meta">

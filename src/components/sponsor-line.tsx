@@ -49,11 +49,10 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
       <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
         aria-label={`Sponsored by ${sponsor.display_name}`}>
         <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
-        <b>{sponsor.display_name}</b>
+        <span><small>{sponsor.round ? `Round ${sponsor.round} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b></span>
       </button>
       {open && (
         <div className="sp-pop">
-          <div>{sponsor.round ? `Round ${sponsor.round} sponsored by` : "Sponsored by"} <b>{sponsor.display_name}</b></div>
           {sponsor.offer && (sponsor.link
             ? <a href={sponsor.link} target="_blank" rel="noopener sponsored" onClick={() => sponsorEvent(sponsor.booking_id, "tap")}>{sponsor.offer} ›</a>
             : <div>{sponsor.offer}</div>)}
