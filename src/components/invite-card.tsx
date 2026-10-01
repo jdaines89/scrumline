@@ -37,8 +37,8 @@ export function InviteCard() {
 
   async function share() {
     const text = named
-      ? `Think you know rugby? Prove it. I'm calling every weekend's games on Scrumline for ${named}. Get the scores right to win real prizes from local businesses, and help fund school projects across South Africa. No betting, no buy-in. Join me: ${link}`
-      : `Think you know rugby? Prove it. I'm calling every weekend's games on Scrumline. Get the scores right to win real prizes from local businesses, and help fund school projects across South Africa. No betting, no buy-in. Join me: ${link}`;
+      ? `Every weekend's rugby on Scrumline helps fund South African schools. I'm calling the games for ${named}: get the scores right, win prizes from local businesses and push our schools up the table. Got a business? Sponsor a round and get seen by players every weekend. Free to play, no betting. Join me: ${link}`
+      : `Every weekend's rugby on Scrumline helps fund South African schools. Get the scores right, win prizes from local businesses and push your school up the table. Got a business? Sponsor a round and get seen by players every weekend. Free to play, no betting. Join me: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else { await navigator.clipboard.writeText(link); setCopied(true); }
