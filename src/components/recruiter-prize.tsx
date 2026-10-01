@@ -42,12 +42,16 @@ function standing(p: RecruiterPrize, nameOf: (id: string) => string): string {
  * for grabs this month and who's ahead, and for a winner, the button to say
  * it arrived.
  */
-export function RecruiterPrizeLine({ prizes, onChange }: { prizes: RecruiterPrize[]; onChange: () => void }) {
+export function RecruiterPrizeLine({ prizes, onChange, onlyOwed = false }: {
+  prizes: RecruiterPrize[]; onChange: () => void;
+  /** When a round prize already has the panel: only a winner's "Received" row, nothing else. */
+  onlyOwed?: boolean;
+}) {
   const { me, pool } = useLeague();
   const nameOf = useNameOf();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<RecruiterPrize | null>(null);
-  const shown = prizes.find((p) => p.status === "open") ?? prizes.find((p) => p.status === "counting");
+  const shown = onlyOwed ? undefined : prizes.find((p) => p.status === "open") ?? prizes.find((p) => p.status === "counting");
   const owed = prizes.find((p) => p.status === "awaiting" && p.winners?.includes(me.user_id) && !p.received.includes(me.user_id));
   if (!shown && !owed) return null;
 

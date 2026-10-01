@@ -44,6 +44,9 @@ function Leaderboard() {
   const recruits = usePoolRecruits(pool!.id);
   const broughtIn = new Map(recruits.map((r) => [r.user_id, r.brought_in]));
   const [recruiterPrizes, reloadRecruiterPrizes] = usePoolRecruiterPrizes(pool!.id);
+  // Mirrors what PrizeLine shows: a round in play or coming up, or a round prize you won and haven't marked received.
+  const roundPrizeShowing = prizes.some((p) => p.status === "in play" || p.status === "upcoming"
+    || (p.status === "awaiting" && !!p.winners?.includes(me.user_id) && !p.received.includes(me.user_id)));
   // A running recruiter prize names who's ahead by its own rule, so the plain thanks line steps aside.
   const prizeRunning = recruiterPrizes.some((p) => p.status === "open" || p.status === "counting");
   const top = pool!.school_emis && !prizeRunning ? topRecruiters(recruits) : null;
@@ -58,10 +61,11 @@ function Leaderboard() {
     <div className="card">
       <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
       <p className="sub">{season.name}. {view === "schools" ? "Every school in the league, not just this pool." : season.is_replay ? "Only rounds that are locked in count." : "Scores count once a match is played."}</p>
-      <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} />
-      {view !== "schools" && <SponsorLine sponsor={sponsor} />}
+      {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
+      {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
+        : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
-      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} />}
+      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} onlyOwed={roundPrizeShowing} />}
       {rows && view !== "schools" && <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />}
       <div className="seg" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>

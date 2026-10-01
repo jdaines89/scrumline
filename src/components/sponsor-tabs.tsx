@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const TABS: [string, string][] = [
   ["/sponsor/", "Schools"],
   ["/sponsor/tournament/", "Tournaments"],
+  ["/sponsor/prizes/", "Prizes"],
   ["/sponsor/results/", "Results"],
   ["/giving/", "Giving"],
   ["/sponsor/profile/", "Profile"],
@@ -15,7 +16,7 @@ const TABS: [string, string][] = [
 export function SponsorTabs() {
   const path = usePathname() ?? "";
   const on = (href: string) => href === "/sponsor/"
-    ? path.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament)/.test(path)
+    ? path.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament|prizes)/.test(path)
     : path.startsWith(href);
   return (
     <nav className="subtabs" aria-label="Business">

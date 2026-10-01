@@ -1,11 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
-import { PrizeSetup } from "@/components/prize-setup";
-import { RecruiterPrizeSetup } from "@/components/recruiter-prize";
-import { SchoolProjectLine } from "@/components/projects-section";
 import { supabase } from "@/lib/supabase";
 import { PoolName } from "@/components/pool-name";
 
@@ -19,6 +17,7 @@ export default function PoolsPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const [myCode, setMyCode] = useState<string | null>(null);
+  const [business, setBusiness] = useState(false);
   const names = new Map(members.map((m) => [m.user_id, m.display_name]));
 
   useEffect(() => {
@@ -29,6 +28,7 @@ export default function PoolsPage() {
 
   useEffect(() => {
     supabase.rpc("my_invite").then(({ data }) => setMyCode(((data ?? []) as { code: string }[])[0]?.code ?? null));
+    supabase.rpc("my_businesses").then(({ data }) => setBusiness(((data ?? []) as unknown[]).length > 0));
   }, []);
 
   async function create(e: FormEvent) {
@@ -85,10 +85,8 @@ export default function PoolsPage() {
             </div>
           );
         })}
+        {business && <p className="small muted" style={{ margin: "12px 0 0" }}>Putting up a prize from your business? That&apos;s in <Link href="/sponsor/prizes/">Business, Prizes</Link>.</p>}
       </div>
-      <SchoolProjectLine />
-      <PrizeSetup />
-      <RecruiterPrizeSetup />
       <div className="grid2">
         <form className="card" onSubmit={create}>
           <h2>Start a pool</h2>
