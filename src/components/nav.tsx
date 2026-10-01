@@ -114,7 +114,7 @@ export function Nav() {
   if (business) return (
     <nav className="tabs">
       <Link href="/sponsor/results/" className={path?.startsWith("/sponsor/results") ? "on" : ""}>Your results</Link>
-      <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament)/.test(path) ? "on" : ""}>Sponsor a school</Link>
+      <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament|prizes)/.test(path) ? "on" : ""}>Sponsor a school</Link>
       <Link href="/sponsor/tournament/" className={path?.startsWith("/sponsor/tournament") ? "on" : ""}>Sponsor a tournament</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
       <Link href="/sponsor/profile/" className={path?.startsWith("/sponsor/profile") ? "on" : ""}>Profile</Link>

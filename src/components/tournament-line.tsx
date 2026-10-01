@@ -9,11 +9,14 @@ import { tournamentEvent, type SeasonSponsor } from "@/lib/tournament-sponsor";
  * and, when the round has its own, "Round 2 sponsored by". Nothing when
  * neither is live.
  */
-export function TournamentLine({ sponsors, seasonName, round, title = true }: {
+export function TournamentLine({ sponsors, seasonName, round, title = true, single = false }: {
   sponsors: SeasonSponsor[]; seasonName: string; round: number | null; title?: boolean;
+  /** Just one line: the round's sponsor if it has one, else the tournament's. */
+  single?: boolean;
 }) {
-  const main = title ? sponsors.find((s) => s.round === null) : undefined;
+  let main = title ? sponsors.find((s) => s.round === null) : undefined;
   const ofRound = round !== null ? sponsors.find((s) => s.round === round) : undefined;
+  if (single && ofRound) main = undefined;
   if (!main && !ofRound) return null;
   return (
     <>
