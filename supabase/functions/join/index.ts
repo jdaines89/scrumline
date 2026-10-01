@@ -2,7 +2,7 @@
 // 20260927000300_invite_links.sql). Public sign-up is off; this is the only
 // door, and every account it opens is recorded against the link's owner.
 // The database decides whether the link may invite this email
-// (invite_check: valid link, new email, 20 per link, 10 an hour).
+// (invite_check: valid link, new email, at most 20 who have not played yet per link, 10 an hour).
 // Deployed with verify_jwt off: people using it have no account yet.
 import { createClient } from "npm:@supabase/supabase-js@2";
 

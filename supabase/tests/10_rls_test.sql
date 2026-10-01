@@ -1996,4 +1996,109 @@ select pg_temp.check((select count(*) from public.tournament_sponsors where stat
 select public.admin_set_tournament_reserve('2027', 5000000, 500000);
 select pg_temp.check(public.tournament_reserve('2027', null) = 5000000, 'an admin can raise a tournament''s reserve');
 
+-- Recruiter prizes: a business's prize for a pool's top recruiter of the month
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into public.seasons (id, name, is_replay, competition_id, feed_season) values ('rec', 'Recruit test', false, '5069', 'rec');
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('r1', 'rec', 1, now() + interval '1 day', '142072', '142073', 'SCHEDULED', 'test'),
+  ('r2', 'rec', 1, now() + interval '1 day', '142075', '142070', 'SCHEDULED', 'test'),
+  ('r3', 'rec', 1, now() + interval '1 day', '142067', '142068', 'SCHEDULED', 'test');
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000e1', 'rec1@example.com', now(), '{}'),
+  ('00000000-0000-0000-0000-0000000000e2', 'rec2@example.com', now(), '{}'),
+  ('00000000-0000-0000-0000-0000000000e3', 'rec3@example.com', now(), '{}');
+-- c brought in e1 (3 calls) and e2 (2 calls) this month, and e3 (3 calls) two months ago
+insert into public.invites (invitee_id, invited_by, email, created_at) values
+  ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-00000000000c', 'rec1@example.com', now()),
+  ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-00000000000c', 'rec2@example.com', now()),
+  ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-00000000000c', 'rec3@example.com',
+   public.sast_month_start((public.sast_this_month() - interval '2 months')::date) + interval '3 days');
+insert into public.entries (user_id, season, team_name)
+select u, 'rec', 'Team' from unnest(array['00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000e2',
+                                           '00000000-0000-0000-0000-0000000000e3']::uuid[]) u;
+insert into public.predictions (entry_id, match_id, home_score, away_score)
+select e.id, m, 20, 10 from public.entries e cross join unnest(array['r1', 'r2', 'r3']) m
+where e.season = 'rec' and (e.user_id <> '00000000-0000-0000-0000-0000000000e2' or m <> 'r3');
+update public.matches set kickoff_at = now() - interval '1 hour' where season = 'rec';
+-- e3's calls were on matches back in their own month
+insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
+  ('r4', 'rec', 2, now() + interval '1 day', '142072', '142073', 'SCHEDULED', 'test'),
+  ('r5', 'rec', 2, now() + interval '1 day', '142075', '142070', 'SCHEDULED', 'test'),
+  ('r6', 'rec', 2, now() + interval '1 day', '142067', '142068', 'SCHEDULED', 'test');
+insert into public.predictions (entry_id, match_id, home_score, away_score)
+select e.id, m, 20, 10 from public.entries e cross join unnest(array['r4', 'r5', 'r6']) m
+where e.season = 'rec' and e.user_id = '00000000-0000-0000-0000-0000000000e3';
+update public.matches set kickoff_at = public.sast_month_start((public.sast_this_month() - interval '2 months')::date) + interval '5 days'
+where id in ('r4', 'r5', 'r6');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.recruiter_prizes (pool_id, month, sponsor_id, sponsor, prize, details)
+select pp.id, public.sast_this_month(), biz.id, 'Someone', 'Cool Folks hoodie', '  Any size  ' from pp, biz where biz.name = 'Cool Folks';
+select pg_temp.check((select sponsor = 'Cool Folks' and details = 'Any size' and status = 'open'
+                      from public.pool_recruiter_prizes((select id from pp))),
+                     'a member''s business puts up this month''s recruiter prize');
+do $$ begin
+  insert into public.recruiter_prizes (pool_id, month, sponsor_id, prize)
+  select pp.id, (public.sast_this_month() + interval '2 months')::date, biz.id, 'A cap' from pp, biz where biz.name = 'Cool Folks';
+  raise exception 'FAILED: a recruiter prize went up months ahead';
+exception when insufficient_privilege then raise notice 'ok: only for this month or next';
+end $$;
+do $$ begin
+  insert into public.recruiter_prizes (pool_id, month, sponsor_id, prize)
+  select pp.id, (public.sast_this_month() + interval '1 month')::date, biz.id, 'A cap' from pp, biz where biz.name = 'Joe''s Pub';
+  raise exception 'FAILED: a recruiter prize in someone else''s business name';
+exception when insufficient_privilege then raise notice 'ok: a recruiter prize comes from a business you run';
+end $$;
+delete from public.recruiter_prizes where month = public.sast_this_month();
+select pg_temp.check((select count(*) from public.pool_recruiter_prizes((select id from pp))) = 1,
+                     'a recruiter prize can''t be withdrawn once its month has started');
+insert into public.recruiter_prizes (pool_id, month, sponsor_id, prize)
+select pp.id, (public.sast_this_month() + interval '1 month')::date, biz.id, 'A cap' from pp, biz where biz.name = 'Cool Folks';
+delete from public.recruiter_prizes where month > public.sast_this_month();
+select pg_temp.check((select count(*) from public.pool_recruiter_prizes((select id from pp))) = 1,
+                     'but next month''s can be withdrawn');
+select pg_temp.check((select best = 1 and leaders = array['00000000-0000-0000-0000-00000000000c']::uuid[] and winners is null
+                      from public.pool_recruiter_prizes((select id from pp))),
+                     'only new players with 3 matches played count, and nobody has won yet');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select mine = 1 and best = 1 and pool_name = 'Prize pool' from public.my_recruiter_prizes()),
+                     'the invite card shows this month''s recruiter prize and your count');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+select pg_temp.check((select count(*) from public.pool_recruiter_prizes((select id from pp))) = 0,
+                     'outsiders don''t see a pool''s recruiter prizes');
+-- Two months ago's prize is decided and overdue
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into public.recruiter_prizes (pool_id, month, sponsor_id, sponsor, prize, offered_by)
+select pp.id, (public.sast_this_month() - interval '2 months')::date, biz.id, 'Cool Folks', 'A shirt', '00000000-0000-0000-0000-00000000000b'
+from pp, biz where biz.name = 'Cool Folks';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select status = 'not delivered' and winners = array['00000000-0000-0000-0000-00000000000c']::uuid[]
+                      from public.pool_recruiter_prizes((select id from pp)) where month < public.sast_this_month()),
+                     'the month''s top recruiter wins, and an unmarked prize shows as not delivered');
+select pg_temp.check(not public.can_offer_recruiter_prize((select id from pp), (public.sast_this_month() + interval '1 month')::date,
+                                                          (select id from biz where name = 'Cool Folks')),
+                     'an overdue recruiter prize blocks new offers');
+select pg_temp.check(not public.can_offer_prize((select id from pp), 2, (select id from biz where name = 'Cool Folks')),
+                     'including round prizes');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  insert into public.recruiter_prize_receipts (pool_id, month) select id, (public.sast_this_month() - interval '2 months')::date from pp;
+  raise exception 'FAILED: a non-winner marked a recruiter prize received';
+exception when insufficient_privilege then raise notice 'ok: only the winner marks a recruiter prize received';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+insert into public.recruiter_prize_receipts (pool_id, month) select id, (public.sast_this_month() - interval '2 months')::date from pp;
+select pg_temp.check((select status from public.pool_recruiter_prizes((select id from pp)) where month < public.sast_this_month()) = 'delivered',
+                     'the winner marks it received');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check(public.can_offer_recruiter_prize((select id from pp), (public.sast_this_month() + interval '1 month')::date,
+                                                      (select id from biz where name = 'Cool Folks')),
+                     'and the business can offer again');
+-- Invite links: the limit counts only people who haven't played yet
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select used = 3 and waiting = 0 from public.my_invite()), 'invitees who have played don''t count towards the link''s limit');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values ('00000000-0000-0000-0000-0000000000e4', 'rec4@example.com', now(), '{}');
+insert into public.invites (invitee_id, invited_by, email) values ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-00000000000c', 'rec4@example.com');
+select pg_temp.check(public.invites_waiting('00000000-0000-0000-0000-00000000000c') = 1, 'one who hasn''t played yet does');
+
 \echo ALL CHECKS PASSED

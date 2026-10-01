@@ -16,6 +16,8 @@ import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { usePoolPrizes } from "@/lib/prizes";
 import { plural, topRecruiters, usePoolRecruits } from "@/lib/recruits";
+import { usePoolRecruiterPrizes } from "@/lib/recruiter-prizes";
+import { RecruiterPrizeLine } from "@/components/recruiter-prize";
 import type { LeaderRow } from "@/lib/types";
 import { PoolName } from "@/components/pool-name";
 
@@ -41,7 +43,10 @@ function Leaderboard() {
   const backers = useSeasonSponsors(season.id);
   const recruits = usePoolRecruits(pool!.id);
   const broughtIn = new Map(recruits.map((r) => [r.user_id, r.brought_in]));
-  const top = pool!.school_emis ? topRecruiters(recruits) : null;
+  const [recruiterPrizes, reloadRecruiterPrizes] = usePoolRecruiterPrizes(pool!.id);
+  // A running recruiter prize names who's ahead by its own rule, so the plain thanks line steps aside.
+  const prizeRunning = recruiterPrizes.some((p) => p.status === "open" || p.status === "counting");
+  const top = pool!.school_emis && !prizeRunning ? topRecruiters(recruits) : null;
   useEffect(() => {
     setRows(readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
     supabase.from("pool_leaderboard").select("*").eq("pool_id", pool!.id)
@@ -56,6 +61,7 @@ function Leaderboard() {
       <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} />
       {view !== "schools" && <SponsorLine sponsor={sponsor} />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
+      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} />}
       {rows && view !== "schools" && <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />}
       <div className="seg" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
