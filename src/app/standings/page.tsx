@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
+import { MatchesSwitch } from "@/components/matches-switch";
 import { Team, stripe } from "@/components/team";
 import { signed } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +19,7 @@ export default function StandingsPage() {
 
   return (
     <>
+      <MatchesSwitch />
       <div className="card scroll-x">
         <h2>{competitions.get(season.competition_id)?.short_name ?? "The"} log</h2>
         <p className="sub">{season.name}. Built live from the results in the database.</p>

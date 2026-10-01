@@ -14,12 +14,13 @@ import { usePreview } from "@/lib/preview";
 const TABS = [
   ["/", "Home"],
   ["/predict/", "Predict"],
-  ["/leaderboard/", "Leaderboard"],
+  ["/pools/", "Leagues"],
   ["/chat/", "Chat"],
-  ["/pools/", "Pools"],
-  ["/fixtures/", "Fixtures"],
-  ["/standings/", "Log"],
+  ["/fixtures/", "Matches"],
 ];
+
+/** Screens that sit under a tab without being its own address: a league's table under Leagues, the log under Matches. */
+const UNDER: Record<string, string[]> = { "/pools/": ["/leaderboard"], "/fixtures/": ["/standings"] };
 
 interface Unread { count: number; tagged: boolean }
 
@@ -139,7 +140,7 @@ export function Nav() {
     </Link>
     <nav className="tabs">
       {[...TABS, ...(sponsors || preview ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
-        <Link key={href} href={href} className={path === href || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
+        <Link key={href} href={href} className={path === href || (UNDER[href] ?? []).some((u) => path?.startsWith(u)) || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
           {label}
           {href === "/chat/" && path !== href && unread.count > 0 &&
             <span className={unread.tagged ? "count at" : "count"}>{unread.tagged ? "@" : unread.count}</span>}

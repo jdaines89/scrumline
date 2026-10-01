@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClassTable } from "@/components/class-table";
 import { HeadToHead } from "@/components/head-to-head";
@@ -59,6 +60,7 @@ function Leaderboard() {
 
   return (
     <div className="card">
+      <Link href="/pools/" className="lg-back">‹ Your leagues</Link>
       <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
       <p className="sub">{season.name}. {view === "schools" ? "Every school in the league, not just this pool." : season.is_replay ? "Only rounds that are locked in count." : "Scores count once a match is played."}</p>
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}

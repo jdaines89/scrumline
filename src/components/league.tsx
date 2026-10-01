@@ -187,7 +187,8 @@ function Loaded({ children }: { children: ReactNode }) {
 }
 
 // Only these screens show one pool's view; everywhere else the pool picker is noise.
-const POOL_SCREENS = ["/leaderboard"];
+// Pools are picked on the Leagues screen now, so no screen shows a pool dropdown.
+const POOL_SCREENS: string[] = [];
 
 /** Which tournament you're looking at, and on pool screens which pool. */
 function Switcher() {
@@ -211,7 +212,7 @@ function Switcher() {
           <select value={pool?.id ?? ""} onChange={(e) => setPool(Number(e.target.value))}>
             {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
           </select>
-        ) : <Link href="/pools/" className="nopool">Start or join a pool</Link>}
+        ) : <Link href="/pools/" className="nopool">Start or join a league</Link>}
       </label>}
     </div>
   );
@@ -223,9 +224,9 @@ export function NeedsPool({ children }: { children: ReactNode }) {
   if (pool) return <>{children}</>;
   return (
     <div className="card narrow">
-      <h2>No pool yet</h2>
-      <p className="sub">You&apos;re not in a pool for {season.name}. Start one or join with a code from a mate.</p>
-      <Link className="btn" href="/pools/">Go to pools</Link>
+      <h2>No league yet</h2>
+      <p className="sub">You&apos;re not in a league for {season.name}. Start one or join with a code from a mate.</p>
+      <Link className="btn" href="/pools/">Go to leagues</Link>
     </div>
   );
 }
