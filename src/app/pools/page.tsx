@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
 import { PrizeSetup } from "@/components/prize-setup";
+import { RecruiterPrizeSetup } from "@/components/recruiter-prize";
 import { SchoolProjectLine } from "@/components/projects-section";
 import { supabase } from "@/lib/supabase";
 import { PoolName } from "@/components/pool-name";
@@ -87,6 +88,7 @@ export default function PoolsPage() {
       </div>
       <SchoolProjectLine />
       <PrizeSetup />
+      <RecruiterPrizeSetup />
       <div className="grid2">
         <form className="card" onSubmit={create}>
           <h2>Start a pool</h2>
