@@ -237,9 +237,9 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 .toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; cursor: pointer; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
 @media (max-width: 560px) {
-  nav.tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  nav.tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0; }
   nav.tabs::-webkit-scrollbar { display: none; }
-  nav.tabs a { padding: 8px 10px; white-space: nowrap; }
+  nav.tabs a { padding: 8px 6px; white-space: nowrap; flex: 1 0 auto; text-align: center; }
   nav.tabs .signout { white-space: nowrap; }
 }
 
@@ -841,3 +841,31 @@ button.prize-open:focus-visible { outline: 2px solid var(--accent); outline-offs
 .pl-acts { display: flex; gap: 6px; }
 @media (max-width: 560px) { .pl-acts { flex-direction: column; } }
 .prize-actions { display: flex; gap: 8px; }
+
+/* Leagues: one card per group you're in, your rank first */
+.lg-sect { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 16px 2px 8px; }
+.lg { display: grid; gap: 10px; }
+.lg-group { display: grid; gap: 6px; }
+.lgc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); }
+.lgc.on { border-color: var(--accent-dim); }
+.lgc.nested { margin-left: 22px; padding: 10px 12px; }
+button.lgc-main { all: unset; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
+button.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+.lgc-rank { min-width: 44px; text-align: center; font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lgc.nested .lgc-rank { font-size: 18px; }
+.lgc-rank small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+.lgc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.lgc-text strong { font-size: 16px; font-weight: 600; }
+.lgc.nested .lgc-text strong { font-size: 15px; }
+.lgc-line { font-size: 13px; color: var(--muted); }
+.lgc-dot { flex: none; background: var(--accent); color: #fff; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
+.lgc-dot.at { background: var(--gold); color: #1a1407; }
+.lgc-chev { color: var(--muted); font-size: 22px; line-height: 1; }
+button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
+.lgc-waiting { flex-basis: 100%; font-size: 13px; padding-left: 56px; }
+.lg-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.lg-form { margin-top: 12px; }
+.lg-form p { margin: 0 0 8px; }
+.lg-back { display: inline-block; font-size: 14px; margin: 0 0 8px; }
+/* Fixtures and the log share the Matches tab */
+.matches-seg { margin: 0 0 14px; }

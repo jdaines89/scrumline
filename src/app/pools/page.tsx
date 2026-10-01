@@ -1,17 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
 import { supabase } from "@/lib/supabase";
 import { PoolName } from "@/components/pool-name";
+import { readCache, writeCache } from "@/lib/cache";
+import type { Pool } from "@/lib/types";
 
-interface Mate { pool_id: number; user_id: string }
+interface Score { pool_id: number; user_id: string; total_points: number }
+interface Unread { pool_id: number; unread: number; tagged: number }
+interface Prize { round: number; prize: string; status: string }
+
+/** Where you stand in one league: rank, how many, and the gap to the top. */
+interface Standing { rank: number; of: number; gap: number; leader: string | null; joint: boolean; scored: boolean }
+
+function standing(rows: Score[], me: string): Standing | null {
+  const mine = rows.find((r) => r.user_id === me);
+  if (!mine) return null;
+  const top = Math.max(...rows.map((r) => r.total_points));
+  const leaders = rows.filter((r) => r.total_points === top);
+  return {
+    rank: 1 + rows.filter((r) => r.total_points > mine.total_points).length,
+    of: rows.length, gap: top - mine.total_points,
+    leader: leaders.length === 1 ? leaders[0].user_id : null,
+    joint: leaders.length > 1,
+    scored: top > 0,
+  };
+}
 
 export default function PoolsPage() {
   const { season, pools, pool, setPool, reloadPools, members, me } = useLeague();
-  const [mates, setMates] = useState<Mate[]>([]);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -19,12 +40,101 @@ export default function PoolsPage() {
   const [myCode, setMyCode] = useState<string | null>(null);
   const [business, setBusiness] = useState(false);
   const names = new Map(members.map((m) => [m.user_id, m.display_name]));
+  const router = useRouter();
+  const [open, setOpen] = useState<"start" | "join" | null>(null);
+  const ids = pools.map((p) => p.id).join(",");
+  const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
+  const [unread, setUnread] = useState<Unread[]>([]);
+  const [prizes, setPrizes] = useState<Map<number, Prize>>(new Map());
+  const [toConfirm, setToConfirm] = useState<Map<string, number>>(new Map());
 
+  // Every league's table in one go, for your rank on each card.
   useEffect(() => {
-    if (!pools.length) { setMates([]); return; }
-    supabase.from("pool_members").select("pool_id, user_id").in("pool_id", pools.map((p) => p.id))
-      .then(({ data }) => setMates((data ?? []) as Mate[]));
-  }, [pools]);
+    if (!pools.length) { setScores([]); return; }
+    setScores(readCache<Score[]>(`leagues:${ids}`) ?? []);
+    supabase.from("pool_leaderboard").select("pool_id, user_id, total_points").in("pool_id", pools.map((p) => p.id))
+      .then(({ data }) => { const r = (data ?? []) as Score[]; writeCache(`leagues:${ids}`, r); setScores(r); });
+    supabase.from("chat_unread").select("pool_id, unread, tagged").in("pool_id", pools.map((p) => p.id))
+      .then(({ data }) => setUnread((data ?? []) as Unread[]));
+    // This round's prize, for mates' leagues (school leagues don't take round prizes).
+    Promise.all(pools.filter((p) => !p.school_emis).map((p) =>
+      supabase.rpc("pool_prizes", { p_pool: p.id }).then(({ data }) => {
+        const list = (data ?? []) as Prize[];
+        const now = list.find((x) => x.status === "in play") ?? list.find((x) => x.status === "upcoming");
+        return [p.id, now] as const;
+      }))).then((pairs) => setPrizes(new Map(pairs.filter((x): x is readonly [number, Prize] => !!x[1]))));
+    // Schoolmates at your schools you haven't confirmed yet.
+    const schools = pools.filter((p) => p.school_emis && !p.school_year);
+    if (schools.length) {
+      Promise.all([
+        supabase.from("school_members").select("user_id, stage, emis").in("emis", schools.map((p) => p.school_emis!)),
+        supabase.from("school_vouches").select("member_id, stage").eq("voucher_id", me.user_id),
+      ]).then(([sm, mv]) => {
+        const done = new Set(((mv.data ?? []) as { member_id: string; stage: string }[]).map((v) => `${v.member_id}:${v.stage}`));
+        const counts = new Map<string, number>();
+        for (const r of (sm.data ?? []) as { user_id: string; stage: string; emis: string }[]) {
+          if (r.user_id === me.user_id || done.has(`${r.user_id}:${r.stage}`)) continue;
+          counts.set(`${r.emis}:${r.stage}`, (counts.get(`${r.emis}:${r.stage}`) ?? 0) + 1);
+        }
+        setToConfirm(counts);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids]);
+
+  const byPool = useMemo(() => {
+    const m = new Map<number, Score[]>();
+    for (const s of scores) m.set(s.pool_id, [...(m.get(s.pool_id) ?? []), s]);
+    return m;
+  }, [scores]);
+  const mateLeagues = pools.filter((p) => !p.school_emis);
+  const schoolLeagues = pools.filter((p) => p.school_emis && !p.school_year);
+  const classOf = (p: Pool) => pools.find((c) => c.school_year && c.school_emis === p.school_emis && c.school_stage === p.school_stage);
+  // A class with no whole-school league above it still gets a card of its own.
+  const looseClasses = pools.filter((c) => c.school_year && !schoolLeagues.some((p) => p.school_emis === c.school_emis && p.school_stage === c.school_stage));
+
+  function openLeague(id: number) {
+    setPool(id);
+    router.push("/leaderboard/");
+  }
+
+  /** The muted line under a league's name: where you stand, then anything happening in it. */
+  function line(p: Pool): string {
+    const st = standing(byPool.get(p.id) ?? [], me.user_id);
+    const bits: string[] = [];
+    if (!st) bits.push(p.school_emis ? "Your school's league" : `Code ${p.join_code}`);
+    else if (!st.scored) bits.push(`${st.of} player${st.of === 1 ? "" : "s"}, nobody has scored yet`);
+    else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
+    else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
+    const pz = prizes.get(p.id);
+    if (pz) bits.push(`${pz.prize} in round ${pz.round}`);
+    return bits.join(" · ");
+  }
+
+  function card(p: Pool, nested = false) {
+    const st = standing(byPool.get(p.id) ?? [], me.user_id);
+    const u = unread.find((x) => x.pool_id === p.id);
+    const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
+    return (
+      <div key={p.id} className={`lgc${nested ? " nested" : ""}${p.id === pool?.id ? " on" : ""}`}>
+        <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>
+          <span className="lgc-rank">{st ? <>{st.rank}<small>of {st.of}</small></> : <small>—</small>}</span>
+          <span className="lgc-text">
+            <strong>{nested ? `Your class of ${p.school_year}` : <PoolName pool={p} />}</strong>
+            <span className="lgc-line">{line(p)}</span>
+          </span>
+          {u && u.unread > 0 && <span className={u.tagged > 0 ? "lgc-dot at" : "lgc-dot"} aria-label={`${u.unread} unread`}>{u.tagged > 0 ? "@" : u.unread}</span>}
+          <span className="lgc-chev" aria-hidden="true">›</span>
+        </button>
+        {!p.school_emis && (
+          <button type="button" className="ghost lgc-invite" onClick={() => share(p.id, p.join_code, p.name)}>{copied === p.id ? "Copied" : "Invite"}</button>
+        )}
+        {waiting > 0 && (
+          <Link href="/me/" className="lgc-waiting">{waiting} schoolmate{waiting === 1 ? "" : "s"} waiting for you to confirm them ›</Link>
+        )}
+      </div>
+    );
+  }
 
   useEffect(() => {
     supabase.rpc("my_invite").then(({ data }) => setMyCode(((data ?? []) as { code: string }[])[0]?.code ?? null));
@@ -33,6 +143,7 @@ export default function PoolsPage() {
 
   async function create(e: FormEvent) {
     e.preventDefault(); setMsg(null);
+    setOpen(null);
     const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id }).select().single();
     if (error) { setMsg(error.message); return; }
     setName(""); await reloadPools(); setPool(data.id);
@@ -42,12 +153,12 @@ export default function PoolsPage() {
     e.preventDefault(); setMsg(null);
     const { data, error } = await supabase.rpc("join_pool", { p_code: code });
     if (error) { setMsg(error.message); return; }
-    setCode(""); await reloadPools(); setPool(data as number);
+    setCode(""); setOpen(null); await reloadPools(); setPool(data as number);
   }
 
   async function share(id: number, joinCode: string, poolName: string) {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const text = `Join my ${season.name} pool "${poolName}" on Scrumline with code ${joinCode} on the Pools screen.`
+    const text = `Join my ${season.name} league "${poolName}" on Scrumline with code ${joinCode} on the Leagues screen.`
       + (myCode ? ` New to Scrumline? Sign up with my link first: ${site}/join/?c=${myCode}` : ` ${site}/pools/`);
     try {
       if (navigator.share) await navigator.share({ text });
@@ -59,54 +170,49 @@ export default function PoolsPage() {
   return (
     <>
       <div className="card">
-        <h2>Your pools for {season.name}</h2>
-        <p className="sub">A pool is a leaderboard and a chat. Your calls for {season.name} count in every pool you&apos;re in.
-          Save your schools on your profile and you&apos;re in their pools automatically. Only Scrumline makes school pools, and they carry a tick.</p>
+        <h2>Your leagues</h2>
+        <p className="sub">{season.name}. Your calls count in every league you&apos;re in. Save your schools on your profile and you&apos;re in their leagues automatically.</p>
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code from a mate.</p>}
-        {pools.map((p) => {
-          const inIt = mates.filter((m) => m.pool_id === p.id);
-          return (
-            <div key={p.id} className={`poolrow${p.id === pool?.id ? " on" : ""}`}>
-              <div className="grow">
-                <button type="button" className="linkish" onClick={() => setPool(p.id)}><strong><PoolName pool={p} /></strong></button>
-                <div className="small muted">{inIt.map((m) => m.user_id === me.user_id ? "You" : names.get(m.user_id) ?? "?").join(", ")}</div>
-              </div>
-              {p.school_emis ? (
-                <span className="small muted">{p.school_year ? "Your class" : `Your ${p.school_stage === "primary" ? "primary" : "high"} school`}</span>
-              ) : (
-                <>
-                  <div className="code">
-                    <span className="small muted">Code</span>
-                    <strong>{p.join_code}</strong>
-                  </div>
-                  <button type="button" className="ghost" onClick={() => share(p.id, p.join_code, p.name)}>{copied === p.id ? "Copied" : "Invite"}</button>
-                </>
-              )}
+        {mateLeagues.length > 0 && <>
+          <div className="lg-sect">Mates</div>
+          <div className="lg">{mateLeagues.map((p) => card(p))}</div>
+        </>}
+        {(schoolLeagues.length > 0 || looseClasses.length > 0) && <>
+          <div className="lg-sect">Schools</div>
+          <div className="lg">
+            {schoolLeagues.map((p) => {
+              const c = classOf(p);
+              return <div key={p.id} className="lg-group">{card(p)}{c && card(c, true)}</div>;
+            })}
+            {looseClasses.map((p) => card(p))}
+          </div>
+        </>}
+        <div className="lg-actions">
+          <button type="button" className={open === "start" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
+          <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>
+        </div>
+        {open === "start" && (
+          <form className="lg-form" onSubmit={create}>
+            <p className="small muted">You get a code to send to your mates.</p>
+            <div className="row">
+              <input required autoFocus maxLength={40} placeholder="League name" value={name} onChange={(e) => setName(e.target.value)} />
+              <button type="submit">Start</button>
             </div>
-          );
-        })}
-        {business && <p className="small muted" style={{ margin: "12px 0 0" }}>Putting up a prize from your business? That&apos;s in <Link href="/sponsor/prizes/">Business, Prizes</Link>.</p>}
+          </form>
+        )}
+        {open === "join" && (
+          <form className="lg-form" onSubmit={join}>
+            <p className="small muted">Type the six-character code you were sent.</p>
+            <div className="row">
+              <input required autoFocus maxLength={6} placeholder="e.g. 7K2Q9D" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
+                style={{ textTransform: "uppercase", letterSpacing: ".12em" }} />
+              <button type="submit">Join</button>
+            </div>
+          </form>
+        )}
+        {msg && <div className="notice" style={{ marginTop: 12 }}>{msg}</div>}
+        {business && <p className="small muted" style={{ margin: "14px 0 0" }}>Putting up a prize from your business? That&apos;s in <Link href="/sponsor/prizes/">Business, Prizes</Link>.</p>}
       </div>
-      <div className="grid2">
-        <form className="card" onSubmit={create}>
-          <h2>Start a pool</h2>
-          <p className="sub">You get a code to send to your mates.</p>
-          <div className="row">
-            <input required maxLength={40} placeholder="Pool name" value={name} onChange={(e) => setName(e.target.value)} />
-            <button type="submit">Start</button>
-          </div>
-        </form>
-        <form className="card" onSubmit={join}>
-          <h2>Join a pool</h2>
-          <p className="sub">Type the six-character code you were sent.</p>
-          <div className="row">
-            <input required maxLength={6} placeholder="e.g. 7K2Q9D" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
-              style={{ textTransform: "uppercase", letterSpacing: ".12em" }} />
-            <button type="submit">Join</button>
-          </div>
-        </form>
-      </div>
-      {msg && <div className="notice">{msg}</div>}
       <InviteCard />
     </>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLeague } from "@/components/league";
+import { MatchesSwitch } from "@/components/matches-switch";
 import { RoundPicker, currentRound } from "@/components/round-picker";
 import { Crest } from "@/components/team";
 import type { Match } from "@/lib/types";
@@ -19,6 +20,7 @@ export default function FixturesPage() {
 
   return (
     <>
+      <MatchesSwitch />
       <RoundPicker rounds={rounds} round={round} onPick={setRound} matches={matches} />
       {[...days].map(([d, list]) => (
         <div className="card" key={d}>
