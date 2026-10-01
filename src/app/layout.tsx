@@ -7,7 +7,7 @@ import { Brand } from "@/components/logo";
 import { PwaSetup } from "@/components/pwa-setup";
 import { PreviewBar } from "@/components/preview-bar";
 
-const description = "Rugby predictions with your old mates. Call the scores, win real prizes from local businesses and help fund your school's projects. No betting.";
+const description = "Rugby predictions with old friends. Call the scores, win real prizes from local businesses and help fund schools across South Africa. No betting.";
 // Link previews (WhatsApp, iMessage, socials) need an absolute image address, or the app picks its own.
 const site = `${process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://jdaines89.github.io"}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
 const card = { url: `${site}/og.png`, width: 1200, height: 630, alt: "Scrumline, rugby prediction leagues" };
