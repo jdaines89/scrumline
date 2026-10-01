@@ -111,16 +111,17 @@ export default function PoolsPage() {
     return bits.join(" · ");
   }
 
-  function card(p: Pool, nested = false) {
+  /** One league row; `label` replaces the name when it sits in its school's group. */
+  function card(p: Pool, label?: string) {
     const st = standing(byPool.get(p.id) ?? [], me.user_id);
     const u = unread.find((x) => x.pool_id === p.id);
     const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
     return (
-      <div key={p.id} className={`lgc${nested ? " nested" : ""}${p.id === pool?.id ? " on" : ""}`}>
+      <div key={p.id} className={`lgc${p.id === pool?.id ? " on" : ""}`}>
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>
           <span className="lgc-rank">{st ? <>{st.rank}<small>of {st.of}</small></> : <small>—</small>}</span>
           <span className="lgc-text">
-            <strong>{nested ? `Your class of ${p.school_year}` : <PoolName pool={p} />}</strong>
+            <strong>{label ?? <PoolName pool={p} />}</strong>
             <span className="lgc-line">{line(p)}</span>
           </span>
           {u && u.unread > 0 && <span className={u.tagged > 0 ? "lgc-dot at" : "lgc-dot"} aria-label={`${u.unread} unread`}>{u.tagged > 0 ? "@" : u.unread}</span>}
@@ -182,7 +183,15 @@ export default function PoolsPage() {
           <div className="lg">
             {schoolLeagues.map((p) => {
               const c = classOf(p);
-              return <div key={p.id} className="lg-group">{card(p)}{c && card(c, true)}</div>;
+              if (!c) return card(p);
+              // A school and your class in it: one panel under the school's name, two equal rows.
+              return (
+                <div key={p.id} className="lg-panel">
+                  <div className="lg-panel-head"><PoolName pool={p} /></div>
+                  {card(p, "Whole school")}
+                  {card(c, `Class of ${c.school_year}`)}
+                </div>
+              );
             })}
             {looseClasses.map((p) => card(p))}
           </div>
