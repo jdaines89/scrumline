@@ -845,23 +845,24 @@ button.prize-open:focus-visible { outline: 2px solid var(--accent); outline-offs
 /* Leagues: one card per group you're in, your rank first */
 .lg-sect { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 16px 2px 8px; }
 .lg { display: grid; gap: 10px; }
-.lg-group { display: grid; gap: 6px; }
+.lg-panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); overflow: hidden; }
+.lg-panel-head { padding: 12px 14px 2px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.lg-panel .lgc { border: 0; border-radius: 0; background: none; }
+.lg-panel .lgc + .lgc { border-top: 1px solid var(--line); }
 .lgc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); }
 .lgc.on { border-color: var(--accent-dim); }
-.lgc.nested { margin-left: 22px; padding: 10px 12px; }
-button.lgc-main { all: unset; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
+button.lgc-main { all: unset; display: flex; align-items: center; gap: 12px; flex: 1 1 260px; min-width: 0; cursor: pointer; }
 button.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
 .lgc-rank { min-width: 44px; text-align: center; font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.lgc.nested .lgc-rank { font-size: 18px; }
 .lgc-rank small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
 .lgc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .lgc-text strong { font-size: 16px; font-weight: 600; }
-.lgc.nested .lgc-text strong { font-size: 15px; }
 .lgc-line { font-size: 13px; color: var(--muted); }
 .lgc-dot { flex: none; background: var(--accent); color: #fff; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
 .lgc-dot.at { background: var(--gold); color: #1a1407; }
 .lgc-chev { color: var(--muted); font-size: 22px; line-height: 1; }
 button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
+@media (max-width: 560px) { button.lgc-invite { margin-left: 56px; } }
 .lgc-waiting { flex-basis: 100%; font-size: 13px; padding-left: 56px; }
 .lg-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .lg-form { margin-top: 12px; }
