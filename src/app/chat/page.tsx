@@ -9,6 +9,7 @@ import { photoUrl, shrinkPhoto } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, Member } from "@/lib/types";
 import { PoolName, poolLabel } from "@/components/pool-name";
+import { PlayerCard } from "@/components/player-card";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -29,6 +30,7 @@ function Chat() {
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const [profile, setProfile] = useState<Member | null>(null);
   const [pick, setPick] = useState(0);
   const [err, setErr] = useState<string | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
@@ -365,7 +367,7 @@ function Chat() {
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
             <div key={m.id} data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
-              {!grouped && !mine && <Avatar member={who} size={28} />}
+              {!grouped && !mine && <button type="button" className="msgwho" aria-label={`${who?.display_name ?? "Player"}'s profile`} onClick={() => who && setProfile(who)}><Avatar member={who} size={28} /></button>}
               <div className="msgbody">
                 {!grouped && (
                   <div className="meta">
@@ -471,6 +473,7 @@ function Chat() {
         </div>
       )}
       {err && <p className="small" style={{ color: "var(--danger)" }}>{err}</p>}
+      {profile && <PlayerCard member={profile} onClose={() => setProfile(null)} />}
     </div>
   );
 }

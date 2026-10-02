@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ClassTable } from "@/components/class-table";
 import { HeadToHead } from "@/components/head-to-head";
 import { NeedsPool, useLeague } from "@/components/league";
+import { PlayerCard } from "@/components/player-card";
 import { PoolRace } from "@/components/pool-race";
 import { PrizeLine } from "@/components/prize-line";
 import { currentRound, SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
@@ -38,6 +39,7 @@ function Leaderboard() {
   // null while the first copy loads; last visit's table shows instantly if this device has one.
   const [rows, setRows] = useState<LeaderRow[] | null>(() => readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [profile, setProfile] = useState<string | null>(null);
   const [view, setView] = useState<"overall" | "round" | "schools">("overall");
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
@@ -94,6 +96,9 @@ function Leaderboard() {
               </div>
               {picked === r.user_id && (
                 <div className="bmore">
+                  <button type="button" className="bprofile" onClick={(e) => { e.stopPropagation(); setProfile(r.user_id); }}>
+                    View {r.user_id === me.user_id ? "your" : `${person(r.user_id)?.known_as ?? person(r.user_id)?.first_name ?? r.manager}'s`} profile ›
+                  </button>
                   <p className="small muted">{r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</p>
                   <div className="bparts">
                     {PARTS.map(([k, code]) => (
@@ -107,6 +112,7 @@ function Leaderboard() {
           ))}
         </ol>
         <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />
+        {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
         </>
       )}
       {view === "overall" && rows && rows.length > 0 && <p className="small muted" style={{ marginTop: 12 }}>

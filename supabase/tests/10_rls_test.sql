@@ -2140,4 +2140,23 @@ insert into auth.users (id, email, invited_at, raw_user_meta_data) values
 select pg_temp.check((select display_name from public.members where user_id = '00000000-0000-0000-0000-0000000000e5') = 'reeves 2',
                      'a new invitee whose email name is taken still gets in');
 
+
+-- Player profiles: anyone in the league sees a player's record and businesses
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) from public.player_record('00000000-0000-0000-0000-00000000000a'))
+                     = (select count(*) from public.entries where user_id = '00000000-0000-0000-0000-00000000000a'),
+                     'a player''s record lists every tournament they play');
+select pg_temp.check((select bool_and(rank between 1 and players) from public.player_record('00000000-0000-0000-0000-00000000000a')),
+                     'each tournament shows a rank out of its players');
+select pg_temp.check(exists (select 1 from public.player_businesses('00000000-0000-0000-0000-00000000000a') where name = 'Joe''s Pub'),
+                     'a player''s business shows on their profile');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+do $$ begin
+  perform public.player_record('00000000-0000-0000-0000-00000000000a');
+  raise exception 'FAILED: signed-out visitors can read a player record';
+exception when insufficient_privilege then raise notice 'ok: signed-out visitors can''t read player records';
+end $$;
+reset role;
 \echo ALL CHECKS PASSED
