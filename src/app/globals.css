@@ -338,6 +338,9 @@ details.mates li .pts { text-align: left; color: var(--accent); font-weight: 700
 .board li.open { background: var(--panel); }
 .h2h { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); cursor: default; }
 .h2h table { font-size: 13px; }
+.h2h th, .h2h td { padding: 8px 5px; }
+.h2h th:first-child, .h2h td:first-child { padding-left: 0; }
+.h2h th:last-child, .h2h td:last-child { padding-right: 0; }
 .h2h .rrow { cursor: pointer; }
 .h2h .rrow td { font-weight: 600; }
 .h2h .mrow td { font-size: 12px; background: var(--panel); vertical-align: top; }

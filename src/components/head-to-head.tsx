@@ -75,7 +75,11 @@ export function HeadToHead({ mine, theirs, name }: { mine: number | null; theirs
                       </td>
                       {!solo && <td className="num">{a ? <>{a.pred_home}–{a.pred_away}{a.is_banker && " ×2"}<div className="pts">+{a.total_pts}</div></> : <span className="muted">no call</span>}</td>}
                       <td className="num">{b ? <>{b.pred_home}–{b.pred_away}{b.is_banker && " ×2"}<div className="pts">+{b.total_pts}</div></> : <span className="muted">no call</span>}</td>
-                      {!solo && <td colSpan={2} />}
+                      {!solo && (() => {
+                        const d = (a?.total_pts ?? 0) - (b?.total_pts ?? 0);
+                        return <td className={`num ${d > 0 ? "up" : d < 0 ? "down" : "muted"}`}>{signed(d)}</td>;
+                      })()}
+                      {!solo && <td />}
                     </tr>
                   );
                 })}
@@ -84,7 +88,7 @@ export function HeadToHead({ mine, theirs, name }: { mine: number | null; theirs
           })}
         </tbody>
       </table>
-      {!solo && <p className="small muted">Swing is the round&apos;s difference, and Gap is the running total. Green means you&apos;re ahead.</p>}
+      {!solo && <p className="small muted">Swing is the difference in points, per round and per game, and Gap is the running total. Green means you&apos;re ahead.</p>}
     </div>
   );
 }
