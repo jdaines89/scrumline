@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
+import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
 import { supabase } from "@/lib/supabase";
 import { PoolName } from "@/components/pool-name";
 import { readCache, writeCache } from "@/lib/cache";
@@ -47,6 +48,7 @@ export default function PoolsPage() {
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
   const [unread, setUnread] = useState<Unread[]>([]);
   const [prizes, setPrizes] = useState<Map<number, Prize>>(new Map());
+  const [recruiter, setRecruiter] = useState<Map<number, RecruiterPrize>>(new Map());
   const [toConfirm, setToConfirm] = useState<Map<string, number>>(new Map());
 
   // Every league's table in one go, for your rank on each card.
@@ -64,6 +66,12 @@ export default function PoolsPage() {
         const now = list.find((x) => x.status === "in play") ?? list.find((x) => x.status === "upcoming");
         return [p.id, now] as const;
       }))).then((pairs) => setPrizes(new Map(pairs.filter((x): x is readonly [number, Prize] => !!x[1]))));
+    // This month's recruiter prize, shown by the Invite button, since inviting is how it's won.
+    Promise.all(pools.map((p) =>
+      supabase.rpc("pool_recruiter_prizes", { p_pool: p.id }).then(({ data }) => {
+        const list = (data ?? []) as RecruiterPrize[];
+        return [p.id, list.find((x) => x.status === "open")] as const;
+      }))).then((pairs) => setRecruiter(new Map(pairs.filter((x): x is readonly [number, RecruiterPrize] => !!x[1]))));
     // Schoolmates at your schools you haven't confirmed yet.
     const schools = pools.filter((p) => p.school_emis && !p.school_year);
     if (schools.length) {
@@ -117,6 +125,7 @@ export default function PoolsPage() {
     const st = standing(byPool.get(p.id) ?? [], me.user_id);
     const u = unread.find((x) => x.pool_id === p.id);
     const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
+    const rp = recruiter.get(p.id);
     return (
       <div key={p.id} className={`lgc${p.id === pool?.id ? " on" : ""}`}>
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>
@@ -130,6 +139,12 @@ export default function PoolsPage() {
         </button>
         {!p.school_emis && (
           <button type="button" className="ghost lgc-invite" onClick={() => share(p.id, p.join_code, p.name)}>{copied === p.id ? "Copied" : "Invite"}</button>
+        )}
+        {rp && (
+          <button type="button" className="lgc-recruit" onClick={() => share(p.id, p.join_code, p.name, !!p.school_emis)}>
+            <span className="lgc-recruit-label">{monthName(rp.month)} recruiter prize</span>
+            <strong>{rp.prize}</strong> · bring in the most new players to win ›
+          </button>
         )}
         {waiting > 0 && (
           <Link href="/me/" className="lgc-waiting">{waiting} schoolmate{waiting === 1 ? "" : "s"} waiting for you to confirm them ›</Link>
@@ -158,10 +173,13 @@ export default function PoolsPage() {
     setCode(""); setOpen(null); await reloadPools(); setPool(data as number);
   }
 
-  async function share(id: number, joinCode: string, poolName: string) {
+  async function share(id: number, joinCode: string, poolName: string, school = false) {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const link = joinLink(site, myCode, joinCode);
-    const text = `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
+    // A school league isn't joined by code: newcomers land in it once they name the school.
+    const link = school ? joinLink(site, myCode) : joinLink(site, myCode, joinCode);
+    const text = school
+      ? `Play for ${poolName} on Scrumline in the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`
+      : `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);

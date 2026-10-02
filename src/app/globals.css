@@ -784,6 +784,8 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .recruiter { margin: 4px 0 10px; }
 /* A recruiter prize sits under the round prize: same panel, plain border, no travelling light. */
 .prize.prize-quiet { animation: none; box-shadow: none; border: 1px solid var(--line); background: var(--panel-2); }
+.prize-slim .prize-row { padding: 8px 14px; }
+.prize-slim .prize-text strong { font-size: 14px; }
 .invite .recruit-prizes { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
 .invite .recruit-prizes li { font-size: 14px; }
 .recruited { margin: -4px 0 12px; }
@@ -868,6 +870,11 @@ button.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset
 button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
 @media (max-width: 560px) { button.lgc-invite { margin-left: 56px; } }
 .lgc-waiting { flex-basis: 100%; font-size: 13px; padding-left: 56px; }
+button.lgc-recruit { all: unset; box-sizing: border-box; flex-basis: 100%; margin-left: 56px; padding: 8px 12px; border-left: 2px solid var(--gold); background: var(--panel-2); border-radius: 0 8px 8px 0; font-size: 13px; color: var(--muted); cursor: pointer; }
+button.lgc-recruit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lgc-recruit strong { color: var(--text); font-weight: 600; }
+.lgc-recruit-label { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text); margin-bottom: 2px; }
+@media (max-width: 560px) { button.lgc-recruit { margin-left: 0; } }
 .lg-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .lg-form { margin-top: 12px; }
 .lg-form p { margin: 0 0 8px; }
