@@ -34,8 +34,13 @@ Deno.serve(async (req) => {
     console.error("invite failed", invErr?.message);
     return reply({ error: "We couldn't send the invite. Try again in a minute." }, 500);
   }
-  const { error: recErr } = await db.rpc("invite_record", { p_invitee: invited.user.id, p_inviter: check.inviter, p_email: email, p_pool: String(pool ?? "").trim() || null });
+  const { error: recErr } = await db.rpc("invite_record", { p_invitee: invited.user.id, p_inviter: check.inviter, p_email: email });
   if (recErr) console.error("invite not recorded", recErr.message);
+  const league = String(pool ?? "").trim();
+  if (league && !recErr) {
+    const { error: poolErr } = await db.rpc("invite_join_pool", { p_invitee: invited.user.id, p_inviter: check.inviter, p_pool: league });
+    if (poolErr) console.error("league not joined", poolErr.message);
+  }
   return reply({ status: "sent" });
 });
 

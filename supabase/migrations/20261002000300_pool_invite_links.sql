@@ -19,10 +19,9 @@ $$;
 revoke execute on function public.pool_invite_info(text) from public;
 grant execute on function public.pool_invite_info(text) to anon, authenticated;
 
--- The join function records the invite as before and, given a league code
--- the inviter plays in, puts the newcomer straight into that league.
-drop function public.invite_record(uuid, uuid, text);
-create function public.invite_record(p_invitee uuid, p_inviter uuid, p_email text, p_pool text default null)
+-- After recording the invite, the join function passes the league code; the
+-- newcomer goes straight into that league if the inviter plays in it.
+create or replace function public.invite_join_pool(p_invitee uuid, p_inviter uuid, p_pool text)
 returns void
 language plpgsql
 security definer
@@ -31,20 +30,18 @@ as $$
 declare
   pid bigint;
 begin
-  insert into public.invites (invitee_id, invited_by, email)
-  values (p_invitee, p_inviter, lower(btrim(p_email)))
-  on conflict (invitee_id) do nothing;
   if nullif(btrim(p_pool), '') is null then return; end if;
   select p.id into pid from public.pools p
   where p.join_code = upper(btrim(p_pool)) and p.school_emis is null
     and exists (select 1 from public.pool_members pm where pm.pool_id = p.id and pm.user_id = p_inviter);
-  if pid is not null and exists (select 1 from public.members where user_id = p_invitee) then
+  if pid is not null and exists (select 1 from public.members where user_id = p_invitee)
+     and exists (select 1 from public.invites where invitee_id = p_invitee and invited_by = p_inviter) then
     insert into public.pool_members (pool_id, user_id) values (pid, p_invitee) on conflict do nothing;
   end if;
 end $$;
-revoke all on function public.invite_record(uuid, uuid, text, text) from public, anon, authenticated;
+revoke all on function public.invite_join_pool(uuid, uuid, text) from public, anon, authenticated;
 do $$ begin
   if exists (select 1 from pg_roles where rolname = 'service_role') then
-    grant execute on function public.invite_record(uuid, uuid, text, text) to service_role;
+    grant execute on function public.invite_join_pool(uuid, uuid, text) to service_role;
   end if;
 end $$;

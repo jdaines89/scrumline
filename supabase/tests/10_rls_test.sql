@@ -2171,8 +2171,10 @@ insert into auth.users (id, email, invited_at, raw_user_meta_data) values
   ('00000000-0000-0000-0000-0000000000d7', 'lg1@example.com', now(), '{}'),
   ('00000000-0000-0000-0000-0000000000d8', 'lg2@example.com', now(), '{}');
 set role service_role;
-select public.invite_record('00000000-0000-0000-0000-0000000000d7', '00000000-0000-0000-0000-00000000000a', 'lg1@example.com', :'lgcode');
-select public.invite_record('00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-00000000000b', 'lg2@example.com', :'othercode');
+select public.invite_record('00000000-0000-0000-0000-0000000000d7', '00000000-0000-0000-0000-00000000000a', 'lg1@example.com');
+select public.invite_join_pool('00000000-0000-0000-0000-0000000000d7', '00000000-0000-0000-0000-00000000000a', :'lgcode');
+select public.invite_record('00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-00000000000b', 'lg2@example.com');
+select public.invite_join_pool('00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-00000000000b', :'othercode');
 reset role;
 select pg_temp.check(exists (select 1 from public.pool_members where pool_id = :lgid and user_id = '00000000-0000-0000-0000-0000000000d7'),
                      'a newcomer invited with a league link is already in that league');
