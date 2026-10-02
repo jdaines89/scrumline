@@ -1,5 +1,6 @@
 "use client";
 
+import { fullName } from "@/lib/names";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { useLeague } from "@/components/league";
@@ -159,7 +160,7 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
                   <li key={m.user_id}>
                     <Avatar member={who} size={28} />
                     <span className="mate-name">
-                      {who?.display_name ?? "A member"}
+                      {fullName(who) || "A member"}
                       {m.last_year && <span className="small muted"> · {stage === "high" ? "Matric" : "Completed"} {m.last_year}</span>}
                     </span>
                     <button type="button" className={on ? "ghost" : ""} disabled={busy} onClick={() => vouch(m, !on)}

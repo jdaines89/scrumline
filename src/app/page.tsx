@@ -47,9 +47,7 @@ export default function Home() {
     <>
       <div className="card">
         <h2>Hi {me.display_name}</h2>
-        <p className="sub">
-          {season.name}{season.is_replay && " · replay: the season has been played, so each of you locks a round in and then sees how it scored."}
-        </p>
+        {season.is_replay && <p className="sub">Replay: the season has been played, so each of you locks a round in and then sees how it scored.</p>}
         {entry
           ? <p style={{ margin: 0 }}>Your team is <strong>{entry.team_name}</strong>.{nudge && <> {nudge}</>}</p>
           : <p style={{ margin: 0 }}><Link href="/predict/">Name your team</Link> to start playing.</p>}

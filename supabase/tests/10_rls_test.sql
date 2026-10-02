@@ -2101,4 +2101,62 @@ insert into auth.users (id, email, invited_at, raw_user_meta_data) values ('0000
 insert into public.invites (invitee_id, invited_by, email) values ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-00000000000c', 'rec4@example.com');
 select pg_temp.check(public.invites_waiting('00000000-0000-0000-0000-00000000000c') = 1, 'one who hasn''t played yet does');
 
+-- Real names, nickname and one team name per person
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+update public.members set first_name = ' Andisile ', last_name = 'Mndai', known_as = 'Reeves', team_name = 'Ruck n Roll'
+  where user_id = auth.uid();
+select pg_temp.check((select display_name = 'Reeves' and first_name = 'Andisile' from public.members where user_id = auth.uid()),
+                     'the short name comes from the nickname, and names are trimmed');
+select pg_temp.check(not exists (select 1 from public.entries where user_id = auth.uid() and team_name <> 'Ruck n Roll'),
+                     'every entry takes the person''s one team name');
+update public.entries set team_name = 'Something Else' where user_id = auth.uid();
+select pg_temp.check(not exists (select 1 from public.entries where user_id = auth.uid() and team_name <> 'Ruck n Roll'),
+                     'an entry can''t drift from the team name');
+update public.members set first_name = 'Hacked' where user_id = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select first_name is distinct from 'Hacked' from public.members where user_id = auth.uid()),
+                     'nobody can set someone else''s name');
+do $$ begin
+  update public.members set team_name = 'ruck N ROLL' where user_id = auth.uid();
+  raise exception 'FAILED: two people got the same team name';
+exception when unique_violation then raise notice 'ok: team names are unique, ignoring case';
+end $$;
+update public.members set first_name = 'Justin', last_name = 'Daines', team_name = 'The Penguins' where user_id = auth.uid();
+select pg_temp.check((select display_name from public.members where user_id = auth.uid()) = 'Justin',
+                     'no nickname: the short name is the first name');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+update public.members set first_name = 'Justin', last_name = 'Botha', known_as = null where user_id = auth.uid();
+select pg_temp.check((select display_name from public.members where user_id = auth.uid()) = 'Justin B',
+                     'a second Justin gets a surname initial, so tags never clash');
+do $$ begin
+  update public.members set known_as = 'zorblat' where user_id = auth.uid();
+  raise exception 'FAILED: a blocked nickname was saved';
+exception when sqlstate '22023' then raise notice 'ok: nicknames go through the word filter';
+end $$;
+reset role; select set_config('request.jwt.claim.sub', '', false);
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000e5', 'reeves@example.com', now(), '{"display_name":"reeves"}');
+select pg_temp.check((select display_name from public.members where user_id = '00000000-0000-0000-0000-0000000000e5') = 'reeves 2',
+                     'a new invitee whose email name is taken still gets in');
+
+
+-- Player profiles: anyone in the league sees a player's record and businesses
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.check((select count(*) from public.player_record('00000000-0000-0000-0000-00000000000a'))
+                     = (select count(*) from public.entries where user_id = '00000000-0000-0000-0000-00000000000a'),
+                     'a player''s record lists every tournament they play');
+select pg_temp.check((select bool_and(rank between 1 and players) from public.player_record('00000000-0000-0000-0000-00000000000a')),
+                     'each tournament shows a rank out of its players');
+select pg_temp.check(exists (select 1 from public.player_businesses('00000000-0000-0000-0000-00000000000a') where name = 'Joe''s Pub'),
+                     'a player''s business shows on their profile');
+reset role; select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+do $$ begin
+  perform public.player_record('00000000-0000-0000-0000-00000000000a');
+  raise exception 'FAILED: signed-out visitors can read a player record';
+exception when insufficient_privilege then raise notice 'ok: signed-out visitors can''t read player records';
+end $$;
+reset role;
 \echo ALL CHECKS PASSED

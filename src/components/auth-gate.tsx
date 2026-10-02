@@ -80,18 +80,14 @@ function SignIn() {
 
 function SetPassword({ email, reset, business, onDone }: { email: string; reset: boolean; business: boolean; onDone: () => void }) {
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
 
+  // Names are asked once inside the app ("Who's playing?"), for new and old players alike.
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (password.length < 8) { setMsg("Use at least 8 characters."); return; }
     const { error } = await supabase.auth.updateUser({ password });
     if (error) { setMsg(error.message); return; }
-    if (name.trim() && !business) {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) await supabase.from("members").update({ display_name: name.trim() }).eq("user_id", data.user.id);
-    }
     onDone();
   }
 
@@ -100,7 +96,6 @@ function SetPassword({ email, reset, business, onDone }: { email: string; reset:
       <h2>{reset ? "Choose a new password" : business ? "Welcome to Scrumline" : "Welcome to the league"}</h2>
       <p className="sub">{reset ? `For ${email}.` : `Choose a password for ${email}. You'll use it to sign in from now on.`}</p>
       <form onSubmit={submit} className="stack">
-        {!reset && !business && <input placeholder="Your name, as the others will see it" value={name} onChange={(e) => setName(e.target.value)} />}
         <input type="password" required placeholder="New password (8+ characters)" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button type="submit">Save and continue</button>
       </form>

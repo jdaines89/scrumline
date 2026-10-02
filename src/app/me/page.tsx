@@ -13,9 +13,11 @@ import { supabase } from "@/lib/supabase";
 
 /** Your picture, name, team, schools, notifications and password, in one place. */
 export default function MePage() {
-  const { me, members, entry, season } = useLeague();
-  const [name, setName] = useState(me.display_name);
-  const [team, setTeam] = useState(entry?.team_name ?? "");
+  const { me, members, season } = useLeague();
+  const [first, setFirst] = useState(me.first_name ?? "");
+  const [last, setLast] = useState(me.last_name ?? "");
+  const [known, setKnown] = useState(me.known_as ?? "");
+  const [team, setTeam] = useState(me.team_name ?? "");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [held, setHeld] = useState<number | null>(null);
@@ -29,23 +31,18 @@ export default function MePage() {
 
   const say = (ok: boolean, text: string) => setMsg({ ok, text });
 
-  async function saveName(e: FormEvent) {
-    e.preventDefault();
-    const n = name.trim();
-    if (n.length < 2) return say(false, "Use at least 2 characters.");
-    // Tags in chat go by name, so two people can't share one.
-    if (members.some((m) => m.user_id !== me.user_id && m.display_name.toLowerCase() === n.toLowerCase()))
-      return say(false, "Someone in the league already goes by that name.");
-    const { error } = await supabase.from("members").update({ display_name: n }).eq("user_id", me.user_id);
-    if (error) return say(false, error.message);
-    window.location.reload();
-  }
+  const namesChanged = first.trim() !== (me.first_name ?? "") || last.trim() !== (me.last_name ?? "")
+    || known.trim() !== (me.known_as ?? "") || team.trim() !== (me.team_name ?? "");
 
-  async function saveTeam(e: FormEvent) {
+  async function saveNames(e: FormEvent) {
     e.preventDefault();
-    if (!entry || !team.trim()) return;
-    const { error } = await supabase.from("entries").update({ team_name: team.trim() }).eq("id", entry.id);
-    if (error) return say(false, error.message);
+    if (!first.trim() || !last.trim() || !team.trim()) return say(false, "First name, surname and team name are all needed.");
+    if (members.some((m) => m.user_id !== me.user_id && m.team_name?.toLowerCase() === team.trim().toLowerCase()))
+      return say(false, "Someone already plays as that team. Pick another.");
+    const { error } = await supabase.from("members")
+      .update({ first_name: first.trim(), last_name: last.trim(), known_as: known.trim() || null, team_name: team.trim() })
+      .eq("user_id", me.user_id);
+    if (error) return say(false, error.code === "23505" ? "Someone already plays as that team. Pick another." : error.message);
     window.location.reload();
   }
 
@@ -76,23 +73,19 @@ export default function MePage() {
 
           <AvatarPicker me={me} onMessage={say} />
 
-          <form onSubmit={saveName} className="stack profile">
-            <label className="small muted">Display name, as everyone sees it and tags you in chat</label>
-            <div className="row">
-              <input maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
-              <button type="submit" disabled={name.trim() === me.display_name}>Save</button>
+          <form onSubmit={saveNames} className="stack profile">
+            <div className="row names-row">
+              <label className="small muted">First name<input required maxLength={40} autoComplete="given-name" value={first} onChange={(e) => setFirst(e.target.value)} /></label>
+              <label className="small muted">Surname<input required maxLength={40} autoComplete="family-name" value={last} onChange={(e) => setLast(e.target.value)} /></label>
             </div>
+            <label className="small muted">Known as at school (optional). Chat and tags use it, otherwise your first name.
+              <input maxLength={24} value={known} onChange={(e) => setKnown(e.target.value)} />
+            </label>
+            <label className="small muted">Team name, the same in every tournament
+              <input required maxLength={30} value={team} onChange={(e) => setTeam(e.target.value)} />
+            </label>
+            <div><button type="submit" disabled={!namesChanged}>Save</button></div>
           </form>
-
-          {entry && (
-            <form onSubmit={saveTeam} className="stack profile">
-              <label className="small muted">Team name for {season.name}</label>
-              <div className="row">
-                <input maxLength={40} value={team} onChange={(e) => setTeam(e.target.value)} />
-                <button type="submit" disabled={team.trim() === entry.team_name}>Save</button>
-              </div>
-            </form>
-          )}
         </div>
 
         <div className="mepage-side">
