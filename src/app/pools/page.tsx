@@ -1,5 +1,6 @@
 "use client";
 
+import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -159,8 +160,8 @@ export default function PoolsPage() {
 
   async function share(id: number, joinCode: string, poolName: string) {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const link = myCode ? `${site}/join/?c=${myCode}&p=${joinCode}` : `${site}/join/?p=${joinCode}`;
-    const text = `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting. Tap to join: ${link}`;
+    const link = joinLink(site, myCode, joinCode);
+    const text = `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);

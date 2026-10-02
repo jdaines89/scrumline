@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { readJoinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 
 // Signed out, AuthGate shows the join form here instead. Signed in, a league
@@ -10,7 +11,7 @@ export default function JoinPage() {
   const [state, setState] = useState<"none" | "joining" | "failed">("none");
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("p");
+    const p = readJoinLink(window.location.search).league;
     if (!p) return;
     setState("joining");
     supabase.rpc("join_pool", { p_code: p }).then(({ data, error }) => {
