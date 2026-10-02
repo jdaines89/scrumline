@@ -10,7 +10,6 @@ import type { LeaderRow } from "@/lib/types";
 interface Scored { entry_id: number; round: number; total_pts: number; result_pts: number; margin_pts: number; near_pts: number; exact_pts: number }
 
 // The same breakdown as the overall table, for one round.
-const PARTS = [["res", "RES"], ["mar", "MAR"], ["cls", "CLS"], ["exa", "EXA"], ["bnk", "BNK"]] as const;
 
 /** One round's table for the pool: who scored what in that round alone. */
 export function RoundTable({ rows }: { rows: LeaderRow[] }) {
@@ -64,17 +63,10 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
               <span className="rank">{1 + table.filter((x) => x.pts > r.pts).length}</span>
               <div className="who">
                 <strong>{r.team ?? r.manager}</strong>
-                <span className="small muted">{r.manager} · {r.called ? `${r.called} match${r.called === 1 ? "" : "es"} · ${r.right} right result${r.right === 1 ? "" : "s"} · ${r.exact} exact` : "No calls scored"}</span>
+                <span className="small muted bname">{r.called ? `${r.manager} · ${r.right} of ${r.called} right` : `${r.manager} · no calls scored`}</span>
               </div>
               <span className="btotal">{r.pts}</span>
             </div>
-            {r.called > 0 && (
-              <div className="bparts">
-                {PARTS.map(([k, code]) => (
-                  <span key={code} className={r.parts[k] > 0 ? "pchip on" : "pchip"}>{code} {r.parts[k]}</span>
-                ))}
-              </div>
-            )}
           </li>
         ))}
       </ol>

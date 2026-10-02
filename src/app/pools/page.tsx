@@ -107,7 +107,7 @@ export default function PoolsPage() {
     else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
     else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
     const pz = prizes.get(p.id);
-    if (pz) bits.push(`${pz.prize} in round ${pz.round}`);
+    if (pz) bits.push(`Round ${pz.round} prize`);
     return bits.join(" · ");
   }
 
@@ -172,7 +172,7 @@ export default function PoolsPage() {
     <>
       <div className="card">
         <h2>Your leagues</h2>
-        <p className="sub">{season.name}. Your calls count in every league you&apos;re in. Save your schools on your profile and you&apos;re in their leagues automatically.</p>
+        <p className="sub">Your calls count in every league you&apos;re in.</p>
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code from a mate.</p>}
         {mateLeagues.length > 0 && <>
           <div className="lg-sect">Mates</div>

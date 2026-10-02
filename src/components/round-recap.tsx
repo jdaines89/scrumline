@@ -25,6 +25,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   const { matches, teams, pool, season } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
   const [note, setNote] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
 
@@ -40,7 +41,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
     if (!scored.length || entries.length < 2) return null;
     const round = Math.max(...scored.map((s) => s.round));
     // The banter goes out under team names, with the person in brackets: "Scrum Dogs (Justin)".
-    const name = new Map(entries.map((r) => [r.entry_id!, r.team_name ? `${r.team_name} (${r.manager})` : r.manager]));
+    const name = new Map(entries.map((r) => [r.entry_id!, r.team_name ?? r.manager]));
     const upTo = (r: number, e: number) => scored.filter((s) => s.entry_id === e && s.round <= r).reduce((a, s) => a + s.total_pts, 0);
     const rank = (r: number, e: number) => 1 + entries.filter((x) => upTo(r, x.entry_id!) > upTo(r, e)).length;
     const inRound = scored.filter((s) => s.round === round);
@@ -114,8 +115,11 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
         <button type="button" className="bank" onClick={share}>Share</button>
       </div>
       <dl>
-        {recap.lines.map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
+        {(open ? recap.lines : recap.lines.slice(0, 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
       </dl>
+      {recap.lines.length > 1 && (
+        <button type="button" className="linkish recapmore" onClick={() => setOpen(!open)}>{open ? "Show less" : "Full recap"}</button>
+      )}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
     </div>
   );
