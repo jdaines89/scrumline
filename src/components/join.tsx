@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { readJoinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 
 type Info = { inviter: string; open: boolean } | null;
@@ -18,8 +19,7 @@ export function Join() {
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const c = new URLSearchParams(window.location.search).get("c") ?? "";
-    const p = new URLSearchParams(window.location.search).get("p") ?? "";
+    const { invite: c, league: p } = readJoinLink(window.location.search);
     setCode(c);
     setPool(p);
     if (p) supabase.rpc("pool_invite_info", { p_code: p }).then(({ data }) => setLeague(((data ?? []) as League[])[0] ?? null));
