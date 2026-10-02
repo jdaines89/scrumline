@@ -72,7 +72,7 @@ function Leaderboard() {
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
-      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} onlyOwed={roundPrizeShowing} />}
+      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} compact={roundPrizeShowing} />}
       <div className="seg" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
         <button type="button" role="tab" aria-selected={view === "round"} className={view === "round" ? "on" : ""} onClick={() => setView("round")}>By round</button>

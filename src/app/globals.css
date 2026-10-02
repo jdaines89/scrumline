@@ -784,6 +784,8 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .recruiter { margin: 4px 0 10px; }
 /* A recruiter prize sits under the round prize: same panel, plain border, no travelling light. */
 .prize.prize-quiet { animation: none; box-shadow: none; border: 1px solid var(--line); background: var(--panel-2); }
+.prize-slim .prize-row { padding: 8px 14px; }
+.prize-slim .prize-text strong { font-size: 14px; }
 .invite .recruit-prizes { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
 .invite .recruit-prizes li { font-size: 14px; }
 .recruited { margin: -4px 0 12px; }

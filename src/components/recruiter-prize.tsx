@@ -42,16 +42,16 @@ function standing(p: RecruiterPrize, nameOf: (id: string) => string): string {
  * for grabs this month and who's ahead, and for a winner, the button to say
  * it arrived.
  */
-export function RecruiterPrizeLine({ prizes, onChange, onlyOwed = false }: {
+export function RecruiterPrizeLine({ prizes, onChange, compact = false }: {
   prizes: RecruiterPrize[]; onChange: () => void;
-  /** When a round prize already has the panel: only a winner's "Received" row, nothing else. */
-  onlyOwed?: boolean;
+  /** When a round prize already has the gold panel: a slimmer row, so the leaderboard stays calm. */
+  compact?: boolean;
 }) {
   const { me, pool } = useLeague();
   const nameOf = useNameOf();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<RecruiterPrize | null>(null);
-  const shown = onlyOwed ? undefined : prizes.find((p) => p.status === "open") ?? prizes.find((p) => p.status === "counting");
+  const shown = prizes.find((p) => p.status === "open") ?? prizes.find((p) => p.status === "counting");
   const owed = prizes.find((p) => p.status === "awaiting" && p.winners?.includes(me.user_id) && !p.received.includes(me.user_id));
   if (!shown && !owed) return null;
 
@@ -63,11 +63,11 @@ export function RecruiterPrizeLine({ prizes, onChange, onlyOwed = false }: {
   }
 
   return (
-    <div className="prize prize-quiet">
+    <div className={`prize prize-quiet${compact ? " prize-slim" : ""}`}>
       {shown && (
         <div className="prize-row">
           <button type="button" className="prize-open" aria-haspopup="dialog" onClick={() => setOpen(shown)}>
-            {shown.image_path && <img className="prize-thumb" src={prizePhotoUrl(shown.image_path)} alt={shown.prize} />}
+            {shown.image_path && <img className={`prize-thumb${compact ? " small" : ""}`} src={prizePhotoUrl(shown.image_path)} alt={shown.prize} />}
             <div className="prize-text">
               <span className="prize-label">{monthName(shown.month)} recruiter prize</span>
               <strong>{shown.prize}</strong>
