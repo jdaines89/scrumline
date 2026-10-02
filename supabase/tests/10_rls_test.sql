@@ -2159,4 +2159,29 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok: signed-out visitors can''t read player records';
 end $$;
 reset role;
+
+-- League invite links: a newcomer lands straight in the inviter's league
+reset role; select set_config('request.jwt.claim.sub', '', false);
+select p.join_code as lgcode, p.id as lgid from public.pools p
+  join public.pool_members pm on pm.pool_id = p.id and pm.user_id = '00000000-0000-0000-0000-00000000000a'
+  where p.school_emis is null limit 1 \gset
+select p.join_code as othercode from public.pools p
+  where p.school_emis is null and not exists (select 1 from public.pool_members pm where pm.pool_id = p.id and pm.user_id = '00000000-0000-0000-0000-00000000000b') limit 1 \gset
+insert into auth.users (id, email, invited_at, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000d7', 'lg1@example.com', now(), '{}'),
+  ('00000000-0000-0000-0000-0000000000d8', 'lg2@example.com', now(), '{}');
+set role service_role;
+select public.invite_record('00000000-0000-0000-0000-0000000000d7', '00000000-0000-0000-0000-00000000000a', 'lg1@example.com');
+select public.invite_join_pool('00000000-0000-0000-0000-0000000000d7', '00000000-0000-0000-0000-00000000000a', :'lgcode');
+select public.invite_record('00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-00000000000b', 'lg2@example.com');
+select public.invite_join_pool('00000000-0000-0000-0000-0000000000d8', '00000000-0000-0000-0000-00000000000b', :'othercode');
+reset role;
+select pg_temp.check(exists (select 1 from public.pool_members where pool_id = :lgid and user_id = '00000000-0000-0000-0000-0000000000d7'),
+                     'a newcomer invited with a league link is already in that league');
+select pg_temp.check(not exists (select 1 from public.pool_members pm join public.pools p on p.id = pm.pool_id
+                                 where p.join_code = :'othercode' and pm.user_id = '00000000-0000-0000-0000-0000000000d8'),
+                     'a link can''t put anyone in a league the inviter isn''t in');
+set role anon;
+select pg_temp.check((select players > 0 from public.pool_invite_info(:'lgcode')), 'a league link shows its name and size before sign-in');
+reset role;
 \echo ALL CHECKS PASSED

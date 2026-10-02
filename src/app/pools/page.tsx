@@ -159,8 +159,8 @@ export default function PoolsPage() {
 
   async function share(id: number, joinCode: string, poolName: string) {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const text = `Join my ${season.name} league "${poolName}" on Scrumline with code ${joinCode} on the Leagues screen.`
-      + (myCode ? ` New to Scrumline? Sign up with my link first: ${site}/join/?c=${myCode}` : ` ${site}/pools/`);
+    const link = myCode ? `${site}/join/?c=${myCode}&p=${joinCode}` : `${site}/join/?p=${joinCode}`;
+    const text = `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting. Tap to join: ${link}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);

@@ -3,6 +3,7 @@
 // door, and every account it opens is recorded against the link's owner.
 // The database decides whether the link may invite this email
 // (invite_check: valid link, new email, at most 20 who have not played yet per link, 10 an hour).
+// With a league code (pool), the newcomer is put straight into that league if the inviter plays in it.
 // Deployed with verify_jwt off: people using it have no account yet.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -15,8 +16,8 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return reply({ error: "POST only" }, 405);
-  let code = "", email = "";
-  try { ({ code, email } = await req.json()); } catch { return reply({ error: "Bad request" }, 400); }
+  let code = "", email = "", pool = "";
+  try { ({ code, email, pool } = await req.json()); } catch { return reply({ error: "Bad request" }, 400); }
   email = String(email ?? "").trim().toLowerCase();
   code = String(code ?? "").trim().toLowerCase();
 
@@ -35,6 +36,11 @@ Deno.serve(async (req) => {
   }
   const { error: recErr } = await db.rpc("invite_record", { p_invitee: invited.user.id, p_inviter: check.inviter, p_email: email });
   if (recErr) console.error("invite not recorded", recErr.message);
+  const league = String(pool ?? "").trim();
+  if (league && !recErr) {
+    const { error: poolErr } = await db.rpc("invite_join_pool", { p_invitee: invited.user.id, p_inviter: check.inviter, p_pool: league });
+    if (poolErr) console.error("league not joined", poolErr.message);
+  }
   return reply({ status: "sent" });
 });
 
