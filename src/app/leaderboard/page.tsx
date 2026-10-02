@@ -21,6 +21,7 @@ import { usePoolRecruiterPrizes } from "@/lib/recruiter-prizes";
 import { RecruiterPrizeLine } from "@/components/recruiter-prize";
 import type { LeaderRow } from "@/lib/types";
 import { PoolName } from "@/components/pool-name";
+import { fullName, useSchoolLabels } from "@/lib/names";
 
 const PARTS = [
   ["res_pts", "RES"], ["mar_pts", "MAR"], ["cls_pts", "CLS"], ["exa_pts", "EXA"], ["banker_pts", "BNK"],
@@ -31,7 +32,9 @@ export default function LeaderboardPage() {
 }
 
 function Leaderboard() {
-  const { pool, me, season, matches } = useLeague();
+  const { pool, me, members, season, matches } = useLeague();
+  const schools = useSchoolLabels();
+  const person = (uid: string) => members.find((m) => m.user_id === uid);
   // null while the first copy loads; last visit's table shows instantly if this device has one.
   const [rows, setRows] = useState<LeaderRow[] | null>(() => readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
   const [picked, setPicked] = useState<string | null>(null);
@@ -85,8 +88,10 @@ function Leaderboard() {
               <div className="brow">
                 <span className="rank">{i + 1}</span>
                 <div className="who">
-                  <strong>{r.manager}</strong>
-                  <span className="small muted">{r.team_name ?? "No team yet"} · {r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</span>
+                  <strong>{r.team_name ?? r.manager}</strong>
+                  <span className="small bname">{fullName(person(r.user_id)) || r.manager}</span>
+                  {schools.get(r.user_id) && <span className="small muted bname">{schools.get(r.user_id)}</span>}
+                  <span className="small muted">{r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</span>
                 </div>
                 <span className="btotal">{r.total_points}</span>
               </div>
@@ -95,7 +100,7 @@ function Leaderboard() {
                   <span key={code} className={r[k] > 0 ? "pchip on" : "pchip"}>{code} {r[k]}</span>
                 ))}
               </div>
-              {picked === r.user_id && r.entry_id && <HeadToHead mine={mine} theirs={r.entry_id} name={r.manager} />}
+              {picked === r.user_id && r.entry_id && <HeadToHead mine={mine} theirs={r.entry_id} name={r.team_name ?? r.manager} />}
             </li>
           ))}
         </ol>

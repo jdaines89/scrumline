@@ -9,6 +9,8 @@ import { isBusinessSession, isPublicPath, isSchoolPath, isSchoolSession, isSpons
 import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
 import { poolLabel } from "@/components/pool-name";
+import { WhoIsPlaying } from "@/components/who-is-playing";
+import { needsNames } from "@/lib/names";
 
 interface League {
   seasons: Season[];
@@ -92,6 +94,8 @@ function Loaded({ children }: { children: ReactNode }) {
   const [seasonId, setSeasonId] = useState<string | null>(null);
   const [data, setData] = useState<SeasonData | null>(null);
   const [poolId, setPoolId] = useState<number | null>(null);
+  // Only ask "Who's playing?" once the real member row is in, never off last visit's copy.
+  const [fresh, setFresh] = useState(false);
 
   // Draw from last visit's copy straight away; the fetches below replace it.
   useEffect(() => {
@@ -132,6 +136,7 @@ function Loaded({ children }: { children: ReactNode }) {
         competitions: (comps.data ?? []) as Competition[], teams: (teams.data ?? []) as Team[] };
       writeCache("base", fresh);
       setBase(hydrate(fresh));
+      setFresh(true);
       // A tapped notification links to one pool (?pool=4): open its tournament and pool.
       const linked = Number(new URLSearchParams(window.location.search).get("pool"));
       if (linked) {
@@ -178,10 +183,19 @@ function Loaded({ children }: { children: ReactNode }) {
     entry: data.entry,
     reloadEntry: loadSeason,
   };
+  // Saved names come back with the short name the database worked out; the entry's team name follows on the server.
+  function named(m: Member) {
+    const members = base!.members.map((x) => (x.user_id === m.user_id ? m : x));
+    const cached = readCache<CachedBase>("base");
+    if (cached) writeCache("base", { ...cached, me: m, members });
+    setBase({ ...base!, me: m, members });
+    loadSeason();
+  }
   return (
     <Ctx.Provider value={value}>
       <Switcher />
       {children}
+      {fresh && needsNames(base.me) && <WhoIsPlaying me={base.me} members={base.members} onDone={named} />}
     </Ctx.Provider>
   );
 }
@@ -235,7 +249,14 @@ export function NeedsEntry({ children }: { children: ReactNode }) {
   const { entry, season, reloadEntry, me } = useLeague();
   const [name, setName] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  // Everyone has one team name now, so joining a tournament needs no questions.
+  useEffect(() => {
+    if (entry || !me.team_name) return;
+    supabase.from("entries").insert({ season: season.id, team_name: me.team_name, user_id: me.user_id })
+      .then(({ error }) => (error ? setMsg(error.message) : reloadEntry()));
+  }, [entry, me.team_name, me.user_id, season.id, reloadEntry]);
   if (entry) return <>{children}</>;
+  if (me.team_name) return msg ? <div className="notice">{msg}</div> : <p className="muted">Getting your team ready&hellip;</p>;
 
   async function create(e: FormEvent) {
     e.preventDefault();

@@ -324,7 +324,7 @@ details.mates li .pts { text-align: left; color: var(--accent); font-weight: 700
   padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; color: var(--muted); }
 
 /* Leaderboard */
-.board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
 .board li { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 10px 12px; }
 .board li.me { border-color: var(--accent-dim); }
 .brow { display: flex; align-items: center; gap: 12px; }
@@ -870,3 +870,23 @@ button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
 .lg-back { display: inline-block; font-size: 14px; margin: 0 0 8px; }
 /* Fixtures and the log share the Matches tab */
 .matches-seg { margin: 0 0 14px; }
+
+/* "Who's playing?": asked once, can't be skipped */
+.wip-dim { position: fixed; inset: 0; z-index: 60; background: rgba(3, 6, 5, .72); display: flex; align-items: flex-end; justify-content: center; }
+.wip-sheet { width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-bottom: none; border-radius: 20px 20px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom)); }
+@media (min-width: 561px) { .wip-dim { align-items: center; } .wip-sheet { border-radius: 16px; border-bottom: 1px solid var(--line); } }
+.wip-sheet h2 { margin: 0 0 6px; }
+.wip-sheet label { display: block; font-size: 12px; color: var(--muted); margin-top: 12px; }
+.wip-sheet label input { display: block; width: 100%; margin-top: 5px; }
+.wip-row { display: flex; gap: 10px; }
+.wip-row label { flex: 1; min-width: 0; }
+.wip-opt { color: #5f7a6e; }
+.wip-hint { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+.wip-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+button.wip-chip { padding: 4px 10px; font-size: 12px; font-weight: 500; border-radius: 14px; background: none; border: 1px solid var(--line); color: var(--muted); }
+.wip-preview { margin: 14px 0 0; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--muted); }
+.wip-preview strong { color: var(--text); }
+button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
+.names-row label { flex: 1; min-width: 0; }
+.names-row label input, .profile > label input { display: block; width: 100%; margin-top: 5px; }
+.board .who .bname { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -39,7 +39,8 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   const recap = useMemo(() => {
     if (!scored.length || entries.length < 2) return null;
     const round = Math.max(...scored.map((s) => s.round));
-    const name = new Map(entries.map((r) => [r.entry_id!, r.manager]));
+    // The banter goes out under team names, with the person in brackets: "Scrum Dogs (Justin)".
+    const name = new Map(entries.map((r) => [r.entry_id!, r.team_name ? `${r.team_name} (${r.manager})` : r.manager]));
     const upTo = (r: number, e: number) => scored.filter((s) => s.entry_id === e && s.round <= r).reduce((a, s) => a + s.total_pts, 0);
     const rank = (r: number, e: number) => 1 + entries.filter((x) => upTo(r, x.entry_id!) > upTo(r, e)).length;
     const inRound = scored.filter((s) => s.round === round);
@@ -83,7 +84,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 
     const leaders = entries.filter((r) => rank(round, r.entry_id!) === 1).map((r) => r.entry_id!);
     lines.push({ label: "Top of the pool", text: `${who(leaders)} on ${upTo(round, leaders[0])} pts` });
-    const table = entries.map((r) => ({ name: r.manager, pts: upTo(round, r.entry_id!), rank: rank(round, r.entry_id!) }))
+    const table = entries.map((r) => ({ name: r.team_name ?? r.manager, pts: upTo(round, r.entry_id!), rank: rank(round, r.entry_id!) }))
       .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)).slice(0, 6);
     return { round, complete, lines, table };
   }, [scored, entries, matches, teams, prizes]);
