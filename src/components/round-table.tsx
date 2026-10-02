@@ -7,14 +7,18 @@ import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { LeaderRow } from "@/lib/types";
 
-interface Scored { entry_id: number; round: number; total_pts: number; result_pts: number; margin_pts: number; near_pts: number; exact_pts: number }
+interface Scored {
+  entry_id: number; round: number; match_id: string; is_banker: boolean; total_pts: number; result_pts: number; margin_pts: number; near_pts: number; exact_pts: number;
+  pred_home: number; pred_away: number; real_home: number; real_away: number;
+}
 
-// The same breakdown as the overall table, for one round.
+const PARTS = [["res", "RES"], ["mar", "MAR"], ["cls", "CLS"], ["exa", "EXA"], ["bnk", "BNK"]] as const;
 
 /** One round's table for the pool: who scored what in that round alone. */
 export function RoundTable({ rows }: { rows: LeaderRow[] }) {
-  const { pool, season, matches, me } = useLeague();
-  const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`roundtable2:${pool!.id}`) ?? []);
+  const { pool, season, matches, me, teams } = useLeague();
+  const [picked, setPicked] = useState<string | null>(null);
+  const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`roundtable3:${pool!.id}`) ?? []);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
   // Rounds with at least one result in, newest last.
@@ -24,9 +28,9 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
 
   useEffect(() => {
     if (!ids) return;
-    supabase.from("prediction_scores").select("entry_id, round, total_pts, result_pts, margin_pts, near_pts, exact_pts")
+    supabase.from("prediction_scores").select("entry_id, round, match_id, is_banker, total_pts, result_pts, margin_pts, near_pts, exact_pts, pred_home, pred_away, real_home, real_away")
       .eq("season", season.id).in("entry_id", ids.split(",").map(Number))
-      .then(({ data }) => { const r = (data ?? []) as Scored[]; writeCache(`roundtable2:${pool!.id}`, r); setScored(r); });
+      .then(({ data }) => { const r = (data ?? []) as Scored[]; writeCache(`roundtable3:${pool!.id}`, r); setScored(r); });
   }, [ids, season.id, pool]);
 
   if (shown === null) return <p className="muted">No results in yet. Round tables appear once the first match is played.</p>;
@@ -39,7 +43,7 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
       bnk: sum((s) => s.total_pts - s.result_pts - s.margin_pts - s.near_pts - s.exact_pts),
     };
     return {
-      parts,
+      parts, calls: mine,
       user_id: r.user_id, manager: r.manager, team: r.team_name,
       pts: mine.reduce((a, s) => a + s.total_pts, 0),
       right: mine.filter((s) => s.result_pts > 0).length,
@@ -48,17 +52,19 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
     };
   }).sort((a, b) => b.pts - a.pts || b.exact - a.exact || a.manager.localeCompare(b.manager));
   const inPlay = matches.filter((m) => m.round === shown);
+  const short = (id: string) => teams.get(id)?.short_name ?? "?";
   const done = inPlay.filter((m) => m.home_score !== null).length;
 
   return (
     <>
       <RoundPicker rounds={played} round={shown} onPick={setRound} matches={matches} />
       <p className="small muted" style={{ margin: "0 0 10px" }}>
-        {done === inPlay.length ? `All ${done} matches played.` : `${done} of ${inPlay.length} matches played so far.`}
+        {done === inPlay.length ? `All ${done} matches played.` : `${done} of ${inPlay.length} matches played so far.`} Tap a team for their calls.
       </p>
       <ol className="board">
         {table.map((r) => (
-          <li key={r.user_id} className={r.user_id === me.user_id ? "me" : ""}>
+          <li key={r.user_id} className={`${r.user_id === me.user_id ? "me" : ""}${picked === r.user_id ? " open" : ""}`}
+            onClick={() => r.called && setPicked(picked === r.user_id ? null : r.user_id)}>
             <div className="brow">
               <span className="rank">{1 + table.filter((x) => x.pts > r.pts).length}</span>
               <div className="who">
@@ -67,6 +73,26 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
               </div>
               <span className="btotal">{r.pts}</span>
             </div>
+            {picked === r.user_id && (
+              <div className="bmore">
+                <div className="bparts">
+                  {PARTS.map(([k, code]) => (
+                    <span key={code} className={r.parts[k] > 0 ? "pchip on" : "pchip"}>{code} {r.parts[k]}</span>
+                  ))}
+                </div>
+                <ul className="rcalls">
+                  {inPlay.filter((m) => m.home_score !== null).map((m) => {
+                    const c = r.calls.find((x) => x.match_id === m.id);
+                    return (
+                      <li key={m.id}>
+                        <span>{short(m.home_team_id)} v {short(m.away_team_id)} <span className="muted">{m.home_score}–{m.away_score}</span></span>
+                        <span>{c ? <>{c.pred_home}–{c.pred_away}{c.is_banker && " ×2"} <strong className={c.total_pts > 0 ? "pts" : "muted"}>+{c.total_pts}</strong></> : <span className="muted">no call</span>}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </li>
         ))}
       </ol>
