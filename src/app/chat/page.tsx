@@ -137,13 +137,19 @@ function Chat() {
       if (!el || !f) return;
       const vh = window.visualViewport?.height ?? window.innerHeight;
       const top = el.getBoundingClientRect().top + window.scrollY;
-      let h = Math.max(260, vh - top - f.offsetHeight - 24);
+      // With the keyboard up there's little room: let the log shrink further rather than push the box off screen.
+      const least = vh < 520 ? 140 : 260;
+      let h = Math.max(least, vh - top - f.offsetHeight - 24);
       el.style.height = `${h}px`;
       // Whatever still hangs below the screen (padding, the error line) comes off too,
       // so the box sits at the bottom without scrolling the page.
       const over = document.documentElement.scrollHeight - vh;
-      if (over > 0) { h = Math.max(260, h - over); el.style.height = `${h}px`; }
+      if (over > 0) { h = Math.max(least, h - over); el.style.height = `${h}px`; }
       if (atBottom.current) el.scrollTop = el.scrollHeight;
+      // Keep the message box resting on the keyboard: never leave the page scrolled past its end.
+      const end = document.documentElement.scrollHeight - vh;
+      if (window.scrollY > end) window.scrollTo(0, Math.max(0, end));
+      else if (document.activeElement === box.current && end > 0) window.scrollTo(0, end);
     };
     fitRef.current = fit;
     fit();
