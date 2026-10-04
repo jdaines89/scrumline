@@ -921,6 +921,8 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .board .who .bname { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board .bmore { margin-top: 8px; }
 .board .bmore p { margin: 0; }
+.recapchat { align-self: center; width: 280px; max-width: 85%; margin: 10px auto; text-align: center; }
+.recapchat .photo { border: 1px solid var(--line); }
 .recapmore { margin-top: 8px; font-size: 13px; color: var(--accent); }
 .board li.skeleton { border: 0; border-top: 1px solid var(--line); border-radius: 0; }
 .board .btotal { font-size: 20px; }

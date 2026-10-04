@@ -7,7 +7,11 @@ import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { photoSize, photoUrl, rememberPhotoSize, shrinkPhoto, sizedName } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
-import type { ChatMessage, Member } from "@/lib/types";
+import type { ChatMessage, LeaderRow, Member } from "@/lib/types";
+import { RoundRecap } from "@/components/round-recap";
+import { usePoolPrizes, type PoolPrize } from "@/lib/prizes";
+import type { PoolSponsor } from "@/lib/sponsor";
+import { readCache, writeCache } from "@/lib/cache";
 import { PoolName, poolLabel } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
 
@@ -16,7 +20,7 @@ const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
 const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "Bullying"], ["sexual", "Sexual"], ["other", "Something else"]];
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
-interface Notice { id: number; kind: "prize_won"; round: number; winners: string[]; prize: string; sponsor: string | null; created_at: string }
+interface Notice { id: number; kind: "prize_won" | "round_recap"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string }
 
 export default function ChatPage() {
   return <NeedsPool><Chat /></NeedsPool>;
@@ -126,6 +130,18 @@ function Chat() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [poolId]);
+
+  // A round recap in the chat needs the league table and prizes; fetched only when one is showing.
+  const hasRecap = notices.some((n) => n.kind === "round_recap");
+  const [board, setBoard] = useState<LeaderRow[]>(() => readCache<LeaderRow[]>(`board:${poolId}`) ?? []);
+  const [prizes] = usePoolPrizes(hasRecap ? poolId : null);
+  useEffect(() => {
+    if (!hasRecap) return;
+    supabase.from("pool_leaderboard").select("*").eq("pool_id", poolId)
+      .order("total_points", { ascending: false }).order("exact_scores", { ascending: false }).order("manager")
+      .then(({ data }) => { const r = (data ?? []) as LeaderRow[]; writeCache(`board:${poolId}`, r); setBoard(r); });
+  }, [hasRecap, poolId]);
+  const recapProps = { rows: board, prizes, sponsor, onOpen: setViewing };
 
   // Live: new and deleted messages arrive as they happen.
   useEffect(() => {
@@ -378,7 +394,7 @@ function Chat() {
       }}>
         {more && <p className="muted small" style={{ textAlign: "center" }}>{loadingOlder ? "Loading older messages…" : "Scroll up for older messages"}</p>}
         {msgs.length === 0 && !notices.length && <p className="muted small">No messages yet. Start the banter.</p>}
-        {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
+        {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
         {msgs.map((m, i) => {
           // Announcements that came after the previous message and before this one (or after the last).
           const t = Date.parse(m.created_at), from = i === 0 ? (more ? t : -Infinity) : Date.parse(msgs[i - 1].created_at);
@@ -392,7 +408,7 @@ function Chat() {
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
             <Fragment key={m.id}>
-            {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
+            {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
             <div data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
               {!grouped && !mine && <button type="button" className="msgwho" aria-label={`${who?.display_name ?? "Player"}'s profile`} onClick={() => who && setProfile(who)}><Avatar member={who} size={28} /></button>}
               <div className="msgbody">
@@ -449,7 +465,7 @@ function Chat() {
                 </>)}
               </div>
             </div>
-            {after.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
+            {after.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
             </Fragment>
           );
         })}
@@ -562,7 +578,11 @@ function Reactions({ list, me, people, onToggle }: {
 }
 
 /** A league announcement: who won the round prize. */
-function NoticeRow({ n, me, people }: { n: Notice; me: string; people: Map<string, Member> }) {
+function NoticeRow({ n, me, people, recap }: {
+  n: Notice; me: string; people: Map<string, Member>;
+  recap: { rows: LeaderRow[]; prizes: PoolPrize[]; sponsor: PoolSponsor | null; onOpen: (url: string) => void };
+}) {
+  if (n.kind === "round_recap") return <RoundRecap {...recap} round={n.round} inChat />;
   const names = [...n.winners].sort((x, y) => x === me ? -1 : y === me ? 1 : 0)
     .map((id) => id === me ? "You" : people.get(id)?.display_name ?? "A former member");
   const who = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
@@ -571,7 +591,7 @@ function NoticeRow({ n, me, people }: { n: Notice; me: string; people: Map<strin
     <div className="notice" role="status">
       <span className="nk">Round {n.round} prize 🏆</span>
       <strong>{line}</strong>
-      <span className="nsub">{n.prize}{n.sponsor ? ` from ${n.sponsor}` : ""}</span>
+      <span className="nsub">{n.prize ?? ""}{n.sponsor ? ` from ${n.sponsor}` : ""}</span>
     </div>
   );
 }
