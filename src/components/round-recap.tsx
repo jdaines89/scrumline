@@ -6,6 +6,7 @@ import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { PoolPrize } from "@/lib/prizes";
 import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
+import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
 
 interface Scored {
@@ -29,6 +30,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   const [note, setNote] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [posting, setPosting] = useState(false);
+  const tournament = useSeasonSponsors(season.id);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
 
@@ -97,9 +99,14 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 
   if (!recap) return null;
   const title = `Round ${recap.round} ${recap.complete ? "recap" : "so far"}`;
+  // Everyone who backed this round, biggest first: the tournament, its round, this league, the round's prize.
   const backers: Backer[] = [];
-  if (sponsor) backers.push({ label: sponsor.round === recap.round ? `Round ${recap.round} sponsor` : "League sponsor", name: sponsor.display_name, logo: sponsor.logo_path });
-  if (recap.biz && recap.biz.name !== sponsor?.display_name) backers.push({ label: `Round ${recap.round} prize by`, name: recap.biz.name, logo: recap.biz.logo });
+  const add = (label: string, name: string, logo: string | null) => { if (!backers.some((b) => b.name === name)) backers.push({ label, name, logo }); };
+  const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
+  if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
+  if (roundSponsor) add(`Round ${recap.round} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
+  if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
+  if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
   const card = (type: "image/png" | "image/jpeg") =>
     drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backers, type);
 
