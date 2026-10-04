@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { readCache, writeCache } from "@/lib/cache";
 
 const LONGEST = 1280;
 const LIMIT = 1024 * 1024;
@@ -43,4 +44,28 @@ export async function photoUrl(path: string): Promise<string | null> {
   if (!data?.signedUrl) return null;
   links.set(path, { url: data.signedUrl, until: Date.now() + 50 * 60_000 });
   return data.signedUrl;
+}
+
+/** A chat photo's file name carries its size (`<uuid>_1280x960`), so the chat can keep its space before it loads. */
+export async function sizedName(blob: Blob): Promise<string> {
+  const id = crypto.randomUUID();
+  try {
+    const bmp = await createImageBitmap(blob);
+    const name = `${id}_${bmp.width}x${bmp.height}`;
+    bmp.close();
+    return name;
+  } catch {
+    return id;
+  }
+}
+
+/** The width and height in a photo's name, or for older photos the size seen last time on this phone. */
+export function photoSize(path: string): { w: number; h: number } | undefined {
+  const m = /_(\d{1,5})x(\d{1,5})\.jpg$/.exec(path);
+  if (m) return { w: +m[1], h: +m[2] };
+  return readCache<{ w: number; h: number }>(`psize:${path}`);
+}
+
+export function rememberPhotoSize(path: string, w: number, h: number): void {
+  if (!/_\d+x\d+\.jpg$/.test(path) && w && h) writeCache(`psize:${path}`, { w, h });
 }

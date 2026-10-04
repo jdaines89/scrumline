@@ -508,6 +508,15 @@ img.avatar { object-fit: cover; padding: 0; }
 .rchip:hover { background: var(--panel); color: var(--text); border-color: var(--line); }
 .rchip.mine { border-color: var(--accent-dim); background: #173a2a; }
 .rchip.mine span { color: var(--accent); }
+.rchip.open { border-color: var(--muted); }
+.rwho { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 4px; max-width: 280px; font-size: 13px; color: var(--muted); }
+.rwho .linkish { font-size: 13px; color: var(--accent); }
+
+/* League announcements, centred between messages. */
+.notice { align-self: center; text-align: center; margin: 10px auto; padding: 10px 16px; max-width: 320px; border-radius: 14px; border: 1px solid #6b5a2a; background: #241f12; }
+.notice .nk { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #d9b75a; }
+.notice strong { display: block; margin-top: 2px; font-size: 15px; }
+.notice .nsub { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
 
 /* School table: unranked schools sit below, quieter, with no rank. */
 .schools-table.waiting li { cursor: default; background: none; }
