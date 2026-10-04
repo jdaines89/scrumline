@@ -1,7 +1,7 @@
 "use client";
 
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type RefObject } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
@@ -61,6 +61,12 @@ function Chat() {
   const [ban, setBan] = useState<string | null>(null);
   // Stay pinned to the newest message unless you've scrolled up to read.
   const atBottom = useRef(true);
+  // Replying to a message, like WhatsApp: swipe a bubble right, or tap it and pick Reply.
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  // Quoted messages older than the loaded page, fetched by id (null = deleted or out of reach).
+  const [quoted, setQuoted] = useState<Map<number, ChatMessage | null>>(new Map());
+  const swipe = useRef<{ id: number; x: number; y: number; dx: number; el: HTMLElement; moved: boolean } | null>(null);
+  const [flash, setFlash] = useState<number | null>(null);
 
   // Reactions for the messages on screen, refreshed whenever anyone reacts.
   const loadReactions = useCallback(async () => {
@@ -193,7 +199,68 @@ function Chat() {
     return () => { window.removeEventListener("resize", fit); window.visualViewport?.removeEventListener("resize", fit); };
   }, []);
 
-  useEffect(() => { fitRef.current(); }, [photo, err, ban, note]);
+  useEffect(() => { fitRef.current(); }, [photo, err, ban, note, replyTo]);
+
+  // Look up any quoted message that isn't on screen.
+  const missingKey = msgs.filter((m) => m.reply_to && !msgs.some((x) => x.id === m.reply_to) && !quoted.has(m.reply_to))
+    .map((m) => m.reply_to).join(",");
+  useEffect(() => {
+    if (!missingKey) return;
+    const ids = [...new Set(missingKey.split(",").map(Number))];
+    supabase.from("chat_messages").select("*").in("id", ids).then(({ data }) => setQuoted((q) => {
+      const next = new Map(q);
+      ids.forEach((id) => next.set(id, ((data ?? []) as ChatMessage[]).find((x) => x.id === id) ?? null));
+      return next;
+    }));
+  }, [missingKey]);
+  const findMsg = (id: number) => msgs.find((x) => x.id === id) ?? quoted.get(id) ?? null;
+
+  function startReply(m: ChatMessage) {
+    setReplyTo(m); setPicked(null);
+    requestAnimationFrame(() => box.current?.focus());
+  }
+
+  // Tap a quote to jump to the message it answers (if it's loaded) and flash it.
+  function jumpTo(id: number) {
+    const el = log.current?.querySelector(`[data-id="${id}"]`);
+    if (!el) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    setFlash(id);
+    setTimeout(() => setFlash((f) => (f === id ? null : f)), 1400);
+  }
+
+  // Swipe right on a bubble to reply. Vertical drags stay as scrolling.
+  const swipeHandlers = (m: ChatMessage) => ({
+    onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (e.pointerType === "mouse") return;
+      swipe.current = { id: m.id, x: e.clientX, y: e.clientY, dx: 0, el: e.currentTarget, moved: false };
+    },
+    onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
+      const s = swipe.current;
+      if (!s || s.id !== m.id) return;
+      const dx = e.clientX - s.x, dy = e.clientY - s.y;
+      if (!s.moved && Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { swipe.current = null; return; }
+      if (dx > 8 && Math.abs(dx) > Math.abs(dy)) s.moved = true;
+      if (!s.moved) return;
+      s.dx = Math.max(0, Math.min(80, dx));
+      s.el.style.transform = `translateX(${s.dx}px)`;
+      s.el.classList.toggle("swiping", s.dx > 56);
+    },
+    onPointerUp: () => endSwipe(m),
+    onPointerCancel: () => endSwipe(m, true),
+  });
+  function endSwipe(m: ChatMessage, cancel = false) {
+    const s = swipe.current;
+    swipe.current = null;
+    if (!s || s.id !== m.id) return;
+    s.el.style.transform = "";
+    s.el.classList.remove("swiping");
+    if (s.moved) {
+      // Don't let the end of a swipe also count as a tap.
+      s.el.addEventListener("click", (ev) => ev.stopPropagation(), { capture: true, once: true });
+      if (!cancel && s.dx > 56) startReply(m);
+    }
+  }
 
   // The box grows with what's in it (up to its CSS max), so a longer message can be read before it's sent.
   useLayoutEffect(() => {
@@ -279,14 +346,16 @@ function Chat() {
       const up = await supabase.storage.from("chat-photos").upload(image_path, photo.blob, { contentType: "image/jpeg" });
       if (up.error) { setSending(false); setErr(up.error.message); return; }
     }
-    const { data, error } = await supabase.from("chat_messages")
-      .insert(image_path ? { body, pool_id: poolId, image_path } : { body, pool_id: poolId }).select().single();
+    const row: Record<string, unknown> = { body, pool_id: poolId };
+    if (image_path) row.image_path = image_path;
+    if (replyTo) row.reply_to = replyTo.id;
+    const { data, error } = await supabase.from("chat_messages").insert(row).select().single();
     setSending(false);
     if (error) {
       if (image_path) supabase.storage.from("chat-photos").remove([image_path]);
       setErr(error.message); return;
     }
-    setText(""); setTag(null); clearPhoto();
+    setText(""); setTag(null); clearPhoto(); setReplyTo(null);
     atBottom.current = true;
     setMsgs((xs) => xs.some((x) => x.id === data.id) ? xs : [...xs, data as ChatMessage]);
   }
@@ -317,6 +386,7 @@ function Chat() {
       if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); choose(matches[pick]); return; }
       if (e.key === "Escape") { setTag(null); return; }
     }
+    if (e.key === "Escape" && replyTo) { setReplyTo(null); return; }
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   }
 
@@ -418,13 +488,14 @@ function Chat() {
           const who = people.get(m.author_id);
           const mine = m.author_id === me.user_id;
           const parts = splitMentions(m.body);
-          const tagsMe = parts.some((p) => "userId" in p && p.userId === me.user_id);
+          const q = m.reply_to ? findMsg(m.reply_to) : null;
+          const tagsMe = parts.some((p) => "userId" in p && p.userId === me.user_id) || (!mine && q?.author_id === me.user_id);
           const grouped = i > 0 && !before.length && msgs[i - 1].author_id === m.author_id
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
             <Fragment key={m.id}>
             {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
-            <div data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
+            <div data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}${flash === m.id ? " flash" : ""}`}>
               {!grouped && !mine && <button type="button" className="msgwho" aria-label={`${who?.display_name ?? "Player"}'s profile`} onClick={() => who && setProfile(who)}><Avatar member={who} size={28} /></button>}
               <div className="msgbody">
                 {!grouped && (
@@ -439,7 +510,8 @@ function Chat() {
                   </div>
                 ) : (<>
                 <div className={`bubble${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !m.body.trim() ? " photoonly" : ""}`}
-                  onClick={() => setPicked(picked === m.id ? null : m.id)}>
+                  onClick={() => setPicked(picked === m.id ? null : m.id)} {...swipeHandlers(m)}>
+                  {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
                   {m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
                   {m.body.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
                     : <span key={j} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{people.get(p.userId)?.display_name ?? "someone"}</span>)}</span>}
@@ -454,6 +526,7 @@ function Chat() {
                           onClick={() => react(m.id, e)}>{e}</button>
                       ))}
                     </div>
+                    <button type="button" className="ghost" onClick={() => startReply(m)}>Reply</button>
                     {mine && <button type="button" className="danger" onClick={() => remove(m.id)}>Delete</button>}
                     {!mine && <button type="button" className="ghost" onClick={() => setReporting(m.id)}>Report</button>}
                     {!mine && <button type="button" className="ghost" onClick={() => setBlocking(m.author_id)}>Block</button>}
@@ -507,6 +580,12 @@ function Chat() {
             ))}
           </ul>
         )}
+        {replyTo && (
+          <div className="replydraft">
+            <Quote m={replyTo} me={me.user_id} people={people} lead="Replying to " onClick={() => jumpTo(replyTo.id)} />
+            <button type="button" className="ghost" aria-label="Cancel reply" onClick={() => setReplyTo(null)}>×</button>
+          </div>
+        )}
         {photo && (
           <div className="photodraft">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -555,6 +634,22 @@ function Photo({ path, onLoad, onOpen }: { path: string; onLoad: () => void; onO
     <img className="photo" src={url} alt="Photo" style={box} width={size?.w} height={size?.h}
       onLoad={(e) => { rememberPhotoSize(path, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight); onLoad(); }}
       onClick={(e) => { e.stopPropagation(); onOpen(url); }} />
+  );
+}
+
+/** The message a reply answers, quoted small above it. Tap to jump to it. */
+function Quote({ m, me, people, lead = "", onClick }: {
+  m: ChatMessage | null; me: string; people: Map<string, Member>; lead?: string; onClick: () => void;
+}) {
+  if (!m || m.hidden_at) return <span className="quote gone">Message unavailable</span>;
+  const who = m.author_id === me ? "You" : people.get(m.author_id)?.display_name ?? "Former member";
+  const text = splitMentions(m.body).map((p) => "text" in p ? p.text : `@${people.get(p.userId)?.display_name ?? "someone"}`).join("").trim();
+  return (
+    <button type="button" className={`quote${m.author_id === me ? " mine" : ""}`}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}>
+      <strong>{lead}{who}</strong>
+      <span>{m.image_path ? `📷 ${text || "Photo"}` : text}</span>
+    </button>
   );
 }
 
