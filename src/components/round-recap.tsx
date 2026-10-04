@@ -14,8 +14,8 @@ interface Scored {
 }
 
 interface Line { label: string; text: string }
-/** Who the card thanks at the bottom: the pool's sponsor, or the business behind the round's prize. */
-interface Backer { name: string; logo: string | null }
+/** Who the card thanks at the bottom: the pool's sponsor and the business behind the round's prize, each named. */
+interface Backer { label: string; name: string; logo: string | null }
 
 /**
  * The latest round's story for one pool: who won it, who climbed, the best
@@ -97,9 +97,11 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 
   if (!recap) return null;
   const title = `Round ${recap.round} ${recap.complete ? "recap" : "so far"}`;
-  const backer: Backer | null = sponsor ? { name: sponsor.display_name, logo: sponsor.logo_path } : recap.biz;
+  const backers: Backer[] = [];
+  if (sponsor) backers.push({ label: sponsor.round === recap.round ? `Round ${recap.round} sponsor` : "League sponsor", name: sponsor.display_name, logo: sponsor.logo_path });
+  if (recap.biz && recap.biz.name !== sponsor?.display_name) backers.push({ label: `Round ${recap.round} prize by`, name: recap.biz.name, logo: recap.biz.logo });
   const card = (type: "image/png" | "image/jpeg") =>
-    drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backer, recap!.round, type);
+    drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backers, type);
 
   // Straight into this pool's chat, as a photo message everyone in the pool can see.
   async function post() {
@@ -152,11 +154,10 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 
 // The recap as a 1080x1350 image, in the app's colours, for WhatsApp and friends.
 async function drawCard(sub: string, title: string, lines: Line[], table: { name: string; pts: number; rank: number }[],
-  backer: Backer | null, round: number, type: "image/png" | "image/jpeg"): Promise<Blob> {
-  const sponsor = backer?.name ?? null;
-  const logo = backer?.logo ? await loadImage(logoUrl(backer.logo)) : null;
+  backers: Backer[], type: "image/png" | "image/jpeg"): Promise<Blob> {
+  const logos = await Promise.all(backers.map((b) => (b.logo ? loadImage(logoUrl(b.logo)) : Promise.resolve(null))));
   // Drawn on a tall sheet first, then cut to fit: at least 1080x1350, longer when the story needs it.
-  const W = 1080, pad = 80, foot = sponsor ? 120 : 0;
+  const W = 1080, pad = 80, row = 96, foot = backers.length ? 32 + row * backers.length : 0;
   let H = 2600; // room for any story; the copy below is cut to what was drawn
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
@@ -199,21 +200,23 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
   out.width = W; out.height = H;
   const o = out.getContext("2d")!;
   o.drawImage(c, 0, 0);
-  // The backer's footer: their logo and name on a quiet band, like the sponsor line in the app.
-  if (sponsor) {
+  // The backers' footer: each one's logo and name on a quiet band, like the sponsor line in the app.
+  if (backers.length) {
     o.fillStyle = "#131e1b"; o.fillRect(0, H - foot, W, foot);
-    const lead = `Round ${round} brought to you by`;
-    o.fillStyle = "#8aa79a"; o.font = font(500, 26); o.fillText(lead, pad, H - 50);
-    let x = pad + o.measureText(lead).width + 18;
-    if (logo) {
-      const s = 64, top = H - 92;
-      o.save(); o.beginPath(); o.roundRect(x, top, s, s, 12); o.fillStyle = "#fff"; o.fill(); o.clip();
-      const k = Math.min((s - 8) / logo.width, (s - 8) / logo.height);
-      o.drawImage(logo, x + (s - logo.width * k) / 2, top + (s - logo.height * k) / 2, logo.width * k, logo.height * k);
-      o.restore();
-      x += s + 16;
-    }
-    o.fillStyle = "#e8f0ec"; o.font = font(700, 30); o.fillText(sponsor, x, H - 50);
+    backers.forEach((b, i) => {
+      const top = H - foot + 16 + i * row, s = 64, base = top + 44;
+      o.fillStyle = "#8aa79a"; o.font = font(500, 26); o.fillText(b.label, pad, base);
+      let x = pad + 300;
+      const logo = logos[i];
+      if (logo) {
+        o.save(); o.beginPath(); o.roundRect(x, top + 2, s, s, 12); o.fillStyle = "#fff"; o.fill(); o.clip();
+        const k = Math.min((s - 8) / logo.width, (s - 8) / logo.height);
+        o.drawImage(logo, x + (s - logo.width * k) / 2, top + 2 + (s - logo.height * k) / 2, logo.width * k, logo.height * k);
+        o.restore();
+        x += s + 18;
+      }
+      o.fillStyle = "#e8f0ec"; o.font = font(700, 32); o.fillText(b.name, x, base);
+    });
   }
   return new Promise((ok) => out.toBlob((b) => ok(b!), type, 0.88));
 }
