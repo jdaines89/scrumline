@@ -151,7 +151,7 @@ export function PrizeSetup() {
   return (
     <div className="card">
       <h2>Round prize for {pool.name}</h2>
-      <p className="sub">For the round&apos;s top caller, from your business. You can change it up to 48 hours before kickoff and withdraw it until kickoff. The winner confirms it arrived.</p>
+      <p className="sub">For the round&apos;s top caller, from your business. You can change it up to 48 hours before kickoff and withdraw it until kickoff. The winner confirms it arrived. You can&apos;t win your own prize: it goes to the best of everyone else.</p>
       {businesses === null ? null : businesses.length === 0 ? (
         <p className="small muted">Prizes come from a business, so everyone knows who&apos;s behind them. <Link href="/sponsor/profile/">Set up your business profile</Link> and come back here.</p>
       ) : open.length === 0 ? <p className="muted">Every round has kicked off, so there&apos;s nothing left to put a prize on.</p> : (

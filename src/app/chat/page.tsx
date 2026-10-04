@@ -9,6 +9,7 @@ import { photoSize, photoUrl, rememberPhotoSize, shrinkPhoto, sizedName } from "
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, LeaderRow, Member } from "@/lib/types";
 import { RoundRecap } from "@/components/round-recap";
+import { PrizeChat } from "@/components/prize-chat";
 import { usePoolPrizes, type PoolPrize } from "@/lib/prizes";
 import type { PoolSponsor } from "@/lib/sponsor";
 import { readCache, writeCache } from "@/lib/cache";
@@ -134,7 +135,11 @@ function Chat() {
   // A round recap in the chat needs the league table and prizes; fetched only when one is showing.
   const hasRecap = notices.some((n) => n.kind === "round_recap");
   const [board, setBoard] = useState<LeaderRow[]>(() => readCache<LeaderRow[]>(`board:${poolId}`) ?? []);
-  const [prizes] = usePoolPrizes(hasRecap ? poolId : null);
+  const [prizes] = usePoolPrizes(poolId);
+  // Private hand-over threads this player is in: they won the prize, or offered it. Open until a month after it was due.
+  const myThreads = prizes.filter((p) => p.winners?.length && (p.winners.includes(me.user_id) || p.offered_by === me.user_id)
+    && (!p.due_at || Date.parse(p.due_at) + 30 * 864e5 > Date.now()));
+  const [prizeChat, setPrizeChat] = useState<PoolPrize | null>(null);
   useEffect(() => {
     if (!hasRecap) return;
     supabase.from("pool_leaderboard").select("*").eq("pool_id", poolId)
@@ -387,6 +392,16 @@ function Chat() {
         </div>
         <SponsorLine sponsor={sponsor} compact />
       </div>
+      {myThreads.map((p) => {
+        const others = p.offered_by === me.user_id ? p.winners!.filter((u) => u !== me.user_id) : [p.offered_by];
+        return (
+          <button key={p.round} type="button" className="pthread" onClick={() => setPrizeChat(p)}>
+            <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a mate").join(" & ")}</span>
+            <span className="pthread-r">Round {p.round} ›</span>
+          </button>
+        );
+      })}
+      {prizeChat && <PrizeChat prize={prizeChat} onClose={() => setPrizeChat(null)} />}
       <div className="chatlog" ref={log} onScroll={(e) => {
         const el = e.currentTarget;
         atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;

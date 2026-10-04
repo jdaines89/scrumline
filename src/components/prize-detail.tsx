@@ -49,6 +49,7 @@ export function PrizeDetail({ prize, nameOf, onClose, label, state: given }: {
               <b>{prize.sponsor}</b>
             </div>
           </div>
+          {!label && <p className="prize-meta pz-rule">Anyone in the league can win it except {nameOf(prize.offered_by)}, who offered it.</p>}
           <SponsorAbout about={prize.sponsor_about} website={prize.sponsor_website} />
         </div>
       </div>

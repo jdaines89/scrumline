@@ -979,3 +979,11 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .pchat-form button { flex: none; }
 .pchat-err { margin: 0; padding: 0 18px 12px; color: var(--danger); }
 @media (max-width: 560px) { .pchat { max-height: 88dvh; } }
+
+/* A private prize thread, reached from the top of the league chat. */
+.pthread { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; margin: 8px 0 0; padding: 9px 14px;
+  border-radius: 12px; border: 1px solid #6b5a2a; background: #241f12; color: var(--text); font-size: 14px; font-weight: 600; text-align: left; }
+.pthread:hover { background: #2d2716; color: var(--text); border-color: #6b5a2a; }
+.pthread > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pthread-r { flex: none; font-size: 13px; font-weight: 500; color: var(--muted); }
+.pz-rule { margin-top: 8px !important; font-size: 12px; }
