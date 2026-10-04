@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PrizeChat } from "@/components/prize-chat";
 import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
 import { prizePhotoUrl, type PoolPrize } from "@/lib/prizes";
@@ -16,22 +16,31 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
   const { members, me, pool } = useLeague();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<PoolPrize | null>(null);
+  const [chat, setChat] = useState<PoolPrize | null>(null);
   const nameOf = (id: string) => (id === me.user_id ? "you" : members.find((m) => m.user_id === id)?.display_name ?? "a mate");
-  if (!prizes.length) return null;
-
   // The round this is about: the one asked for, else the one in play, else the next.
   const shown = round !== undefined
     ? prizes.find((p) => p.round === round)
     : prizes.find((p) => p.status === "in play") ?? prizes.find((p) => p.status === "upcoming");
   const owed = compact ? undefined
     : prizes.find((p) => p.status === "awaiting" && p.winners?.includes(me.user_id) && !p.received.includes(me.user_id));
-  // The latest round someone won, for everyone to see: until it's handed over, and a week after.
   // A prize this player's business owes: won, not yet confirmed received.
   const giving = compact || round !== undefined ? undefined
     : prizes.find((p) => p.status === "awaiting" && p.offered_by === me.user_id && p.winners?.length && !p.winners.includes(me.user_id));
+  // The latest round someone won, for everyone to see: until it's handed over, and a week after.
   const won = compact || round !== undefined ? undefined : latestWin(prizes);
   const cheer = won && won !== owed && won !== giving ? won : undefined;
-  if (!shown && !owed && !cheer && !giving) return null;
+  // A phone alert for a prize message links here with ?prize=<round>: open that thread.
+  const linked = typeof window === "undefined" ? null : Number(new URLSearchParams(window.location.search).get("prize")) || null;
+  const toOpen = linked ? [owed, giving].find((p) => p?.round === linked) : undefined;
+  useEffect(() => {
+    if (!toOpen) return;
+    setChat(toOpen);
+    const q = new URLSearchParams(window.location.search);
+    q.delete("prize");
+    window.history.replaceState(null, "", window.location.pathname + (q.size ? `?${q}` : ""));
+  }, [toOpen]);
+  if (!prizes.length || (!shown && !owed && !cheer && !giving)) return null;
 
   async function received(p: PoolPrize) {
     setBusy(true);
@@ -76,7 +85,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
             <span className="prize-meta">Get it to {giving.winners!.length > 1 ? "them" : winners(giving.winners!, nameOf)}{giving.due_at ? ` by ${day(giving.due_at)}` : ""}. They tap Received once they have it.</span>
           </div>
           <span className="prize-acts">
-            <Link className="btn prize-btn" href={`/chat/?pool=${pool!.id}&say=${encodeURIComponent(giving.winners!.map((u) => `@${nameOf(u)}`).join(" ") + ` congrats on the round ${giving.round} prize! `)}`}>Message</Link>
+            <button type="button" className="prize-btn" onClick={() => setChat(giving)}>Message</button>
           </span>
         </div>
       )}
@@ -89,12 +98,11 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
           </div>
           <span className="prize-acts">
             <button type="button" className="prize-btn" disabled={busy} onClick={() => received(owed)}>Received</button>
-            {owed.offered_by !== me.user_id && (
-              <Link className="btn ghostlink prize-btn" href={`/chat/?pool=${pool!.id}&say=${encodeURIComponent(`@${nameOf(owed.offered_by)} `)}`}>Message</Link>
-            )}
+            {owed.offered_by !== me.user_id && <button type="button" className="ghost prize-btn" onClick={() => setChat(owed)}>Message</button>}
           </span>
         </div>
       )}
+      {chat && <PrizeChat prize={chat} onClose={() => setChat(null)} />}
       {open && <PrizeDetail prize={open} nameOf={(id) => (id === me.user_id ? "you" : nameOf(id))} onClose={() => setOpen(null)} />}
     </div>
   );

@@ -6,6 +6,7 @@ import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
 import { shrinkPhoto } from "@/lib/photo";
 import { day } from "@/components/prize-line";
+import { PrizeChat } from "@/components/prize-chat";
 import { prizePhotoUrl, trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
 
@@ -45,6 +46,7 @@ export function PrizeSetup() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   // Prizes this player's business owes: won, not yet confirmed received.
+  const [chat, setChat] = useState<PoolPrize | null>(null);
   const handover = prizes.filter((p) => p.offered_by === me.user_id && p.status === "awaiting" && p.winners?.length);
   const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
 
@@ -211,15 +213,12 @@ export function PrizeSetup() {
               which keeps your track record clean. Not confirmed by then counts as not delivered.
             </span>
             <span className="prize-acts">
-              {p.winners!.filter((u) => u !== me.user_id && !p.received.includes(u)).map((u) => (
-                <Link key={u} className="btn prize-btn" href={`/chat/?pool=${pool!.id}&say=${encodeURIComponent(`@${nameOf(u)} congrats on the round ${p.round} prize! `)}`}>
-                  Message {nameOf(u)}
-                </Link>
-              ))}
+              <button type="button" className="prize-btn" onClick={() => setChat(p)}>Message {p.winners!.length > 1 ? "the winners" : who}</button>
             </span>
           </div>
         );
       })}
+      {chat && <PrizeChat prize={chat} onClose={() => setChat(null)} />}
       {prizes.length > 0 && (
         <>
           <ul className="prizelist">
