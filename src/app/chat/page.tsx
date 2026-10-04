@@ -598,15 +598,22 @@ function NoticeRow({ n, me, people, recap }: {
   recap: { rows: LeaderRow[]; prizes: PoolPrize[]; sponsor: PoolSponsor | null; onOpen: (url: string) => void };
 }) {
   if (n.kind === "round_recap") return <RoundRecap {...recap} round={n.round} inChat />;
-  const names = [...n.winners].sort((x, y) => x === me ? -1 : y === me ? 1 : 0)
-    .map((id) => id === me ? "You" : people.get(id)?.display_name ?? "A former member");
-  const who = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-  const line = names.length > 1 ? `${who} share it` : names[0] === "You" ? "You won it!" : `${who} wins it!`;
+  // Winners and the member who offered the prize are tagged, like a chat mention.
+  const giver = recap.prizes.find((p) => p.round === n.round)?.offered_by;
+  const tag = (id: string) => (
+    <span key={id} className={`tag${id === me ? " me" : ""}`}>@{people.get(id)?.display_name ?? "a former member"}</span>
+  );
+  const ws = [...n.winners].sort((x, y) => x === me ? -1 : y === me ? 1 : 0);
+  const list = ws.flatMap((id, i) => [i === 0 ? null : i === ws.length - 1 ? " and " : ", ", tag(id)]);
+  const tagged = n.winners.includes(me) || giver === me;
   return (
-    <div className="notice" role="status">
+    <div className={`notice${tagged ? " tagged" : ""}`} role="status">
       <span className="nk">Round {n.round} prize 🏆</span>
-      <strong>{line}</strong>
-      <span className="nsub">{n.prize ?? ""}{n.sponsor ? ` from ${n.sponsor}` : ""}</span>
+      <strong>{list} {ws.length > 1 ? "share it!" : "wins it!"}</strong>
+      <span className="nsub">
+        {n.prize ?? ""}{n.sponsor ? ` from ${n.sponsor}` : ""}
+        {giver && <> · offered by {tag(giver)}</>}
+      </span>
     </div>
   );
 }
