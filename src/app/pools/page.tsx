@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
+import { latestWin } from "@/components/prize-line";
+import type { PoolPrize } from "@/lib/prizes";
 import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
 import { supabase } from "@/lib/supabase";
 import { PoolName } from "@/components/pool-name";
@@ -14,7 +16,7 @@ import type { Pool } from "@/lib/types";
 
 interface Score { pool_id: number; user_id: string; total_points: number }
 interface Unread { pool_id: number; unread: number; tagged: number }
-interface Prize { round: number; prize: string; status: string }
+type Prize = Pick<PoolPrize, "round" | "prize" | "status" | "winners" | "due_at">;
 
 /** Where you stand in one league: rank, how many, and the gap to the top. */
 interface Standing { rank: number; of: number; gap: number; leader: string | null; joint: boolean; scored: boolean }
@@ -63,7 +65,7 @@ export default function PoolsPage() {
     Promise.all(pools.filter((p) => !p.school_emis).map((p) =>
       supabase.rpc("pool_prizes", { p_pool: p.id }).then(({ data }) => {
         const list = (data ?? []) as Prize[];
-        const now = list.find((x) => x.status === "in play") ?? list.find((x) => x.status === "upcoming");
+        const now = list.find((x) => x.status === "in play") ?? list.find((x) => x.status === "upcoming") ?? latestWin(list);
         return [p.id, now] as const;
       }))).then((pairs) => setPrizes(new Map(pairs.filter((x): x is readonly [number, Prize] => !!x[1]))));
     // This month's recruiter prize, shown by the Invite button, since inviting is how it's won.
@@ -116,7 +118,8 @@ export default function PoolsPage() {
     else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
     else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
     const pz = prizes.get(p.id);
-    if (pz) bits.push(`Round ${pz.round} prize`);
+    if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won round ${pz.round}'s prize`);
+    else if (pz) bits.push(`Round ${pz.round} prize`);
     return bits.join(" · ");
   }
 
