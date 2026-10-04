@@ -395,6 +395,8 @@ header.top .shell { position: relative; }
 .recap { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 14px 0 0; }
 .recaphead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .recaphead h3 { margin: 0; font-size: 16px; }
+.recapbtns { display: flex; gap: 6px; flex: none; }
+.recaphead h3 { white-space: nowrap; }
 .recap dl { margin: 8px 0 0; display: grid; gap: 8px; }
 .recap dt { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
 .recap dd { margin: 2px 0 0; font-size: 14px; }

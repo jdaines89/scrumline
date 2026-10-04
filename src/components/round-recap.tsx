@@ -5,7 +5,8 @@ import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { PoolPrize } from "@/lib/prizes";
-import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
+import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
+import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
 
 interface Scored {
@@ -14,6 +15,8 @@ interface Scored {
 }
 
 interface Line { label: string; text: string }
+/** Who the card thanks at the bottom: the pool's sponsor and the business behind the round's prize, each named. */
+interface Backer { label: string; name: string; logo: string | null }
 
 /**
  * The latest round's story for one pool: who won it, who climbed, the best
@@ -22,10 +25,12 @@ interface Line { label: string; text: string }
  * image for the group chat.
  */
 export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: LeaderRow[]; prizes?: PoolPrize[]; sponsor?: PoolSponsor | null }) {
-  const { matches, teams, pool, season } = useLeague();
+  const { matches, teams, pool, season, me } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
   const [note, setNote] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const tournament = useSeasonSponsors(season.id);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
 
@@ -87,15 +92,41 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
     lines.push({ label: "Top of the pool", text: `${who(leaders)} on ${upTo(round, leaders[0])} pts` });
     const table = entries.map((r) => ({ name: r.team_name ?? r.manager, pts: upTo(round, r.entry_id!), rank: rank(round, r.entry_id!) }))
       .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)).slice(0, 6);
-    return { round, complete, lines, table };
+    // A round prize's business is that round's backer, even before its winner is known.
+    const biz = prizes.find((p) => p.round === round);
+    return { round, complete, lines, table, biz: biz ? { name: biz.sponsor, logo: biz.sponsor_logo } : null };
   }, [scored, entries, matches, teams, prizes]);
 
   if (!recap) return null;
   const title = `Round ${recap.round} ${recap.complete ? "recap" : "so far"}`;
+  // Everyone who backed this round, biggest first: the tournament, its round, this league, the round's prize.
+  const backers: Backer[] = [];
+  const add = (label: string, name: string, logo: string | null) => { if (!backers.some((b) => b.name === name)) backers.push({ label, name, logo }); };
+  const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
+  if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
+  if (roundSponsor) add(`Round ${recap.round} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
+  if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
+  if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
+  const card = (type: "image/png" | "image/jpeg") =>
+    drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backers, type);
+
+  // Straight into this pool's chat, as a photo message everyone in the pool can see.
+  async function post() {
+    setNote(null); setPosting(true);
+    const blob = await card("image/jpeg");
+    const path = `${pool!.id}/${me.user_id}/${crypto.randomUUID()}.jpg`;
+    const up = await supabase.storage.from("chat-photos").upload(path, blob, { contentType: "image/jpeg" });
+    const { error } = up.error ? up : await supabase.from("chat_messages").insert({ pool_id: pool!.id, body: `${title} 🏉`, image_path: path });
+    if (error && !up.error) supabase.storage.from("chat-photos").remove([path]);
+    setPosting(false);
+    if (error) { setNote("Couldn't post it to the chat. Try again in a moment."); return; }
+    if (sponsor) sponsorEvent(sponsor.booking_id, "share");
+    setNote("Posted to the chat.");
+  }
 
   async function share() {
     setNote(null);
-    const blob = await drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, sponsor?.display_name ?? null);
+    const blob = await card("image/png");
     if (sponsor) sponsorEvent(sponsor.booking_id, "share");
     const file = new File([blob], `scrumline-round-${recap!.round}.png`, { type: "image/png" });
     const text = `${title}, ${pool!.name}\n` + recap!.lines.map((l) => `${l.label}: ${l.text}`).join("\n");
@@ -112,7 +143,10 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
     <div className="recap">
       <div className="recaphead">
         <h3>{title}</h3>
-        <button type="button" className="bank" onClick={share}>Share</button>
+        <span className="recapbtns">
+          <button type="button" className="bank" disabled={posting} onClick={post}>{posting ? "Posting…" : "Post to chat"}</button>
+          <button type="button" className="bank" onClick={share}>Share</button>
+        </span>
       </div>
       <dl>
         {(open ? recap.lines : recap.lines.slice(0, 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
@@ -126,8 +160,12 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 }
 
 // The recap as a 1080x1350 image, in the app's colours, for WhatsApp and friends.
-async function drawCard(sub: string, title: string, lines: Line[], table: { name: string; pts: number; rank: number }[], sponsor: string | null): Promise<Blob> {
-  const W = 1080, H = 1350, pad = 80;
+async function drawCard(sub: string, title: string, lines: Line[], table: { name: string; pts: number; rank: number }[],
+  backers: Backer[], type: "image/png" | "image/jpeg"): Promise<Blob> {
+  const logos = await Promise.all(backers.map((b) => (b.logo ? loadImage(logoUrl(b.logo)) : Promise.resolve(null))));
+  // Drawn on a tall sheet first, then cut to fit: at least 1080x1350, longer when the story needs it.
+  const W = 1080, pad = 80, row = 96, foot = backers.length ? 32 + row * backers.length : 0;
+  let H = 2600; // room for any story; the copy below is cut to what was drawn
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const g = c.getContext("2d")!;
@@ -155,23 +193,49 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
     for (const row of wrap(l.text, W - pad * 2)) { y += 50; g.fillText(row, pad, y); }
     y += 70;
   }
-  // The pool table after this round, as much of it as fits.
+  // The pool table after this round, top six.
   g.strokeStyle = "#24382f"; g.lineWidth = 2;
   for (const t of table) {
-    if (y + 20 > H - (sponsor ? 140 : 60)) break;
     g.beginPath(); g.moveTo(pad, y - 44); g.lineTo(W - pad, y - 44); g.stroke();
     g.fillStyle = "#8aa79a"; g.font = font(600, 32); g.fillText(String(t.rank), pad, y);
     g.fillStyle = "#e8f0ec"; g.fillText(t.name, pad + 60, y);
     g.font = font(800, 32); g.textAlign = "right"; g.fillText(String(t.pts), W - pad, y); g.textAlign = "left";
     y += 62;
   }
-  // The sponsor's footer: one quiet line, like the one in the app.
-  if (sponsor) {
-    g.fillStyle = "#131e1b"; g.fillRect(0, H - 100, W, 100);
-    g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText("Prizes by ", pad, H - 40);
-    const x = pad + g.measureText("Prizes by ").width;
-    g.fillStyle = "#e8f0ec"; g.font = font(700, 28); g.fillText(sponsor, x, H - 40);
-    g.fillStyle = "#8aa79a"; g.font = font(600, 24); g.textAlign = "right"; g.fillText("scrumline", W - pad, H - 40); g.textAlign = "left";
+  H = Math.max(1350, y - 10 + foot);
+  const out = document.createElement("canvas");
+  out.width = W; out.height = H;
+  const o = out.getContext("2d")!;
+  o.drawImage(c, 0, 0);
+  // The backers' footer: each one's logo and name on a quiet band, like the sponsor line in the app.
+  if (backers.length) {
+    o.fillStyle = "#131e1b"; o.fillRect(0, H - foot, W, foot);
+    backers.forEach((b, i) => {
+      const top = H - foot + 16 + i * row, s = 64, base = top + 44;
+      o.fillStyle = "#8aa79a"; o.font = font(500, 26); o.fillText(b.label, pad, base);
+      let x = pad + 300;
+      const logo = logos[i];
+      if (logo) {
+        o.save(); o.beginPath(); o.roundRect(x, top + 2, s, s, 12); o.fillStyle = "#fff"; o.fill(); o.clip();
+        const k = Math.min((s - 8) / logo.width, (s - 8) / logo.height);
+        o.drawImage(logo, x + (s - logo.width * k) / 2, top + 2 + (s - logo.height * k) / 2, logo.width * k, logo.height * k);
+        o.restore();
+        x += s + 18;
+      }
+      o.fillStyle = "#e8f0ec"; o.font = font(700, 32); o.fillText(b.name, x, base);
+    });
   }
-  return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
+  return new Promise((ok) => out.toBlob((b) => ok(b!), type, 0.88));
+}
+
+// A logo for the canvas; without CORS the canvas couldn't be saved, so a logo that won't load is left out.
+function loadImage(src: string): Promise<HTMLImageElement | null> {
+  return new Promise((ok) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => ok(img);
+    img.onerror = () => ok(null);
+    img.src = src;
+    setTimeout(() => ok(null), 4000);
+  });
 }
