@@ -31,7 +31,7 @@ begin
   from (
     select t.x[1] as uid from regexp_matches(new.body, '<@([0-9a-f-]{36})>', 'g') as t(x)
     union
-    select r.author_id::text from public.chat_messages r where r.id = new.reply_to
+    select r.author_id::text from public.chat_messages r where r.id = new.reply_to and r.author_id <> new.author_id
   ) u
   join public.pool_members pm on pm.pool_id = new.pool_id and pm.user_id::text = u.uid
   on conflict do nothing;
