@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { sizedName } from "@/lib/photo";
 import type { PoolPrize } from "@/lib/prizes";
 import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
@@ -114,7 +115,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   async function post() {
     setNote(null); setPosting(true);
     const blob = await card("image/jpeg");
-    const path = `${pool!.id}/${me.user_id}/${crypto.randomUUID()}.jpg`;
+    const path = `${pool!.id}/${me.user_id}/${await sizedName(blob)}.jpg`;
     const up = await supabase.storage.from("chat-photos").upload(path, blob, { contentType: "image/jpeg" });
     const { error } = up.error ? up : await supabase.from("chat_messages").insert({ pool_id: pool!.id, body: `${title} 🏉`, image_path: path });
     if (error && !up.error) supabase.storage.from("chat-photos").remove([path]);

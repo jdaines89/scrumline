@@ -1,11 +1,11 @@
 "use client";
 
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type RefObject } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type RefObject } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
-import { photoUrl, shrinkPhoto } from "@/lib/photo";
+import { photoSize, photoUrl, rememberPhotoSize, shrinkPhoto, sizedName } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
 import type { ChatMessage, Member } from "@/lib/types";
 import { PoolName, poolLabel } from "@/components/pool-name";
@@ -16,6 +16,7 @@ const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
 const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "Bullying"], ["sexual", "Sexual"], ["other", "Something else"]];
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
+interface Notice { id: number; kind: "prize_won"; round: number; winners: string[]; prize: string; sponsor: string | null; created_at: string }
 
 export default function ChatPage() {
   return <NeedsPool><Chat /></NeedsPool>;
@@ -40,6 +41,7 @@ function Chat() {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const people = useMemo(() => new Map(everyone.map((m) => [m.user_id, m])), [everyone]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const idsKey = msgs.map((m) => m.id).join(",");
   const shownIds = useRef<number[]>([]);
   const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null);
@@ -113,6 +115,18 @@ function Chat() {
     setMore((data ?? []).length === PAGE);
   }, [poolId]);
 
+  // League announcements (a round prize won), shown in the log by time.
+  useEffect(() => {
+    setNotices([]);
+    supabase.from("chat_notices").select("*").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20)
+      .then(({ data }) => setNotices(((data ?? []) as Notice[]).reverse()));
+    const ch = supabase.channel(`notices:${poolId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_notices", filter: `pool_id=eq.${poolId}` },
+        (p) => setNotices((xs) => xs.some((x) => x.id === (p.new as Notice).id) ? xs : [...xs, p.new as Notice]))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [poolId]);
+
   // Live: new and deleted messages arrive as they happen.
   useEffect(() => {
     load();
@@ -175,7 +189,7 @@ function Chat() {
   const toBottom = useCallback(() => {
     if (atBottom.current && log.current) log.current.scrollTop = log.current.scrollHeight;
   }, []);
-  useLayoutEffect(toBottom, [msgs, reactions, toBottom]);
+  useLayoutEffect(toBottom, [msgs, reactions, notices, toBottom]);
   // Things that settle after the first paint (pictures, avatars, the sponsor in
   // the header) change sizes without a scroll: keep the box fitted and pinned.
   useEffect(() => {
@@ -240,7 +254,7 @@ function Chat() {
     }
     let image_path: string | null = null;
     if (photo) {
-      image_path = `${poolId}/${me.user_id}/${crypto.randomUUID()}.jpg`;
+      image_path = `${poolId}/${me.user_id}/${await sizedName(photo.blob)}.jpg`;
       const up = await supabase.storage.from("chat-photos").upload(image_path, photo.blob, { contentType: "image/jpeg" });
       if (up.error) { setSending(false); setErr(up.error.message); return; }
     }
@@ -363,16 +377,23 @@ function Chat() {
         if (el.scrollTop < 60) older();
       }}>
         {more && <p className="muted small" style={{ textAlign: "center" }}>{loadingOlder ? "Loading older messages…" : "Scroll up for older messages"}</p>}
-        {msgs.length === 0 && <p className="muted small">No messages yet. Start the banter.</p>}
+        {msgs.length === 0 && !notices.length && <p className="muted small">No messages yet. Start the banter.</p>}
+        {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
         {msgs.map((m, i) => {
+          // Announcements that came after the previous message and before this one (or after the last).
+          const t = Date.parse(m.created_at), from = i === 0 ? (more ? t : -Infinity) : Date.parse(msgs[i - 1].created_at);
+          const before = notices.filter((n) => Date.parse(n.created_at) > from && Date.parse(n.created_at) <= t);
+          const after = i === msgs.length - 1 ? notices.filter((n) => Date.parse(n.created_at) > t) : [];
           const who = people.get(m.author_id);
           const mine = m.author_id === me.user_id;
           const parts = splitMentions(m.body);
           const tagsMe = parts.some((p) => "userId" in p && p.userId === me.user_id);
-          const grouped = i > 0 && msgs[i - 1].author_id === m.author_id
+          const grouped = i > 0 && !before.length && msgs[i - 1].author_id === m.author_id
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
-            <div key={m.id} data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
+            <Fragment key={m.id}>
+            {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
+            <div data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}`}>
               {!grouped && !mine && <button type="button" className="msgwho" aria-label={`${who?.display_name ?? "Player"}'s profile`} onClick={() => who && setProfile(who)}><Avatar member={who} size={28} /></button>}
               <div className="msgbody">
                 {!grouped && (
@@ -428,6 +449,8 @@ function Chat() {
                 </>)}
               </div>
             </div>
+            {after.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} />)}
+            </Fragment>
           );
         })}
       </div>
@@ -484,39 +507,71 @@ function Chat() {
   );
 }
 
-/** A chat photo, fetched through a short-lived private link. Tap to see it full size. */
+/** A chat photo, fetched through a short-lived private link. Tap to see it full size.
+ *  Its space is kept from the start (the size is in the file name), so the chat doesn't jump as photos arrive. */
 function Photo({ path, onLoad, onOpen }: { path: string; onLoad: () => void; onOpen: (url: string) => void }) {
   const [url, setUrl] = useState<string | null>(null);
+  const size = useMemo(() => photoSize(path), [path]);
   useEffect(() => {
     let live = true;
     photoUrl(path).then((u) => { if (live) setUrl(u); });
     return () => { live = false; };
   }, [path]);
-  if (!url) return <div className="photo skeleton" />;
+  const box = size ? { width: Math.round(Math.min(260, (320 * size.w) / size.h)), height: "auto", aspectRatio: `${size.w} / ${size.h}` } : undefined;
+  if (!url) return <div className="photo skeleton" style={box} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className="photo" src={url} alt="Photo" onLoad={onLoad}
+    <img className="photo" src={url} alt="Photo" style={box} width={size?.w} height={size?.h}
+      onLoad={(e) => { rememberPhotoSize(path, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight); onLoad(); }}
       onClick={(e) => { e.stopPropagation(); onOpen(url); }} />
   );
 }
 
-/** Counts under a message, one chip per emoji; yours are highlighted and tapping toggles. */
+/** Counts under a message, one chip per emoji; yours are highlighted. Tap a chip to see who reacted. */
 function Reactions({ list, me, people, onToggle }: {
   list: Reaction[]; me: string; people: Map<string, Member>; onToggle: (emoji: string) => void;
 }) {
+  const [open, setOpen] = useState<string | null>(null);
   if (!list.length) return null;
+  const name = (id: string) => id === me ? "You" : people.get(id)?.display_name ?? "Former member";
+  const shown = open ? list.filter((r) => r.emoji === open) : [];
   return (
-    <div className="reactions">
-      {EMOJI.filter((e) => list.some((r) => r.emoji === e)).map((e) => {
-        const who = list.filter((r) => r.emoji === e);
-        const mine = who.some((r) => r.user_id === me);
-        return (
-          <button key={e} type="button" className={`rchip${mine ? " mine" : ""}`} onClick={() => onToggle(e)}
-            title={who.map((r) => r.user_id === me ? "You" : people.get(r.user_id)?.display_name ?? "Someone").join(", ")}>
-            {e} <span>{who.length}</span>
+    <>
+      <div className="reactions">
+        {EMOJI.filter((e) => list.some((r) => r.emoji === e)).map((e) => {
+          const who = list.filter((r) => r.emoji === e);
+          const mine = who.some((r) => r.user_id === me);
+          return (
+            <button key={e} type="button" className={`rchip${mine ? " mine" : ""}${open === e ? " open" : ""}`}
+              aria-expanded={open === e} onClick={(ev) => { ev.stopPropagation(); setOpen(open === e ? null : e); }}>
+              {e} <span>{who.length}</span>
+            </button>
+          );
+        })}
+      </div>
+      {open && shown.length > 0 && (
+        <div className="rwho">
+          <span>{open} {shown.map((r) => r.user_id).sort((x, y) => x === me ? -1 : y === me ? 1 : 0).map(name).join(", ")}</span>
+          <button type="button" className="linkish" onClick={() => { onToggle(open); if (shown.length === 1 && shown[0].user_id === me) setOpen(null); }}>
+            {shown.some((r) => r.user_id === me) ? "Remove yours" : "Add yours"}
           </button>
-        );
-      })}
+        </div>
+      )}
+    </>
+  );
+}
+
+/** A league announcement: who won the round prize. */
+function NoticeRow({ n, me, people }: { n: Notice; me: string; people: Map<string, Member> }) {
+  const names = [...n.winners].sort((x, y) => x === me ? -1 : y === me ? 1 : 0)
+    .map((id) => id === me ? "You" : people.get(id)?.display_name ?? "A former member");
+  const who = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+  const line = names.length > 1 ? `${who} share it` : names[0] === "You" ? "You won it!" : `${who} wins it!`;
+  return (
+    <div className="notice" role="status">
+      <span className="nk">Round {n.round} prize 🏆</span>
+      <strong>{line}</strong>
+      <span className="nsub">{n.prize}{n.sponsor ? ` from ${n.sponsor}` : ""}</span>
     </div>
   );
 }
