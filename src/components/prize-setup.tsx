@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "
 import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
 import { shrinkPhoto } from "@/lib/photo";
+import { day } from "@/components/prize-line";
 import { prizePhotoUrl, trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
 
@@ -43,6 +44,8 @@ export function PrizeSetup() {
   const [photo, setPhoto] = useState<{ blob: Blob; preview: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  // Prizes this player's business owes: won, not yet confirmed received.
+  const handover = prizes.filter((p) => p.offered_by === me.user_id && p.status === "awaiting" && p.winners?.length);
   const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
 
   useEffect(() => {
@@ -197,6 +200,26 @@ export function PrizeSetup() {
         </form>
       )}
       {msg && <p className="small" style={{ marginTop: 10 }}>{msg}</p>}
+      {handover.map((p) => {
+        const who = whoWon(p, nameOf);
+        return (
+          <div key={p.round} className="handover">
+            <span className="prize-label">To hand over · round {p.round}</span>
+            <strong>{who} won your {p.prize}</strong>
+            <span className="prize-meta">
+              Get it to {p.winners!.length > 1 ? "them" : who}{p.due_at ? ` by ${day(p.due_at)}` : ""}. They tap Received once they have it,
+              which keeps your track record clean. Not confirmed by then counts as not delivered.
+            </span>
+            <span className="prize-acts">
+              {p.winners!.filter((u) => u !== me.user_id && !p.received.includes(u)).map((u) => (
+                <Link key={u} className="btn prize-btn" href={`/chat/?pool=${pool!.id}&say=${encodeURIComponent(`@${nameOf(u)} congrats on the round ${p.round} prize! `)}`}>
+                  Message {nameOf(u)}
+                </Link>
+              ))}
+            </span>
+          </div>
+        );
+      })}
       {prizes.length > 0 && (
         <>
           <ul className="prizelist">

@@ -600,6 +600,13 @@ main.shell:has(.card.chat) { padding-bottom: 12px; }
 .prize-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .prize-meta { font-size: 13px; color: var(--muted); }
 button.prize-btn { padding: 6px 12px; font-size: 13px; }
+.prize-btn.btn { padding: 6px 12px; font-size: 13px; }
+.prize-acts { display: flex; flex-direction: column; gap: 6px; flex: none; align-items: stretch; text-align: center; }
+.prize-won .prize-label { color: #d9b75a; }
+/* A business's prize that's been won and still needs handing over. */
+.handover { display: grid; gap: 4px; margin-top: 14px; padding: 12px 14px; border-radius: 14px; border: 1px solid #6b5a2a; background: #241f12; }
+.handover .prize-label { color: #d9b75a; }
+.handover .prize-acts { flex-direction: row; flex-wrap: wrap; margin-top: 6px; }
 .prizeform { display: grid; gap: 10px; }
 .prizefields { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 8px; }
 @media (max-width: 560px) { .prizefields { grid-template-columns: 1fr; } }
