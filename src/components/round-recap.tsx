@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
-import { sizedName } from "@/lib/photo";
 import type { PoolPrize } from "@/lib/prizes";
 import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
@@ -25,12 +24,15 @@ interface Backer { label: string; name: string; logo: string | null }
  * so pool mates can already read every one of them. Share turns it into an
  * image for the group chat.
  */
-export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: LeaderRow[]; prizes?: PoolPrize[]; sponsor?: PoolSponsor | null }) {
-  const { matches, teams, pool, season, me } = useLeague();
+export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inChat = false }: {
+  rows: LeaderRow[]; prizes?: PoolPrize[]; sponsor?: PoolSponsor | null;
+  /** A set round (the chat's recap post); otherwise the latest round with scores. */
+  round?: number; inChat?: boolean;
+}) {
+  const { matches, teams, pool, season } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
   const [note, setNote] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [posting, setPosting] = useState(false);
   const tournament = useSeasonSponsors(season.id);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
@@ -45,12 +47,13 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
 
   const recap = useMemo(() => {
     if (!scored.length || entries.length < 2) return null;
-    const round = Math.max(...scored.map((s) => s.round));
+    const round = only ?? Math.max(...scored.map((s) => s.round));
     // The banter goes out under team names, with the person in brackets: "Scrum Dogs (Justin)".
     const name = new Map(entries.map((r) => [r.entry_id!, r.team_name ?? r.manager]));
     const upTo = (r: number, e: number) => scored.filter((s) => s.entry_id === e && s.round <= r).reduce((a, s) => a + s.total_pts, 0);
     const rank = (r: number, e: number) => 1 + entries.filter((x) => upTo(r, x.entry_id!) > upTo(r, e)).length;
     const inRound = scored.filter((s) => s.round === round);
+    if (!inRound.length) return null;
     const roundPts = (e: number) => inRound.filter((s) => s.entry_id === e).reduce((a, s) => a + s.total_pts, 0);
     const complete = matches.filter((m) => m.round === round).every((m) => m.home_score !== null);
     const matchName = (id: string) => {
@@ -96,7 +99,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
     // A round prize's business is that round's backer, even before its winner is known.
     const biz = prizes.find((p) => p.round === round);
     return { round, complete, lines, table, biz: biz ? { name: biz.sponsor, logo: biz.sponsor_logo } : null };
-  }, [scored, entries, matches, teams, prizes]);
+  }, [scored, entries, matches, teams, prizes, only]);
 
   if (!recap) return null;
   const title = `Round ${recap.round} ${recap.complete ? "recap" : "so far"}`;
@@ -110,20 +113,6 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
   const card = (type: "image/png" | "image/jpeg") =>
     drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backers, type);
-
-  // Straight into this pool's chat, as a photo message everyone in the pool can see.
-  async function post() {
-    setNote(null); setPosting(true);
-    const blob = await card("image/jpeg");
-    const path = `${pool!.id}/${me.user_id}/${await sizedName(blob)}.jpg`;
-    const up = await supabase.storage.from("chat-photos").upload(path, blob, { contentType: "image/jpeg" });
-    const { error } = up.error ? up : await supabase.from("chat_messages").insert({ pool_id: pool!.id, body: `${title} 🏉`, image_path: path });
-    if (error && !up.error) supabase.storage.from("chat-photos").remove([path]);
-    setPosting(false);
-    if (error) { setNote("Couldn't post it to the chat. Try again in a moment."); return; }
-    if (sponsor) sponsorEvent(sponsor.booking_id, "share");
-    setNote("Posted to the chat.");
-  }
 
   async function share() {
     setNote(null);
@@ -141,18 +130,17 @@ export function RoundRecap({ rows, prizes = [], sponsor = null }: { rows: Leader
   }
 
   return (
-    <div className="recap">
+    <div className={`recap${inChat ? " inchat" : ""}`}>
       <div className="recaphead">
         <h3>{title}</h3>
         <span className="recapbtns">
-          <button type="button" className="bank" disabled={posting} onClick={post}>{posting ? "Posting…" : "Post to chat"}</button>
           <button type="button" className="bank" onClick={share}>Share</button>
         </span>
       </div>
       <dl>
-        {(open ? recap.lines : recap.lines.slice(0, 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
+        {(open ? recap.lines : recap.lines.slice(0, inChat ? 3 : 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
       </dl>
-      {recap.lines.length > 1 && (
+      {recap.lines.length > (inChat ? 3 : 1) && (
         <button type="button" className="linkish recapmore" onClick={() => setOpen(!open)}>{open ? "Show less" : "Full recap"}</button>
       )}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
