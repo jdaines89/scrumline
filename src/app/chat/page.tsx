@@ -141,7 +141,7 @@ function Chat() {
       .order("total_points", { ascending: false }).order("exact_scores", { ascending: false }).order("manager")
       .then(({ data }) => { const r = (data ?? []) as LeaderRow[]; writeCache(`board:${poolId}`, r); setBoard(r); });
   }, [hasRecap, poolId]);
-  const recapProps = { rows: board, prizes, sponsor };
+  const recapProps = { rows: board, prizes, sponsor, onOpen: setViewing };
 
   // Live: new and deleted messages arrive as they happen.
   useEffect(() => {
@@ -580,7 +580,7 @@ function Reactions({ list, me, people, onToggle }: {
 /** A league announcement: who won the round prize. */
 function NoticeRow({ n, me, people, recap }: {
   n: Notice; me: string; people: Map<string, Member>;
-  recap: { rows: LeaderRow[]; prizes: PoolPrize[]; sponsor: PoolSponsor | null };
+  recap: { rows: LeaderRow[]; prizes: PoolPrize[]; sponsor: PoolSponsor | null; onOpen: (url: string) => void };
 }) {
   if (n.kind === "round_recap") return <RoundRecap {...recap} round={n.round} inChat />;
   const names = [...n.winners].sort((x, y) => x === me ? -1 : y === me ? 1 : 0)

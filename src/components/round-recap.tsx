@@ -24,10 +24,12 @@ interface Backer { label: string; name: string; logo: string | null }
  * so pool mates can already read every one of them. Share turns it into an
  * image for the group chat.
  */
-export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inChat = false }: {
+export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inChat = false, onOpen }: {
   rows: LeaderRow[]; prizes?: PoolPrize[]; sponsor?: PoolSponsor | null;
   /** A set round (the chat's recap post); otherwise the latest round with scores. */
-  round?: number; inChat?: boolean;
+  round?: number;
+  /** In the chat the recap is the card image itself; tapping it opens it full size. */
+  inChat?: boolean; onOpen?: (url: string) => void;
 }) {
   const { matches, teams, pool, season } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
@@ -101,18 +103,40 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     return { round, complete, lines, table, biz: biz ? { name: biz.sponsor, logo: biz.sponsor_logo } : null };
   }, [scored, entries, matches, teams, prizes, only]);
 
-  if (!recap) return null;
-  const title = `Round ${recap.round} ${recap.complete ? "recap" : "so far"}`;
+  const title = recap ? `Round ${recap.round} ${recap.complete ? "recap" : "so far"}` : "";
   // Everyone who backed this round, biggest first: the tournament, its round, this league, the round's prize.
-  const backers: Backer[] = [];
-  const add = (label: string, name: string, logo: string | null) => { if (!backers.some((b) => b.name === name)) backers.push({ label, name, logo }); };
-  const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
-  if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
-  if (roundSponsor) add(`Round ${recap.round} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
-  if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
-  if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
-  const card = (type: "image/png" | "image/jpeg") =>
-    drawCard(`${pool!.name} · ${season.name}`, title, recap!.lines, recap!.table, backers, type);
+  const backers = useMemo(() => {
+    const out: Backer[] = [];
+    if (!recap) return out;
+    const add = (label: string, name: string, logo: string | null) => { if (!out.some((b) => b.name === name)) out.push({ label, name, logo }); };
+    const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
+    if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
+    if (roundSponsor) add(`Round ${recap.round} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
+    if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
+    if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
+    return out;
+  }, [recap, tournament, sponsor]);
+  const sub = `${pool!.name} · ${season.name}`;
+  const card = (type: "image/png" | "image/jpeg") => drawCard(sub, title, recap!.lines, recap!.table, backers, type);
+
+  // In the chat, draw the card once its story is known and show the picture.
+  const [img, setImg] = useState<{ url: string; w: number; h: number } | null>(null);
+  const story = recap && inChat ? JSON.stringify([sub, title, recap.lines, recap.table, backers]) : "";
+  useEffect(() => {
+    if (!story) return;
+    let live = true, url = "";
+    const [s, t, lines, table, bk] = JSON.parse(story) as [string, string, Line[], { name: string; pts: number; rank: number }[], Backer[]];
+    drawCard(s, t, lines, table, bk, "image/jpeg").then(async (blob) => {
+      if (!live) return;
+      url = URL.createObjectURL(blob);
+      const bmp = await createImageBitmap(blob).catch(() => null);
+      setImg({ url, w: bmp?.width ?? 1080, h: bmp?.height ?? 1350 });
+      bmp?.close();
+    });
+    return () => { live = false; if (url) URL.revokeObjectURL(url); };
+  }, [story]);
+
+  if (!recap) return null;
 
   async function share() {
     setNote(null);
@@ -129,8 +153,22 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     setNote("Saved the image. Drop it in the group chat.");
   }
 
+  if (inChat) {
+    return (
+      <div className="recapchat">
+        {img
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img className="photo" src={img.url} alt={title} style={{ width: "100%", height: "auto", aspectRatio: `${img.w} / ${img.h}`, maxHeight: "none" }}
+              onClick={() => onOpen?.(img.url)} />
+          : <div className="photo skeleton" style={{ width: "100%", height: "auto", aspectRatio: "1080 / 1350", maxHeight: "none" }} />}
+        <button type="button" className="linkish recapmore" onClick={share}>Share</button>
+        {note && <p className="small muted" style={{ margin: "4px 0 0" }}>{note}</p>}
+      </div>
+    );
+  }
+
   return (
-    <div className={`recap${inChat ? " inchat" : ""}`}>
+    <div className="recap">
       <div className="recaphead">
         <h3>{title}</h3>
         <span className="recapbtns">
@@ -138,9 +176,9 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
         </span>
       </div>
       <dl>
-        {(open ? recap.lines : recap.lines.slice(0, inChat ? 3 : 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
+        {(open ? recap.lines : recap.lines.slice(0, 1)).map((l) => <div key={l.label}><dt>{l.label}</dt><dd>{l.text}</dd></div>)}
       </dl>
-      {recap.lines.length > (inChat ? 3 : 1) && (
+      {recap.lines.length > 1 && (
         <button type="button" className="linkish recapmore" onClick={() => setOpen(!open)}>{open ? "Show less" : "Full recap"}</button>
       )}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
