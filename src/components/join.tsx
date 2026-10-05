@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { CodeForm } from "@/components/code-form";
+import { HowItWorks } from "@/components/how-it-works";
 import { readJoinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 
@@ -79,20 +80,21 @@ export function Join() {
     );
   }
   return (
+    <>
     <div className="card narrow join">
       {league ? (
         <>
           <p className="kicker">{league.season_name}</p>
           <h2>{info.inviter} wants you in {league.pool_name}</h2>
           <p className="sub">
-            Call the score of every match each weekend and climb the table{league.players > 1 ? `. ${league.players} players are already in` : ""}.
-            Win prizes from local businesses, and every game you play helps fund South African schools. Free to play, no betting.
+            A rugby prediction league{league.players > 1 ? ` with ${league.players} players already in` : ""}. Call the scores, climb the table and win
+            prizes from local businesses, while every game you play helps fund South African schools.
           </p>
         </>
       ) : (
         <>
           <h2>{info.inviter} invited you to Scrumline</h2>
-          <p className="sub">Rugby prediction leagues with your mates, your class and your school. Win prizes from local businesses and help fund South African schools. Free to play, no betting.</p>
+          <p className="sub">Rugby prediction leagues with your friends, your class and your school. Win prizes from local businesses and help fund South African schools.</p>
         </>
       )}
       <form onSubmit={submit} className="stack">
@@ -102,5 +104,7 @@ export function Join() {
       {msg && <p className="small" style={{ color: "var(--danger)", marginBottom: 0 }}>{msg}</p>}
       <p className="small muted join-foot">Already on Scrumline? <a href={home}>Sign in</a></p>
     </div>
+    <HowItWorks />
+    </>
   );
 }

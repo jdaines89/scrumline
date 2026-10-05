@@ -65,6 +65,14 @@ function Leaderboard() {
       .then(({ data }) => { const r = (data ?? []) as LeaderRow[]; writeCache(`board:${pool!.id}`, r); setRows(r); });
   }, [pool]);
 
+  // The table comes first; what's up for grabs sits straight under it.
+  const prizeBlock = (
+    <div className="board-prizes">
+      <PrizeLine prizes={prizes} onChange={reloadPrizes} />
+      <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} compact={roundPrizeShowing} />
+    </div>
+  );
+
   return (
     <div className="card">
       <Link href="/pools/" className="lg-back">‹ Your leagues</Link>
@@ -73,14 +81,12 @@ function Leaderboard() {
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
-      {view !== "schools" && <PrizeLine prizes={prizes} onChange={reloadPrizes} />}
-      {view !== "schools" && <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} compact={roundPrizeShowing} />}
       <div className="seg" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
         <button type="button" role="tab" aria-selected={view === "round"} className={view === "round" ? "on" : ""} onClick={() => setView("round")}>By round</button>
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
       </div>
-      {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <RoundTable rows={rows} />) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
+      {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
         {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={rows} />}
@@ -114,6 +120,7 @@ function Leaderboard() {
             </li>
           ))}
         </ol>
+        {prizeBlock}
         <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />
         {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
         </>

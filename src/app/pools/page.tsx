@@ -112,6 +112,19 @@ export default function PoolsPage() {
   const classOf = (p: Pool) => pools.find((c) => c.school_year && c.school_emis === p.school_emis && c.school_stage === p.school_stage);
   // A class with no whole-school league above it still gets a card of its own.
   const looseClasses = pools.filter((c) => c.school_year && !schoolLeagues.some((p) => p.school_emis === c.school_emis && p.school_stage === c.school_stage));
+  // The same recruiter prize often runs in several of your leagues: show it once, on the first card it reaches.
+  const recruiterShownOn = new Set<number>();
+  {
+    const seen = new Set<string>();
+    const order = [...mateLeagues, ...schoolLeagues.flatMap((p) => [p, classOf(p)]), ...looseClasses].filter((p): p is Pool => !!p);
+    for (const p of order) {
+      const rp = recruiter.get(p.id);
+      if (!rp) continue;
+      const key = `${rp.month}|${rp.sponsor}|${rp.prize}`;
+      if (seen.has(key)) continue;
+      seen.add(key); recruiterShownOn.add(p.id);
+    }
+  }
 
   function openLeague(id: number) {
     setPool(id);
@@ -137,7 +150,7 @@ export default function PoolsPage() {
     const st = standing(byPool.get(p.id) ?? [], me.user_id);
     const u = unread.find((x) => x.pool_id === p.id);
     const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
-    const rp = recruiter.get(p.id);
+    const rp = recruiterShownOn.has(p.id) ? recruiter.get(p.id) : undefined;
     return (
       <div key={p.id} className={`lgc${p.id === pool?.id ? " on" : ""}`}>
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>

@@ -22,10 +22,10 @@ export default function FixturesPage() {
     <>
       <MatchesSwitch />
       <RoundPicker rounds={rounds} round={round} onPick={setRound} matches={matches} />
-      {[...days].map(([d, list]) => (
+      {[...days].map(([d, list], i) => (
         <div className="card" key={d}>
           <h2>{d}</h2>
-          <p className="sub">Times are South African (SAST).</p>
+          {i === 0 && <p className="sub">Kick-off times are South African time.</p>}
           {list.map((m) => {
             const h = teams.get(m.home_team_id), a = teams.get(m.away_team_id);
             const played = m.home_score !== null;

@@ -57,6 +57,7 @@ export function Numbers({ season, seasonName }: { season: string; seasonName: st
       {rounds.length > 0 && (
         <>
           <h3 className="numbers-h">{seasonName}: players who called each round</h3>
+          <div className="scroll-x">
           <table>
             <tbody>
               {rounds.map((r) => (
@@ -64,6 +65,7 @@ export function Numbers({ season, seasonName }: { season: string; seasonName: st
               ))}
             </tbody>
           </table>
+          </div>
         </>
       )}
     </div>
