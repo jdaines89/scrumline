@@ -1,6 +1,7 @@
 import { Crest } from "@/components/team";
 import type { Digest, Side, SwingGame } from "@/lib/digest";
 import type { Team } from "@/lib/types";
+import { roundName } from "@/lib/format";
 
 // How the pool called it: your side in the accent colour, everyone else muted.
 function Split({ g }: { g: SwingGame }) {
@@ -23,8 +24,8 @@ export function RoundDigest({ d, round, open, teamsOf }: {
     open > 0 && `lock ${open} more to see mates there`,
   ].filter(Boolean).join(" · ");
   return (
-    <section className="digest" aria-label={`Round ${round} at a glance`}>
-      <p className="dkicker">Round {round} at a glance</p>
+    <section className="digest" aria-label={`${roundName(round)} at a glance`}>
+      <p className="dkicker">{roundName(round)} at a glance</p>
       <p className="dhead">{d.headline}</p>
       {d.standing && <p className="dstand">{d.standing}</p>}
       <ul className="dlist">

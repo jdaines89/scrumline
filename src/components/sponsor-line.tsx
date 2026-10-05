@@ -7,6 +7,7 @@ import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { sampleSponsor, usePreview } from "@/lib/preview";
 import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
+import { roundName } from "@/lib/format";
 
 /** The round being played now: the first with a match still to come, else the last. */
 export function currentRound(matches: { round: number; kickoff_at: string }[]): number | null {
@@ -49,7 +50,7 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
       <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
         aria-label={`Sponsored by ${sponsor.display_name}`}>
         <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
-        <span><small>{sponsor.round ? `Round ${sponsor.round} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b></span>
+        <span><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b></span>
       </button>
       {open && (
         <div className="sp-pop">
@@ -65,7 +66,7 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
     <div className="spline">
       <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
       <div>
-        <div>{sponsor.round ? `Round ${sponsor.round} sponsored by` : "Sponsored by"}{" "}
+        <div>{sponsor.round ? `${roundName(sponsor.round)} sponsored by` : "Sponsored by"}{" "}
           {more
             ? <button type="button" className="linkish sp-name" aria-expanded={open} onClick={() => setOpen(!open)}><b>{sponsor.display_name}</b></button>
             : <b>{sponsor.display_name}</b>}

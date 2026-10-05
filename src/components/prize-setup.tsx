@@ -9,6 +9,7 @@ import { day } from "@/components/prize-line";
 import { PrizeChat } from "@/components/prize-chat";
 import { prizePhotoUrl, trackRecord, usePoolPrizes, whoWon, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
+import { roundName, roundText } from "@/lib/format";
 
 const STATUS: Record<PoolPrize["status"], string> = {
   upcoming: "Upcoming", "in play": "In play", "no winner": "No winner", awaiting: "Awaiting",
@@ -157,9 +158,9 @@ export function PrizeSetup() {
       ) : open.length === 0 ? <p className="muted">Every round has kicked off, so there&apos;s nothing left to put a prize on.</p> : (
         <form className="prizeform" onSubmit={offer}>
           <div className="prizefields">
-            {editing ? <span className="prize-biz">Round {editing.round}</span> : (
+            {editing ? <span className="prize-biz">{roundName(editing.round)}</span> : (
               <select id="prize-round" value={pick ?? ""} onChange={(e) => setRound(Number(e.target.value))} aria-label="Round">
-                {open.map((r) => <option key={r} value={r}>Round {r}</option>)}
+                {open.map((r) => <option key={r} value={r}>{roundName(r)}</option>)}
               </select>
             )}
             {editing ? <span className="prize-biz">From {editing.sponsor}</span> : businesses.length > 1 ? (
@@ -206,7 +207,7 @@ export function PrizeSetup() {
         const who = whoWon(p, nameOf);
         return (
           <div key={p.round} className="handover">
-            <span className="prize-label">To hand over · round {p.round}</span>
+            <span className="prize-label">To hand over · {roundText(p.round)}</span>
             <strong>{who} won your {p.prize}</strong>
             <span className="prize-meta">
               Get it to {p.winners!.length > 1 ? "them" : who}{p.due_at ? ` by ${day(p.due_at)}` : ""}. They tap Received once they have it,

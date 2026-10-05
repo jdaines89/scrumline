@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
-import { signed } from "@/lib/format";
+import { signed, roundShort } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 
 interface Scored {
@@ -58,7 +58,7 @@ export function HeadToHead({ mine, theirs, name }: { mine: number | null; theirs
             return (
               <Fragment key={rd}>
                 <tr className="rrow" onClick={() => setOpen(open === rd ? null : rd)}>
-                  <td>{open === rd ? "▾" : "▸"} R{rd}</td>
+                  <td>{open === rd ? "▾" : "▸"} {roundShort(rd)}</td>
                   {!solo && <td className="num">{me}</td>}
                   <td className="num">{them}</td>
                   {!solo && <td className={`num ${me > them ? "up" : me < them ? "down" : ""}`}>{signed(me - them)}</td>}

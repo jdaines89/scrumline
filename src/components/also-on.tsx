@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
-import { kickoff } from "@/lib/format";
+import { kickoff, roundName } from "@/lib/format";
 import { worthSwitching, type NextUp } from "@/lib/seasons";
 import { supabase } from "@/lib/supabase";
 
@@ -33,7 +33,7 @@ export function AlsoOn() {
   return (
     <div className="card also-on">
       <p>
-        <strong>{target.name}</strong> is on while the {resting} rests. Round {other!.round} starts {kickoff(other!.kickoff_at)}.
+        <strong>{target.name}</strong> is on while the {resting} rests. {roundName(other!.round)} starts {kickoff(other!.kickoff_at)}.
       </p>
       <button type="button" onClick={() => setSeason(target.id)}>Play it</button>
     </div>

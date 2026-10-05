@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { LeaderRow } from "@/lib/types";
+import { roundShort, roundText } from "@/lib/format";
 
 interface Scored { entry_id: number; round: number; total_pts: number }
 interface Line { user_id: string; name: string; mine: boolean; pts: number[] }
@@ -83,7 +84,7 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
             </g>
           ))}
           {[0, ...rounds].map((rd, i) => (
-            <text key={i} x={x(i)} y={H - 6} textAnchor="middle" className="tick">{i === 0 ? "Start" : `R${rd}`}</text>
+            <text key={i} x={x(i)} y={H - 6} textAnchor="middle" className="tick">{i === 0 ? "Start" : roundShort(rd)}</text>
           ))}
           {col !== null && <line x1={x(col)} x2={x(col)} y1={PAD.t} y2={H - PAD.b} className="cross" />}
           {ordered.map((l) => (
@@ -105,7 +106,7 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
         </svg>
         {col !== null && (
           <div className="racetip" style={{ left: `${Math.min(80, Math.max(20, (x(col) / W) * 100))}%` }}>
-            <strong>{col === 0 ? "Start" : `After round ${rounds[col - 1]}`}</strong>
+            <strong>{col === 0 ? "Start" : `After ${roundText(rounds[col - 1])}`}</strong>
             {atRows.map(({ l, rank }) => (
               <div key={l.user_id} className={l.mine ? "mine" : ""}>
                 <span>{many ? `${rank}. ` : ""}{l.mine ? "You" : l.name}</span><span>{l.pts[col]}</span>

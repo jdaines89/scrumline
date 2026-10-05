@@ -14,6 +14,7 @@ import { logEvent } from "@/lib/events";
 import { PoolName } from "@/components/pool-name";
 import { readCache, writeCache } from "@/lib/cache";
 import type { Pool } from "@/lib/types";
+import { roundName, roundText } from "@/lib/format";
 
 interface Score { pool_id: number; user_id: string; total_points: number }
 interface Unread { pool_id: number; unread: number; tagged: number }
@@ -122,8 +123,8 @@ export default function PoolsPage() {
     else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
     else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
     const pz = prizes.get(p.id);
-    if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won round ${pz.round}'s prize`);
-    else if (pz) bits.push(`Round ${pz.round} prize`);
+    if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won ${roundText(pz.round)}'s prize`);
+    else if (pz) bits.push(`${roundName(pz.round)} prize`);
     return bits.join(" · ");
   }
 

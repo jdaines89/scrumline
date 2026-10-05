@@ -6,6 +6,7 @@ import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
 import { prizePhotoUrl, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
+import { roundName, roundText } from "@/lib/format";
 
 /**
  * The pool's round prize as one small panel: what it is, who's behind it,
@@ -56,7 +57,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
           <button type="button" className="prize-open" aria-haspopup="dialog" onClick={() => setOpen(shown)}>
             {shown.image_path && <img className="prize-thumb" src={prizePhotoUrl(shown.image_path)} alt={shown.prize} />}
             <div className="prize-text">
-              <span className="prize-label">Round {shown.round} prize</span>
+              <span className="prize-label">{roundName(shown.round)} prize</span>
               <strong>{shown.prize}</strong>
               <span className="prize-meta">{shown.sponsor} · offered by {nameOf(shown.offered_by)}</span>
             </div>
@@ -69,7 +70,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
           <button type="button" className="prize-open" aria-haspopup="dialog" onClick={() => setOpen(cheer)}>
             {cheer.image_path && <img className="prize-thumb small" src={prizePhotoUrl(cheer.image_path)} alt={cheer.prize} />}
             <div className="prize-text">
-              <span className="prize-label">Round {cheer.round} winner 🏆</span>
+              <span className="prize-label">{roundName(cheer.round)} winner 🏆</span>
               <strong>{winners(cheer.winners!, nameOf)} won the {cheer.prize}</strong>
               <span className="prize-meta">{cheer.sponsor} · {cheer.status === "delivered" ? "handed over" : "on its way"}</span>
             </div>
@@ -80,7 +81,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
       {giving && (
         <div className="prize-row prize-won">
           <div className="prize-text" onClick={() => setOpen(giving)} style={{ cursor: "pointer" }}>
-            <span className="prize-label">To hand over · round {giving.round}</span>
+            <span className="prize-label">To hand over · {roundText(giving.round)}</span>
             <strong>{winners(giving.winners!, nameOf)} won your {giving.prize}</strong>
             <span className="prize-meta">Get it to {giving.winners!.length > 1 ? "them" : winners(giving.winners!, nameOf)}{giving.due_at ? ` by ${day(giving.due_at)}` : ""}. They tap Received once they have it.</span>
           </div>
@@ -92,7 +93,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
       {owed && (
         <div className="prize-row prize-won">
           <div className="prize-text" onClick={() => setOpen(owed)} style={{ cursor: "pointer" }}>
-            <span className="prize-label">You won round {owed.round} 🏆</span>
+            <span className="prize-label">You won {roundText(owed.round)} 🏆</span>
             <strong>{owed.prize}</strong>
             <span className="prize-meta">{nameOf(owed.offered_by) === "you" ? owed.sponsor : `${cap(nameOf(owed.offered_by))} from ${owed.sponsor}`} will sort out getting it to you{owed.due_at ? ` by ${day(owed.due_at)}` : ""}. Tap Received once you have it.</span>
           </div>

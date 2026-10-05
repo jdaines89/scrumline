@@ -1,7 +1,7 @@
 "use client";
 
 import type { Match } from "@/lib/types";
-import { matchDay } from "@/lib/format";
+import { matchDay, roundName } from "@/lib/format";
 
 /**
  * One round at a time: arrows either side, and the round name opens a list
@@ -22,9 +22,9 @@ export function RoundPicker({ rounds, round, onPick, locked, matches }: {
       <button type="button" className="ghost arrow" aria-label="Previous round" disabled={i <= 0} onClick={() => onPick(rounds[i - 1])}>‹</button>
       <label className="which">
         <select value={round} onChange={(e) => onPick(Number(e.target.value))} aria-label="Round">
-          {rounds.map((r) => <option key={r} value={r}>Round {r}{locked?.has(r) ? " ✓" : ""} · {dates(r)}</option>)}
+          {rounds.map((r) => <option key={r} value={r}>{roundName(r)}{locked?.has(r) ? " ✓" : ""} · {dates(r)}</option>)}
         </select>
-        <strong>Round {round}{locked?.has(round) ? " ✓" : ""}</strong>
+        <strong>{roundName(round)}{locked?.has(round) ? " ✓" : ""}</strong>
         <span>{dates(round)} · {rounds.length} rounds ▾</span>
       </label>
       <button type="button" className="ghost arrow" aria-label="Next round" disabled={i >= rounds.length - 1} onClick={() => onPick(rounds[i + 1])}>›</button>
