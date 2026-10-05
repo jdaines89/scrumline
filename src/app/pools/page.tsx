@@ -47,6 +47,9 @@ export default function PoolsPage() {
   const names = new Map(members.map((m) => [m.user_id, m.display_name]));
   const router = useRouter();
   const [open, setOpen] = useState<"start" | "join" | null>(null);
+  // The league you just started, until you've sent it to your group.
+  const [made, setMade] = useState<{ id: number; name: string; code: string } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const ids = pools.map((p) => p.id).join(",");
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
   const [unread, setUnread] = useState<Unread[]>([]);
@@ -168,6 +171,7 @@ export default function PoolsPage() {
     const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id }).select().single();
     if (error) { setMsg(error.message); return; }
     setName(""); await reloadPools(); setPool(data.id);
+    setMade({ id: data.id, name: data.name, code: data.join_code }); setLinkCopied(false);
   }
 
   async function join(e: FormEvent) {
@@ -177,13 +181,18 @@ export default function PoolsPage() {
     setCode(""); setOpen(null); await reloadPools(); setPool(data as number);
   }
 
-  async function share(id: number, joinCode: string, poolName: string, school = false) {
+  function invite(joinCode: string, poolName: string, school = false) {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
     // A school league isn't joined by code: newcomers land in it once they name the school.
     const link = school ? joinLink(site, myCode) : joinLink(site, myCode, joinCode);
     const text = school
       ? `Play for ${poolName} on Scrumline in the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`
       : `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
+    return { link, text };
+  }
+
+  async function share(id: number, joinCode: string, poolName: string, school = false) {
+    const { text } = invite(joinCode, poolName, school);
     logEvent("invite_shared", { from: school ? "school" : "league" }, id);
     try {
       if (navigator.share) await navigator.share({ text });
@@ -224,9 +233,25 @@ export default function PoolsPage() {
           <button type="button" className={open === "start" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
           <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>
         </div>
+        {made && (
+          <div className="lg-made">
+            <strong>{made.name} is ready</strong>
+            <p className="small muted">Send it to your group. Anyone who taps the link lands straight in your league.</p>
+            <div className="row">
+              <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(invite(made.code, made.name).text)}`} target="_blank" rel="noreferrer"
+                onClick={() => logEvent("invite_shared", { from: "new_league", via: "whatsapp" }, made.id)}>Send on WhatsApp</a>
+              <button type="button" className="ghost" onClick={async () => {
+                logEvent("invite_shared", { from: "new_league", via: "copy" }, made.id);
+                try { await navigator.clipboard.writeText(invite(made.code, made.name).link); setLinkCopied(true); } catch { /* no clipboard */ }
+              }}>{linkCopied ? "Link copied" : "Copy link"}</button>
+              <button type="button" className="ghost" onClick={() => setMade(null)}>Done</button>
+            </div>
+            <p className="small muted" style={{ margin: "8px 0 0" }}>Or tell them the code: <strong className="lg-code">{made.code}</strong></p>
+          </div>
+        )}
         {open === "start" && (
           <form className="lg-form" onSubmit={create}>
-            <p className="small muted">You get a code to send to your mates.</p>
+            <p className="small muted">Next you send it to your group on WhatsApp.</p>
             <div className="row">
               <input required autoFocus maxLength={40} placeholder="League name" value={name} onChange={(e) => setName(e.target.value)} />
               <button type="submit">Start</button>

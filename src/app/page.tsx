@@ -11,6 +11,7 @@ import type { StandingRow } from "@/lib/types";
 import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { AlertsCard } from "@/components/alerts-card";
+import { callingStreak, type Streak } from "@/lib/streak";
 
 export default function Home() {
   const { season, matches, teams, me, entry } = useLeague();
@@ -39,6 +40,18 @@ export default function Home() {
       .eq("entry_id", entry.id).in("match_id", nextIds.split(","))
       .then(({ count }) => { writeCache(`called:${entry.id}:${nextIds}`, count ?? 0); setCalled(count ?? 0); });
   }, [entry, nextIds]);
+  // Every match you've called this season, for your calling streak.
+  const [streak, setStreak] = useState<Streak | null>(null);
+  useEffect(() => {
+    if (!entry || !matches.length) { setStreak(null); return; }
+    const key = `streak:${entry.id}`;
+    const cached = readCache<string[]>(key);
+    if (cached) setStreak(callingStreak(matches, new Set(cached)));
+    supabase.from("predictions").select("match_id").eq("entry_id", entry.id).then(({ data }) => {
+      const ids = ((data ?? []) as { match_id: string }[]).map((r) => r.match_id);
+      writeCache(key, ids); setStreak(callingStreak(matches, new Set(ids)));
+    });
+  }, [entry, matches]);
   const allCalled = called !== null && called >= next.length;
   const nudge = nextRound === null || called === null ? null
     : allCalled ? <>All {next.length} calls are in for round {nextRound}. <Link href="/predict/">See them</Link>.</>
@@ -52,6 +65,11 @@ export default function Home() {
         {entry
           ? <p style={{ margin: 0 }}>Your team is <strong>{entry.team_name}</strong>.{nudge && <> {nudge}</>}</p>
           : <p style={{ margin: 0 }}><Link href="/predict/">Name your team</Link> to start playing.</p>}
+        {streak && streak.rounds >= 2 && !season.is_replay && (
+          <p className="small muted streak-line">
+            {streak.rounds} rounds called in a row. {streak.forgiven ? "Your one free miss is used, so call every round to keep it." : "Miss one and it still holds."}
+          </p>
+        )}
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
       <AlertsCard />
