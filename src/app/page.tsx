@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import type { StandingRow } from "@/lib/types";
 import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
+import { AlertsCard } from "@/components/alerts-card";
 
 export default function Home() {
   const { season, matches, teams, me, entry } = useLeague();
@@ -53,6 +54,7 @@ export default function Home() {
           : <p style={{ margin: 0 }}><Link href="/predict/">Name your team</Link> to start playing.</p>}
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
+      <AlertsCard />
       <div className="grid2">
         {nextRound !== null && (
           <div className="card">
