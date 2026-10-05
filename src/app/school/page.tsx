@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { SchoolSearch } from "@/components/school-search";
 import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
-import { ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
+import { pickedSchool, rememberPickedSchool, ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import { logEvent } from "@/lib/events";
@@ -129,6 +129,7 @@ export default function SchoolPage() {
 
 function PickSchool({ onDone }: { onDone: () => void }) {
   const [pick, setPick] = useState<School | null>(null);
+  useEffect(() => { setPick((p) => p ?? pickedSchool()); }, []);
   const [holder, setHolder] = useState<Holder | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => {
@@ -140,6 +141,7 @@ function PickSchool({ onDone }: { onDone: () => void }) {
     if (!pick) return;
     const { error } = await supabase.rpc("set_school_account_school", { p_emis: pick.emis });
     if (error) { setMsg(error.message); return; }
+    rememberPickedSchool(null);
     onDone();
   }
   return (

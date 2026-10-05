@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 
 /** Pages anyone can open without signing in. */
-export const isPublicPath = (path: string | null) => /^\/(business|schools)(\/|$)/.test(path ?? "");
+export const isPublicPath = (path: string | null) => /^\/(business|schools|rules)(\/|$)/.test(path ?? "");
 
 /** Pages a business account may open; everything else is for players. */
 export const isSponsorPath = (path: string | null) => /^\/(sponsor|giving)/.test(path ?? "");

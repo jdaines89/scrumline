@@ -4,12 +4,21 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { SchoolSearch } from "@/components/school-search";
 import { shrinkPhoto } from "@/lib/photo";
-import { randsToMinor, STATE_LABEL, useProjects, type Project } from "@/lib/projects";
+import { PROJECT_MENU, randsToMinor, STATE_LABEL, useProjects, type Project } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
 
 type Say = (ok: boolean, text: string) => void;
+
+/** Shrinks and stores one project photo; returns its path. */
+async function uploadProjectPhoto(projectId: number, file: File): Promise<string> {
+  const blob = await shrinkPhoto(file);
+  const path = `${projectId}/${crypto.randomUUID()}.jpg`;
+  const up = await supabase.storage.from("project-photos").upload(path, blob, { contentType: "image/jpeg" });
+  if (up.error) throw new Error("Couldn't upload that photo.");
+  return path;
+}
 
 /** The Foundation's side of school projects: list one, settle pledges, order, and post the proof. */
 export default function AdminProjects() {
@@ -36,17 +45,37 @@ function NewProject({ say }: { say: Say }) {
   const [supplier, setSupplier] = useState("");
   const [price, setPrice] = useState("");
   const [deadline, setDeadline] = useState(() => new Date(Date.now() + 45 * 864e5).toISOString().slice(0, 10));
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [caption, setCaption] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  function pickFromMenu(i: string) {
+    const m = PROJECT_MENU[Number(i)];
+    if (!m) return;
+    setTitle(m.title); setWhy(m.why); setItems(m.items);
+  }
 
   async function create(e: FormEvent) {
     e.preventDefault();
     const target = randsToMinor(price);
     if (!school || target === null) { say(false, "Pick a school and type the supplier's price in rands."); return; }
-    const { error } = await supabase.rpc("admin_create_project", {
+    setBusy(true);
+    const { data: id, error } = await supabase.rpc("admin_create_project", {
       p_emis: school.emis, p_title: title, p_why: why, p_items: items, p_supplier: supplier, p_price_minor: target, p_deadline: deadline,
     });
-    if (error) { say(false, error.message.includes("check") ? "Check every field. The price must be between R100 and R25,000." : error.message); return; }
-    setSchool(null); setTitle(""); setWhy(""); setItems(""); setSupplier(""); setPrice("");
-    say(true, "Project listed. It shows on the Giving page now.");
+    if (error) { setBusy(false); say(false, error.message.includes("check") ? "Check every field. The price must be between R100 and R25,000." : error.message); return; }
+    let failed = 0;
+    for (const [i, file] of photos.entries()) {
+      try {
+        const path = await uploadProjectPhoto(id as number, file);
+        const added = await supabase.rpc("admin_add_need_photo", { p_project: id, p_image_path: path, p_caption: i === 0 ? caption : null });
+        if (added.error) failed++;
+      } catch { failed++; }
+    }
+    setBusy(false);
+    setSchool(null); setTitle(""); setWhy(""); setItems(""); setSupplier(""); setPrice(""); setPhotos([]); setCaption("");
+    say(failed === 0, failed === 0 ? "Project listed. It shows on the Giving page now."
+      : `Project listed, but ${failed} photo${failed === 1 ? "" : "s"} didn't upload. Add ${failed === 1 ? "it" : "them"} from the project below.`);
   }
 
   return (
@@ -54,6 +83,10 @@ function NewProject({ say }: { say: Say }) {
       <p className="sp-kicker">Admin</p>
       <h2>List a school project</h2>
       <p className="sub">Only fixed-price items from a supplier&apos;s quote, up to R25,000. No building work. A 15% Scrumline project fee is added on top and shown on the card.</p>
+      <select value="" onChange={(e) => pickFromMenu(e.target.value)} aria-label="Start from a ready-made project">
+        <option value="">Start from a ready-made project…</option>
+        {PROJECT_MENU.map((m, i) => <option key={m.title} value={i}>{m.title}</option>)}
+      </select>
       {school
         ? <div className="row"><strong className="grow">{school.name}</strong><button type="button" className="ghost" onClick={() => setSchool(null)}>Change</button></div>
         : <SchoolSearch onPick={setSchool} placeholder="Find the school" />}
@@ -68,13 +101,21 @@ function NewProject({ say }: { say: Say }) {
       {randsToMinor(price) !== null && (
         <p className="small muted" style={{ margin: 0 }}>Backers pledge {money(Math.round(randsToMinor(price)! * 1.15))}: {money(randsToMinor(price)!)} for the items + {money(Math.round(randsToMinor(price)! * 0.15))} project fee.</p>
       )}
-      <div><button type="submit">List project</button></div>
+      <div className="stack">
+        <label className="btn ghostlink" style={{ alignSelf: "flex-start" }}>
+          {photos.length ? `${photos.length} photo${photos.length === 1 ? "" : "s"} of the need` : "Add photos of the need"}
+          <input type="file" accept="image/*" multiple hidden onChange={(e) => { setPhotos(Array.from(e.target.files ?? []).slice(0, 4)); e.target.value = ""; }} />
+        </label>
+        {photos.length > 0 && <input maxLength={120} placeholder="Caption, e.g. The balls the U16s use now" value={caption} onChange={(e) => setCaption(e.target.value)} />}
+        <p className="small muted" style={{ margin: 0 }}>Up to four: the broken tap, the worn kit, the empty shelf. No learners&apos; faces. They can&apos;t be changed once the project is fully backed.</p>
+      </div>
+      <div><button type="submit" disabled={busy}>{busy ? "Listing…" : "List project"}</button></div>
     </form>
   );
 }
 
 function ManageProject({ p, say }: { p: Project; say: Say }) {
-  const [kind, setKind] = useState<"quote" | "order" | "delivery" | "note">(p.state === "ordered" ? "delivery" : p.state === "funded" ? "order" : "quote");
+  const [kind, setKind] = useState<"need" | "quote" | "order" | "delivery" | "note">(p.state === "ordered" ? "delivery" : p.state === "funded" ? "order" : "quote");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -90,13 +131,11 @@ function ManageProject({ p, say }: { p: Project; say: Say }) {
     setBusy(true);
     let path: string | null = null;
     try {
-      if (file) {
-        const blob = await shrinkPhoto(file);
-        path = `${p.id}/${crypto.randomUUID()}.jpg`;
-        const up = await supabase.storage.from("project-photos").upload(path, blob, { contentType: "image/jpeg" });
-        if (up.error) throw new Error("Couldn't upload that photo.");
-      }
-      await rpc("admin_add_evidence", { p_project: p.id, p_kind: kind, p_note: note, p_image_path: path }, "Posted to the project's record.");
+      if (file) path = await uploadProjectPhoto(p.id, file);
+      if (kind === "need") {
+        if (!path) throw new Error("A photo of the need needs a photo.");
+        await rpc("admin_add_need_photo", { p_project: p.id, p_image_path: path, p_caption: note }, "Added to the photos of the need.");
+      } else await rpc("admin_add_evidence", { p_project: p.id, p_kind: kind, p_note: note, p_image_path: path }, "Posted to the project's record.");
       setNote("");
     } catch (err) {
       say(false, (err as Error).message);
@@ -125,6 +164,7 @@ function ManageProject({ p, say }: { p: Project; say: Say }) {
         <div className="stack" style={{ marginTop: 10 }}>
           <div className="row">
             <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} aria-label="What this is">
+              {p.state === "open" && !p.funded_once && (p.need?.length ?? 0) < 4 && <option value="need">Photo of the need</option>}
               <option value="quote">Quote</option><option value="order">Order</option><option value="delivery">Delivery</option><option value="note">Update</option>
             </select>
             <input className="grow" maxLength={280} placeholder="Note, e.g. Handed to the coach on 12 Oct" value={note} onChange={(e) => setNote(e.target.value)} />
