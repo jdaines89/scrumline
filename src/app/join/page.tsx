@@ -16,8 +16,8 @@ export default function JoinPage() {
     setState("joining");
     supabase.rpc("join_pool", { p_code: p }).then(({ data, error }) => {
       if (error) { setState("failed"); return; }
-      // ?pool= opens that league's tournament and table (see LeagueProvider).
-      window.location.replace(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/leaderboard/?pool=${data}`);
+      // ?pool= opens that league's tournament (see LeagueProvider); Predict welcomes them in.
+      window.location.replace(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/predict/?pool=${data}&welcome=1`);
     });
   }, []);
 
