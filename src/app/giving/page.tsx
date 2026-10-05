@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { schoolHref } from "@/lib/crest";
 import { ProjectsSection } from "@/components/projects-section";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
@@ -83,7 +84,7 @@ export default function GivingPage() {
                 <li key={r.emis ?? "fund"}>
                   <span className="rank">{i + 1}</span>
                   <div className="who">
-                    <strong>{r.name}</strong>
+                    {r.emis ? <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link> : <strong>{r.name}</strong>}
                     <span className="small muted">{[r.town, r.no_fee && r.emis ? "no-fee school" : null, r.sponsors.length ? `from ${r.sponsors.join(", ")}` : null].filter(Boolean).join(" · ")}</span>
                   </div>
                   <div className="amt"><b>{money(r.committed_minor)}</b>

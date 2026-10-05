@@ -2,7 +2,9 @@
 
 import { fullName } from "@/lib/names";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { schoolHref } from "@/lib/crest";
 import { useLeague } from "@/components/league";
 import { ROLE_NAME } from "@/lib/school";
 import { supabase } from "@/lib/supabase";
@@ -136,7 +138,7 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
         <>
           <div className="school-saved">
             <div>
-              <div className="school-name">{saved.schools.name}</div>
+              <Link href={schoolHref(saved.schools.emis)} className="school-name sch-link">{saved.schools.name}</Link>
               <div className="small muted">
                 {[saved.schools.town, saved.last_year && `${stage === "high" ? "Matric" : "Completed"} ${saved.last_year}`].filter(Boolean).join(" · ")}
               </div>

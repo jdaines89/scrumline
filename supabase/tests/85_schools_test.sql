@@ -62,4 +62,35 @@ select pg_temp.check(not exists (select 1 from public.pools p join public.school
                      'every school league carries the school''s full name');
 select pg_temp.check(not exists (select 1 from public.pools where school_emis is null and full_name is not null),
                      'mates'' leagues have no school name');
+
+-- A school's page: members only; the crest is set by an admin or the school's verified contact
+reset role;
+select emis as pemis from public.member_schools order by emis limit 1 \gset
+select id as pseason from public.seasons order by id limit 1 \gset
+create temp table pageref as select :'pemis'::text as emis;
+grant select on pageref to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((public.school_page(:'pemis', :'pseason') -> 'school' ->> 'name') = (select name from public.schools where emis = :'pemis'),
+                     'a player opens a school''s page with its full name');
+select pg_temp.check(jsonb_array_length(public.school_page(:'pemis', :'pseason') -> 'players') =
+                     (select count(*) from public.member_schools where emis = :'pemis'), 'the page lists everyone who went there');
+select pg_temp.check(not (public.school_page(:'pemis', :'pseason') ->> 'can_set_crest')::boolean, 'a player can''t change the crest');
+do $$ begin
+  perform public.set_school_crest((select emis from pageref), (select emis from pageref) || '/crest.png');
+  raise exception 'FAILED: a player set a school''s crest';
+exception when insufficient_privilege then raise notice 'ok: players can''t set a crest';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+select pg_temp.check(public.school_page(:'pemis', :'pseason') is null, 'outsiders get no school page');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform public.set_school_crest((select emis from pageref), '999999/crest.png');
+  raise exception 'FAILED: crest taken from another school''s folder';
+exception when invalid_parameter_value then raise notice 'ok: a crest comes from the school''s own folder';
+end $$;
+select public.set_school_crest(:'pemis', :'pemis' || '/crest-1.png');
+select public.set_school_crest(:'pemis', :'pemis' || '/crest-2.png');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((public.school_page(:'pemis', :'pseason') ->> 'crest_path') = :'pemis' || '/crest-2.png', 'the newest crest shows');
+reset role;
 \echo SCHOOLS CHECKS PASSED

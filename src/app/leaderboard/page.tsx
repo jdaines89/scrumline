@@ -41,6 +41,8 @@ function Leaderboard() {
   const [picked, setPicked] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
   const [view, setView] = useState<"overall" | "round" | "schools">("overall");
+  // ?tab=schools opens the schools table straight away (a school's page links here).
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("tab") === "schools") setView("schools"); }, []);
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;

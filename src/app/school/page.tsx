@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Crest, CrestUpload } from "@/components/crest";
 import { SchoolSearch } from "@/components/school-search";
 import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
 import { pickedSchool, rememberPickedSchool, ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
@@ -28,6 +29,7 @@ export default function SchoolPage() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [holder, setHolder] = useState<Holder | null>(null);
+  const [crest, setCrest] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const acct = await supabase.from("school_accounts").select("emis").maybeSingle();
@@ -39,6 +41,8 @@ export default function SchoolPage() {
       supabase.from("school_payouts").select("id, amount_minor, currency, status, created_at, paid_at, confirmed_at, note").order("created_at", { ascending: false }),
     ]);
     setDash(((d.data ?? []) as Dashboard[])[0] ?? null);
+    const c = await supabase.from("school_crests").select("image_path").eq("emis", acct.data.emis).maybeSingle();
+    setCrest((c.data?.image_path as string | undefined) ?? null);
     const h = await supabase.rpc("school_claim_holder", { p_emis: acct.data.emis });
     setHolder(((h.data ?? []) as Holder[])[0] ?? null);
     setPayouts((p.data ?? []) as Payout[]);
@@ -72,7 +76,10 @@ export default function SchoolPage() {
     <>
       <div className="card narrow">
         <p className="sp-kicker">Your school</p>
-        <h2>{d.name}</h2>
+        <div className="sch-own">
+          <Crest emis={d.emis} path={crest} size={56} name={d.name} />
+          <h2>{d.name}</h2>
+        </div>
         <p className="sub">{d.town ? `${d.town} · ` : ""}{d.players} player{d.players === 1 ? "" : "s"} on Scrumline</p>
         {d.claim_status === "needs_review" && <p className="notice small">We&apos;re checking your claim{d.review_reason ? `: ${d.review_reason.toLowerCase()}` : ""}. We&apos;ll email you, and nothing is paid out until it&apos;s sorted.</p>}
         {onNotice && <p className="notice small">Claimed. For a week, players from {d.name} can see that you claimed it. Payouts start after {day(d.notice_until!)}.</p>}
@@ -84,6 +91,10 @@ export default function SchoolPage() {
         {d.sponsors.length > 0
           ? <p className="small muted" style={{ marginBottom: 0 }}>Backed by {d.sponsors.join(", ")}.</p>
           : <p className="small muted" style={{ marginBottom: 0 }}>No sponsor yet. Share the link below with parents and former pupils who own a business.</p>}
+        {d.claim_status === "verified" && !preview && (
+          <CrestUpload emis={d.emis} hasCrest={!!crest} onDone={load}
+            note="Your crest shows on the school's page, in the schools table and next to its league." />
+        )}
       </div>
 
       {!claimed && holder && !preview && (
