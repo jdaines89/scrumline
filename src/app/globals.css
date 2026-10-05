@@ -1016,3 +1016,13 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .alerts-acts { display: flex; gap: 8px; align-items: center; flex: none; }
 .alerts-acts button { padding: 8px 14px; font-size: 14px; }
 @media (max-width: 560px) { .alerts-card { flex-direction: column; align-items: stretch; } .alerts-acts { justify-content: flex-end; } }
+
+/* Admin growth targets */
+.gate-row { margin: 14px 0; }
+.gate-label { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; margin-bottom: 6px; }
+.gate-bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.gate-bar span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.gate-spark { display: flex; align-items: flex-end; gap: 4px; height: 72px; margin-top: 8px; }
+.gate-spark div { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.gate-spark span { display: block; width: 100%; min-height: 2px; background: var(--accent); opacity: .75; border-radius: 2px 2px 0 0; }
+.gate-spark-axis { display: flex; justify-content: space-between; margin-top: 4px; }

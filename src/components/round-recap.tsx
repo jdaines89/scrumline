@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { logEvent } from "@/lib/events";
 import type { PoolPrize } from "@/lib/prizes";
 import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
@@ -142,6 +143,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     setNote(null);
     const blob = await card("image/png");
     if (sponsor) sponsorEvent(sponsor.booking_id, "share");
+    logEvent("recap_shared", { round: recap!.round }, pool!.id);
     const file = new File([blob], `scrumline-round-${recap!.round}.png`, { type: "image/png" });
     const text = `${title}, ${pool!.name}\n` + recap!.lines.map((l) => `${l.label}: ${l.text}`).join("\n");
     try {

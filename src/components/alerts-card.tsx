@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { canInstall, install, isInstalled, onInstallChange, pushState, turnOn, type PushState } from "@/lib/push";
 import { installHow, type InstallHow } from "@/lib/install";
+import { logEvent } from "@/lib/events";
 
 const KEY = "sl:alerts-later";
 const LATER = 5 * 864e5;
@@ -32,7 +33,16 @@ export function AlertsCard() {
     return onInstallChange(() => setInstallable(canInstall()));
   }, []);
 
+  const showing = !hidden && !!state && state !== "on" && state !== "blocked" && !(state === "unsupported" && isInstalled());
+  useEffect(() => {
+    if (!showing || !state) return;
+    // Once per browser session, so a page reload doesn't count twice.
+    try { if (sessionStorage.getItem("sl:alerts-shown")) return; sessionStorage.setItem("sl:alerts-shown", "1"); } catch { /* log anyway */ }
+    logEvent("alerts_shown", { state });
+  }, [showing, state]);
+
   function notNow() {
+    logEvent("alerts_later", { state: state ?? "unknown" });
     try { localStorage.setItem(KEY, String(Date.now())); } catch { /* fine */ }
     setHidden(true);
   }
@@ -46,7 +56,7 @@ export function AlertsCard() {
   }
 
   // Nothing to offer: already on, blocked (only phone settings can fix that), or a browser without push.
-  if (hidden || !state || state === "on" || state === "blocked" || (state === "unsupported" && isInstalled())) return null;
+  if (!showing || !state) return null;
 
   const home = state === "needs-home-screen" || state === "unsupported";
   return (
