@@ -6,6 +6,7 @@ import { money, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
+import { roundName, roundText } from "@/lib/format";
 
 interface Slot {
   pool_id: number; pool_name: string; kind: "school" | "class" | "pool"; school_year: number | null; players: number;
@@ -122,7 +123,7 @@ export default function SponsorPage() {
         {roundSlot?.next_round && roundSlot.round_price_minor && (
           <button type="button" className={`opt${pick?.round ? " sel" : ""}`} disabled={!roundSlot.round_available}
             onClick={() => setPick({ slot: roundSlot, round: roundSlot.next_round, price: roundSlot.round_price_minor! })}>
-            <div className="grow"><strong>Round {roundSlot.next_round} prize</strong>
+            <div className="grow"><strong>{roundName(roundSlot.next_round)} prize</strong>
               <div className="small muted">{label(roundSlot)}, one weekend · your prize, your name on it{roundSlot.round_available ? "" : " · taken"}</div></div>
             <div className="price">{money(roundSlot.round_price_minor, roundSlot.currency)}<small>a round</small></div>
           </button>
@@ -146,7 +147,7 @@ export default function SponsorPage() {
           </div>
           <p className="small muted">The schools&apos; {money(sp.own + sp.partner, cur)} is a donation with a section 18A tax certificate. The rest is advertising on one tax invoice. You can add an extra donation at checkout; we take nothing from it, only the 3.5% card fee.</p>
           <Link className="btn paybtn" href={`/sponsor/checkout/?pool=${pick.slot.pool_id}${pick.round ? `&round=${pick.round}` : ""}`}>
-            Continue with {pick.round ? `round ${pick.round}` : pick.slot.kind === "school" ? "the whole school" : label(pick.slot)}
+            Continue with {pick.round ? `${roundText(pick.round)}` : pick.slot.kind === "school" ? "the whole school" : label(pick.slot)}
           </Link>
         </div>
       )}

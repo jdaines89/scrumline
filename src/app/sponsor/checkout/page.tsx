@@ -6,6 +6,7 @@ import { SponsorTile } from "@/components/sponsor-tile";
 import { CATEGORIES, extraFee, money, query, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
+import { roundText } from "@/lib/format";
 
 interface Quote { pool_id: number; pool_name: string; kind: string; players: number; price_minor: number | null; currency: string; available: boolean; taken_by: string | null; reason: string | null }
 interface Sponsor { id: number; name: string; category: string; email: string; logo_path?: string | null }
@@ -93,7 +94,7 @@ export default function Checkout() {
   return (
     <form onSubmit={pay}>
       <div className="card narrow">
-        <p className="sp-kicker">{quote.pool_name}{round ? ` · round ${round}` : ""}{season ? ` · ${season.name}` : ""}</p>
+        <p className="sp-kicker">{quote.pool_name}{round ? ` · ${roundText(round)}` : ""}{season ? ` · ${season.name}` : ""}</p>
         <h2>Your sponsorship</h2>
         <div className="field"><label>Business name, as players will see it</label>
           <input required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} disabled={!!sponsor} /></div>

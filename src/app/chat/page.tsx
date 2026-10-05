@@ -15,6 +15,7 @@ import type { PoolSponsor } from "@/lib/sponsor";
 import { readCache, writeCache } from "@/lib/cache";
 import { PoolName, poolLabel } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
+import { roundName } from "@/lib/format";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -470,7 +471,7 @@ function Chat() {
         return (
           <button key={p.round} type="button" className="pthread" onClick={() => setPrizeChat(p)}>
             <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a mate").join(" & ")}</span>
-            <span className="pthread-r">Round {p.round} ›</span>
+            <span className="pthread-r">{roundName(p.round)} ›</span>
           </button>
         );
       })}
@@ -706,7 +707,7 @@ function NoticeRow({ n, me, people, recap }: {
   const tagged = n.winners.includes(me) || giver === me;
   return (
     <div className={`notice${tagged ? " tagged" : ""}`} role="status">
-      <span className="nk">Round {n.round} prize 🏆</span>
+      <span className="nk">{roundName(n.round)} prize 🏆</span>
       <strong>{list} {ws.length > 1 ? "share it!" : "wins it!"}</strong>
       <span className="nsub">
         {n.prize ?? ""}{n.sponsor ? ` from ${n.sponsor}` : ""}

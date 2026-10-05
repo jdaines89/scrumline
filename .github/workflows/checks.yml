@@ -65,6 +65,6 @@ jobs:
           sh supabase/tests/run.sh | tee db.log
           # Some migrations need Supabase-only extensions (pg_net, pg_cron) and
           # skip that part on plain Postgres; a failed check prints FAILED.
-          if grep -q 'FAILED' db.log || ! grep -q 'ALL CHECKS PASSED' db.log || ! grep -q 'BACKUP CHECKS PASSED' db.log || ! grep -q 'ANALYTICS CHECKS PASSED' db.log || ! grep -q 'OPENER CHECKS PASSED' db.log || ! grep -q 'LOGIN CODE CHECKS PASSED' db.log || ! grep -q 'NATIONS CHECKS PASSED' db.log; then
+          if grep -q 'FAILED' db.log || ! grep -q 'ALL CHECKS PASSED' db.log || ! grep -q 'BACKUP CHECKS PASSED' db.log || ! grep -q 'ANALYTICS CHECKS PASSED' db.log || ! grep -q 'OPENER CHECKS PASSED' db.log || ! grep -q 'LOGIN CODE CHECKS PASSED' db.log || ! grep -q 'NATIONS CHECKS PASSED' db.log || ! grep -q 'KNOCKOUT CHECKS PASSED' db.log; then
             echo "::error::Database checks failed"; exit 1
           fi

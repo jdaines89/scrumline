@@ -6,6 +6,7 @@ import { randsToMinor } from "@/lib/projects";
 import { money, split } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
+import { roundName } from "@/lib/format";
 
 interface Slot { round: number | null; first_kickoff: string | null; reserve_minor: number; taken: boolean; taken_by: string | null; open: boolean }
 interface Business { id: number; name: string }
@@ -19,7 +20,7 @@ const STATUS: Record<string, string> = {
   withdrawn: "Withdrawn", lapsed: "Not paid in time",
 };
 const day = (d: string) => new Date(d).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
-const slotName = (r: number | null) => (r === null ? "The whole tournament" : `Round ${r}`);
+const slotName = (r: number | null) => (r === null ? "The whole tournament" : `${roundName(r)}`);
 
 /** Apply to present a whole tournament, or one round of it. Scrumline approves one business per slot. */
 export default function SponsorTournament() {
@@ -75,7 +76,7 @@ export default function SponsorTournament() {
           return (
             <button key={s.round ?? 0} type="button" className={`opt${on ? " sel" : ""}`} onClick={() => setPick(s)}>
               <div className="grow"><strong>{slotName(s.round)}</strong>
-                <div className="small muted">{s.round === null ? `"${season.name} presented by" you, all season` : `"Round ${s.round} sponsored by" you${s.first_kickoff ? `, from now until ${day(s.first_kickoff)}'s kickoff and through the round` : ""}`}</div></div>
+                <div className="small muted">{s.round === null ? `"${season.name} presented by" you, all season` : `"${roundName(s.round)} sponsored by" you${s.first_kickoff ? `, from now until ${day(s.first_kickoff)}'s kickoff and through the round` : ""}`}</div></div>
               <div className="price">from {money(s.reserve_minor)}</div>
             </button>
           );

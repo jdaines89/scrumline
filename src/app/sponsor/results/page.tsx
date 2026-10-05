@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { initials, money, query } from "@/lib/sponsor";
 import { SAMPLE_ALLOC, SAMPLE_BOOKING, SAMPLE_MINE, SAMPLE_RESULTS, previewOn, sampleDays } from "@/lib/preview";
 import { supabase } from "@/lib/supabase";
+import { roundText } from "@/lib/format";
 
 interface Mine { booking_id: number; sponsor_name: string; pool_name: string; season_name: string; round: number | null; status: string; price_minor: number; currency: string; creative_status: string | null }
 interface Results { players: number; reached: number; seen: number; shares: number; taps: number }
@@ -81,7 +82,7 @@ export default function SponsorResults() {
           <p className="sub">Tap a sponsorship to see how often players saw your name and what reached the schools.</p>
           {list.map((m) => (
             <Link key={m.booking_id} className="rowline" href={`/sponsor/results/?b=${m.booking_id}`}>
-              <span>{m.pool_name}{m.round ? `, round ${m.round}` : ""}<span className="small muted"> · {m.season_name}</span></span>
+              <span>{m.pool_name}{m.round ? `, ${roundText(m.round)}` : ""}<span className="small muted"> · {m.season_name}</span></span>
               <span className="small muted">{STATUS[m.status] ?? m.status}</span>
             </Link>
           ))}
@@ -102,7 +103,7 @@ export default function SponsorResults() {
         <div className="sp-head">
           <div className="sp-tile big">{initials(b.sponsor_name)}</div>
           <div><h2>{b.sponsor_name}</h2>
-            <div className="small muted">{b.pool_name}{b.round ? `, round ${b.round}` : ""} · {b.season_name}</div></div>
+            <div className="small muted">{b.pool_name}{b.round ? `, ${roundText(b.round)}` : ""} · {b.season_name}</div></div>
         </div>
         <p className={`small ${b.status === "live" ? "school-ok" : "muted"}`}>{STATE[b.status] ?? b.status}</p>
         {r && (
