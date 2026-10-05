@@ -14,6 +14,18 @@ export function matchDay(iso: string): string {
   });
 }
 
+/** "Fri 6 Nov", the heading over a day's matches. */
+export function dayHeading(iso: string): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short" });
+  return `${day} ${matchDay(iso).replace(/^0/, "")}`;
+}
+
+/** "22:10", SA time. */
+export function kickTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-ZA", { timeZone: "Africa/Johannesburg", hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
 export function signed(n: number): string {
   return n > 0 ? `+${n}` : String(n);
 }

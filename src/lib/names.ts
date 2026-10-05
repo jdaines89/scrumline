@@ -36,7 +36,7 @@ export function suggestTeams(taken: string[], seed: number, count = 3): string[]
 
 /** "Victoria Park High School '07": where each person played their school rugby (high school first). */
 export function useSchoolLabels(): Map<string, string> {
-  const [labels, setLabels] = useState<Record<string, string>>(() => readCache<Record<string, string>>("schoollabels") ?? {});
+  const [labels, setLabels] = useState<Record<string, string>>(() => readCache<Record<string, string>>("schoollabels2") ?? {});
   useEffect(() => {
     supabase.from("member_schools").select("user_id, stage, last_year, schools(name)").then(({ data }) => {
       const out: Record<string, string> = {};
@@ -44,10 +44,10 @@ export function useSchoolLabels(): Map<string, string> {
       for (const stage of ["primary", "high"]) {
         for (const r of rows) {
           if (r.stage !== stage || !r.schools) continue;
-          out[r.user_id] = r.last_year ? `${r.schools.name} '${String(r.last_year).slice(-2)}` : r.schools.name;
+          out[r.user_id] = r.last_year ? `${r.schools.name}, class of ${r.last_year}` : r.schools.name;
         }
       }
-      writeCache("schoollabels", out);
+      writeCache("schoollabels2", out);
       setLabels(out);
     });
   }, []);

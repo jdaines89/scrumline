@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLeague } from "@/components/league";
 import { Team, stripe } from "@/components/team";
-import { kickoff, roundName, roundText } from "@/lib/format";
+import { dayHeading, kickTime, roundName, roundText } from "@/lib/format";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { StandingRow } from "@/lib/types";
@@ -82,30 +82,33 @@ export default function Home() {
           <div className="card">
             <h2>{roundName(nextRound)}</h2>
             <p className="sub">Up next{!allCalled && <> · <Link href="/predict/">call your scores</Link></>}</p>
-            <table><tbody>
-              {next.map((m) => (
-                <tr key={m.id}>
-                  <td style={{ textAlign: "right" }}><Team team={teams.get(m.home_team_id)} align="right" bold={false} /></td>
-                  <td className="muted small" style={{ textAlign: "center", width: 86 }}>{kickoff(m.kickoff_at).replace(/^\w+, /, "")}</td>
-                  <td><Team team={teams.get(m.away_team_id)} bold={false} /></td>
-                </tr>
+            <div className="fx">
+              {next.map((m, i) => (
+                <div key={m.id}>
+                  {(i === 0 || dayHeading(m.kickoff_at) !== dayHeading(next[i - 1].kickoff_at)) && <div className="fx-day">{dayHeading(m.kickoff_at)}</div>}
+                  <div className="fx-row">
+                    <span className="fx-team home"><Team team={teams.get(m.home_team_id)} align="right" bold={false} /></span>
+                    <span className="fx-time">{kickTime(m.kickoff_at)}</span>
+                    <span className="fx-team"><Team team={teams.get(m.away_team_id)} bold={false} /></span>
+                  </div>
+                </div>
               ))}
-            </tbody></table>
+            </div>
           </div>
         )}
         {lastRound !== null && (
           <div className="card">
             <h2>{roundName(lastRound)}</h2>
             <p className="sub">Latest results</p>
-            <table><tbody>
+            <div className="fx">
               {latest.map((m) => (
-                <tr key={m.id}>
-                  <td style={{ textAlign: "right" }}><Team team={teams.get(m.home_team_id)} align="right" bold={false} /></td>
-                  <td className="score" style={{ textAlign: "center", width: 70 }}>{m.home_score}&ndash;{m.away_score}</td>
-                  <td><Team team={teams.get(m.away_team_id)} bold={false} /></td>
-                </tr>
+                <div key={m.id} className="fx-row">
+                  <span className="fx-team home"><Team team={teams.get(m.home_team_id)} align="right" bold={false} /></span>
+                  <span className="fx-time score">{m.home_score}&ndash;{m.away_score}</span>
+                  <span className="fx-team"><Team team={teams.get(m.away_team_id)} bold={false} /></span>
+                </div>
               ))}
-            </tbody></table>
+            </div>
           </div>
         )}
         {log.length > 0 && <div className="card">

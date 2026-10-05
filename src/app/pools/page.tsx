@@ -12,7 +12,7 @@ import type { PoolPrize } from "@/lib/prizes";
 import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
 import { supabase } from "@/lib/supabase";
 import { logEvent } from "@/lib/events";
-import { PoolName } from "@/components/pool-name";
+import { PoolName, poolTitle } from "@/components/pool-name";
 import { readCache, writeCache } from "@/lib/cache";
 import type { Pool } from "@/lib/types";
 import { roundName, roundText } from "@/lib/format";
@@ -153,7 +153,7 @@ export default function PoolsPage() {
           <OrganiserLine poolId={p.id} poolName={p.name} me={me.user_id} site={`${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`} />
         )}
         {rp && (
-          <button type="button" className="lgc-recruit" onClick={() => share(p.id, p.join_code, p.name, !!p.school_emis)}>
+          <button type="button" className="lgc-recruit" onClick={() => share(p.id, p.join_code, poolTitle(p), !!p.school_emis)}>
             <span className="lgc-recruit-label">{monthName(rp.month)} recruiter prize</span>
             <strong>{rp.prize}</strong> · bring in the most new players to win ›
           </button>

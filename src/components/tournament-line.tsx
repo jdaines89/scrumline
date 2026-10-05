@@ -21,7 +21,7 @@ export function TournamentLine({ sponsors, seasonName, round, title = true, sing
   if (!main && !ofRound) return null;
   return (
     <>
-      {main && <One s={main} lead={`${seasonName} presented by`} />}
+      {main && <One s={main} lead="Presented by" />}
       {ofRound && <One s={ofRound} lead={`${roundName(ofRound.round)} sponsored by`} />}
     </>
   );
