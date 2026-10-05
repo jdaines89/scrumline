@@ -1026,3 +1026,10 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .gate-spark div { flex: 1; height: 100%; display: flex; align-items: flex-end; }
 .gate-spark span { display: block; width: 100%; min-height: 2px; background: var(--accent); opacity: .75; border-radius: 2px 2px 0 0; }
 .gate-spark-axis { display: flex; justify-content: space-between; margin-top: 4px; }
+
+/* Just started a league: send it to the group */
+.lg-made { margin-top: 14px; padding: 14px; border: 1px solid var(--accent-dim); border-radius: 12px; }
+.lg-made p { margin: 4px 0 12px; }
+.lg-made .row { flex-wrap: wrap; gap: 8px; }
+.lg-code { letter-spacing: .12em; }
+.streak-line { margin: 8px 0 0; }
