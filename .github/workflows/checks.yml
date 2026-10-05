@@ -1,0 +1,68 @@
+# Runs on every pull request, before anything reaches main and the live app.
+# The live database holds real players' calls and chat, so a PR must:
+#   - typecheck, pass the unit tests and build;
+#   - rebuild a scratch database from every migration and pass the RLS and
+#     behaviour checks (supabase/tests);
+#   - only add new, non-destructive migrations (scripts/check-migrations.mjs).
+name: Checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://lgqhimcthptxglqppnuf.supabase.co
+      NEXT_PUBLIC_SUPABASE_KEY: sb_publishable_iUIXd23NeI3DTP8YIvOeHQ_1JHtj3sJ
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Only new, additive migrations
+        run: node scripts/check-migrations.mjs origin/${{ github.base_ref || 'main' }}
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: pg
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: pg
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild from migrations and run the checks
+        run: |
+          sh supabase/tests/run.sh | tee db.log
+          if grep -q 'ERROR' db.log || ! grep -q 'ALL CHECKS PASSED' db.log; then
+            echo "::error::Database checks failed"; exit 1
+          fi
