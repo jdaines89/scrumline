@@ -1,40 +1,29 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
-import { shieldFor, type Division } from "@/lib/crest";
+import { useEffect, useState, type ChangeEvent } from "react";
+import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 
-const SHIELD = "M4 4h56v26c0 15-12 25-28 30C16 55 4 45 4 30z";
-
-function Charge({ d, metal }: { d: Division; metal: string }) {
-  switch (d) {
-    case "chevron": return <path d="M4 44 32 18l28 26v10L32 28 4 54z" fill={metal} />;
-    case "pale": return <rect x="32" y="0" width="32" height="64" fill={metal} />;
-    case "bend": return <path d="M4 4h12l44 44v12z" fill={metal} />;
-    case "quarterly": return <path d="M32 4h28v28H32zM4 32h28v32H4z" fill={metal} />;
-    case "fess": return <rect x="0" y="22" width="64" height="14" fill={metal} />;
-    case "saltire": return <path d="M4 4h8l20 20 20-20h8v6L38 30l22 22v8h-6L32 38 10 60H4v-6l22-22L4 10z" fill={metal} />;
-  }
-}
-
-/** A school's crest: its real one when added, otherwise its own plain shield. */
+/**
+ * A school's crest when it has added its real one. Until then a plain school
+ * icon, the same for every school: we never invent a crest for a school.
+ */
 export function Crest({ emis, path, size = 40, name }: { emis: string; path?: string | null; size?: number; name?: string }) {
   const [broken, setBroken] = useState(false);
   if (path && !broken) {
     const url = supabase.storage.from("school-crests").getPublicUrl(path).data.publicUrl;
-    return <img className="crest" src={url} alt={name ? `${name} crest` : ""} width={size} height={size} onError={() => setBroken(true)} />;
+    return <img className="school-mark" src={url} alt={name ? `${name} crest` : ""} width={size} height={size} onError={() => setBroken(true)} />;
   }
-  const s = shieldFor(emis);
-  const clip = `crest-${emis}`;
   return (
-    <svg className="crest" viewBox="0 0 64 64" width={size} height={size} role={name ? "img" : undefined} aria-hidden={name ? undefined : true} aria-label={name ? `${name} shield` : undefined}>
-      <defs><clipPath id={clip}><path d={SHIELD} /></clipPath></defs>
-      <g clipPath={`url(#${clip})`}>
-        <rect width="64" height="64" fill={s.field} />
-        <Charge d={s.division} metal={s.metal} />
-      </g>
-      <path d={SHIELD} fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="1.5" />
-    </svg>
+    <span className="school-mark plain" data-emis={emis} aria-hidden style={{ width: size, height: size }}>
+      <svg viewBox="0 0 24 24" width={Math.round(size * 0.56)} height={Math.round(size * 0.56)} fill="none" stroke="currentColor"
+        strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 10 12 5l9 5" />
+        <path d="M5 10v9h14v-9" />
+        <path d="M10 19v-4h4v4" />
+        <path d="M8 13h.01M16 13h.01" />
+      </svg>
+    </span>
   );
 }
 
@@ -94,4 +83,23 @@ async function squarePng(file: File): Promise<Blob> {
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+/** Real crests schools have added, by EMIS number. Small: one row per school that has one. */
+export function useCrests(): Map<string, string> {
+  const [rows, setRows] = useState<Record<string, string>>(() => readCache<Record<string, string>>("crests1") ?? {});
+  useEffect(() => {
+    supabase.from("school_crests").select("emis, image_path").then(({ data }) => {
+      const out: Record<string, string> = {};
+      for (const r of (data ?? []) as { emis: string; image_path: string }[]) out[r.emis] = r.image_path;
+      writeCache("crests1", out); setRows(out);
+    });
+  }, []);
+  return new Map(Object.entries(rows));
+}
+
+/** A school's real crest in a list, or nothing: rows don't repeat the same plain icon. */
+export function ListCrest({ emis, crests, size }: { emis: string; crests: Map<string, string>; size: number }) {
+  const path = crests.get(emis);
+  return path ? <Crest emis={emis} path={path} size={size} /> : null;
 }

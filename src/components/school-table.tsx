@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Crest } from "@/components/crest";
+import { ListCrest, useCrests } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
@@ -23,6 +23,7 @@ const MINIMUM = 10;
  */
 export function SchoolTable() {
   const { season } = useLeague();
+  const crests = useCrests();
   const [stage, setStage] = useState<Stage>("high");
   const key = `schools3:${season.id}:${stage}`;
   const [rows, setRows] = useState<SchoolRow[] | null>(() => readCache<SchoolRow[]>(key) ?? null);
@@ -61,7 +62,7 @@ export function SchoolTable() {
                 <li key={r.emis} className={r.mine ? "me" : ""}>
                   <div className="brow">
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
-                    <Crest emis={r.emis} size={30} />
+                    <ListCrest emis={r.emis} crests={crests} size={30} />
                     <div className="who">
                       <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
                       <span className="small muted">{[r.town, `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
@@ -79,7 +80,7 @@ export function SchoolTable() {
                 {waiting.map((r) => (
                   <li key={r.emis} className={r.mine ? "me" : ""}>
                     <div className="brow">
-                    <Crest emis={r.emis} size={30} />
+                    <ListCrest emis={r.emis} crests={crests} size={30} />
                     <div className="who">
                       <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
                       <span className="small muted">
