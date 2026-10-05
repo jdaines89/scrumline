@@ -1,5 +1,6 @@
 "use client";
 
+import { poolTitle } from "@/components/pool-name";
 import { useEffect, useMemo, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
@@ -118,7 +119,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     if (recap.biz) add(`${roundName(recap.round)} prize by`, recap.biz.name, recap.biz.logo);
     return out;
   }, [recap, tournament, sponsor]);
-  const sub = `${pool!.name} · ${season.name}`;
+  const sub = `${poolTitle(pool!)} · ${season.name}`;
   const card = (type: "image/png" | "image/jpeg") => drawCard(sub, title, recap!.lines, recap!.table, backers, type);
 
   // In the chat, draw the card once its story is known and show the picture.
@@ -146,7 +147,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     if (sponsor) sponsorEvent(sponsor.booking_id, "share");
     logEvent("recap_shared", { round: recap!.round }, pool!.id);
     const file = new File([blob], `scrumline-round-${recap!.round}.png`, { type: "image/png" });
-    const text = `${title}, ${pool!.name}\n` + recap!.lines.map((l) => `${l.label}: ${l.text}`).join("\n");
+    const text = `${title}, ${poolTitle(pool!)}\n` + recap!.lines.map((l) => `${l.label}: ${l.text}`).join("\n");
     try {
       if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     } catch (e) { if ((e as Error).name === "AbortError") return; }

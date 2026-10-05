@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/inter";
 import "./globals.css";
 import { AuthGate } from "@/components/auth-gate";
 import { LeagueProvider } from "@/components/league";

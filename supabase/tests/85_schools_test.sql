@@ -57,4 +57,9 @@ select pg_temp.check((select count(*) from public.project_need_photos_list() whe
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
 select pg_temp.check((select count(*) from public.project_need_photos_list()) = 0, 'outsiders see none');
 reset role;
+select pg_temp.check(not exists (select 1 from public.pools p join public.schools s on s.emis = p.school_emis
+                                 where p.full_name is distinct from s.name || coalesce(' Class of ' || p.school_year, '')),
+                     'every school league carries the school''s full name');
+select pg_temp.check(not exists (select 1 from public.pools where school_emis is null and full_name is not null),
+                     'mates'' leagues have no school name');
 \echo SCHOOLS CHECKS PASSED

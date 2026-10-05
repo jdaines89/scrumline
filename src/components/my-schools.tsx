@@ -147,7 +147,7 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
           </div>
           <p className={`small ${mine?.verified ? "school-ok" : "muted"}`}>
             {mine?.verified
-              ? `Confirmed by ${mine.vouches} schoolmates`
+              ? (mine.vouches ? `Confirmed by ${mine.vouches} schoolmates` : "Confirmed by your schoolmates")
               : `Needs ${NEEDED - (mine?.vouches ?? 0)} more schoolmate${NEEDED - (mine?.vouches ?? 0) === 1 ? "" : "s"} to confirm you`}
           </p>
           <ClaimLine emis={saved.emis} onMessage={onMessage} />

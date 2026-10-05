@@ -90,7 +90,8 @@ function Leaderboard() {
                 <span className="rank">{i + 1}</span>
                 <div className="who">
                   <strong>{r.team_name ?? r.manager}</strong>
-                  <span className="small muted bname">{[fullName(person(r.user_id)) || r.manager, schools.get(r.user_id)].filter(Boolean).join(" · ")}</span>
+                  <span className="small muted bname">{fullName(person(r.user_id)) || r.manager}</span>
+                  {schools.get(r.user_id) && <span className="small bschool">{schools.get(r.user_id)}</span>}
                 </div>
                 <span className="btotal">{r.total_points}</span>
               </div>

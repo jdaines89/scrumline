@@ -3,11 +3,12 @@ import type { Pool } from "@/lib/types";
 /** A pool's name, with a tick when it's an official school pool (made by Scrumline, never by a player). */
 export function PoolName({ pool }: { pool: Pool }) {
   if (!pool.school_emis) return <>{pool.name}</>;
-  const cut = pool.name.lastIndexOf(" ") + 1;
+  const name = poolTitle(pool);
+  const cut = name.lastIndexOf(" ") + 1;
   return (
     <>
-      {pool.name.slice(0, cut)}
-      <span className="nowrap">{pool.name.slice(cut)}
+      {name.slice(0, cut)}
+      <span className="nowrap">{name.slice(cut)}
       {(
         <svg className="verified" viewBox="0 0 16 16" width="15" height="15" role="img" aria-label="Official school pool">
           <title>Official school pool, set up by Scrumline</title>
@@ -20,4 +21,7 @@ export function PoolName({ pool }: { pool: Pool }) {
 }
 
 /** The same for a plain-text spot like a dropdown. */
-export const poolLabel = (pool: Pool) => (pool.school_emis ? `${pool.name} ✓` : pool.name);
+export const poolLabel = (pool: Pool) => (pool.school_emis ? `${poolTitle(pool)} ✓` : pool.name);
+
+/** A league's name in full: school leagues use the school's official name, never a shortened one. */
+export const poolTitle = (pool: Pool) => pool.full_name || pool.name;

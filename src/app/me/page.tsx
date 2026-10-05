@@ -118,10 +118,24 @@ export default function MePage() {
             <div className="me-biz">
               <strong>Look after your school&apos;s account?</strong>
               <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
-              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link>{me.is_admin && <Link className="btn ghostlink" href="/admin/metrics/">Growth targets</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/pack/">Sponsor pack</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/schools/">Schools admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/projects/">Projects admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/sponsors/">Sponsors admin</Link>}{me.is_admin && <Link className="btn ghostlink" href="/admin/moderation/">Moderation{held ? ` · ${held} to review` : ""}</Link>}</div>
+              <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link></div>
             </div>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
           </div>
+          {me.is_admin && (
+            <div className="card">
+              <h2>Running Scrumline</h2>
+              <p className="sub">Only admins see this.</p>
+              <nav className="admin-links">
+                <Link href="/admin/metrics/">Growth targets<span>Weekly callers and the sprint target</span></Link>
+                <Link href="/admin/pack/">Sponsor pack<span>One page to send a business</span></Link>
+                <Link href="/admin/schools/">Schools<span>Claims and payouts</span></Link>
+                <Link href="/admin/projects/">School projects<span>List, settle and prove</span></Link>
+                <Link href="/admin/sponsors/">Sponsors<span>Bookings and approvals</span></Link>
+                <Link href="/admin/moderation/">Moderation<span>{held ? `${held} waiting for review` : "Nothing waiting"}</span></Link>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
       {me.is_admin && <Numbers season={season.id} seasonName={season.name} />}

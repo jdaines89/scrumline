@@ -1,5 +1,6 @@
 "use client";
 
+import { poolTitle } from "@/components/pool-name";
 import Link from "next/link";
 import { AlertsCard } from "@/components/alerts-card";
 import { AllSet, type NextStep } from "@/components/all-set";
@@ -276,7 +277,7 @@ function Predict() {
       )}
       {welcome && pool && (
         <div className="card welcome-card">
-          <strong>You&apos;re in {pool.name}</strong>
+          <strong>You&apos;re in {poolTitle(pool)}</strong>
           <span className="small muted">Call the score of each game below. One Banker a round doubles your points. Your calls count in every league you join.</span>
           <button type="button" className="ghost" onClick={() => setWelcome(false)}>Got it</button>
         </div>

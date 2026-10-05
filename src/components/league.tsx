@@ -211,9 +211,10 @@ function Switcher() {
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
-      <label>
-        <span>Tournament</span>
-        <select value={season.id} onChange={(e) => setSeason(e.target.value)}>
+      <label className="season-pick">
+        <span className="season-pick-kicker">Tournament</span>
+        <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}{seasons.length > 1 && <span className="season-pick-chev" aria-hidden="true">⌄</span>}</span>
+        <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Tournament">
           {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
         </select>
       </label>

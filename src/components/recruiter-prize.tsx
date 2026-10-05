@@ -1,5 +1,6 @@
 "use client";
 
+import { poolTitle } from "@/components/pool-name";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
@@ -178,7 +179,7 @@ export function RecruiterPrizeSetup() {
 
   return (
     <div className="card">
-      <h2>Recruiter prize for {pool.name}</h2>
+      <h2>Recruiter prize for {poolTitle(pool)}</h2>
       <p className="sub">For whoever here brings the most new players onto Scrumline in a month, from your business. {RULE} The winner confirms it arrived.</p>
       {business && (free.length === 0 ? <p className="muted">This month and next already have a recruiter prize.</p> : (
         <form className="prizeform" onSubmit={offer}>
