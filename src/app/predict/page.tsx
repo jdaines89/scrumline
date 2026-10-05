@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertsCard } from "@/components/alerts-card";
 import { AllSet, type NextStep } from "@/components/all-set";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { NeedsEntry, useLeague } from "@/components/league";
@@ -269,6 +270,7 @@ function Predict() {
           </span>
         </form>
       )}
+      <AlertsCard />
       <RoundPicker rounds={rounds} round={round} onPick={setRound} locked={locked} matches={matches} />
       <div className="card">
         <h2>Round {round} {done && <span className="badge win">locked</span>}</h2>
