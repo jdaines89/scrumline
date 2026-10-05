@@ -1,5 +1,6 @@
 "use client";
 
+import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -147,6 +148,9 @@ export default function PoolsPage() {
         </button>
         {!p.school_emis && (
           <button type="button" className="ghost lgc-invite" onClick={() => share(p.id, p.join_code, p.name)}>{copied === p.id ? "Copied" : "Invite"}</button>
+        )}
+        {!p.school_emis && p.created_by === me.user_id && (
+          <OrganiserLine poolId={p.id} poolName={p.name} me={me.user_id} site={`${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`} />
         )}
         {rp && (
           <button type="button" className="lgc-recruit" onClick={() => share(p.id, p.join_code, p.name, !!p.school_emis)}>

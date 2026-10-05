@@ -12,6 +12,7 @@ import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { AlertsCard } from "@/components/alerts-card";
 import { AlsoOn } from "@/components/also-on";
+import { BringAMate } from "@/components/bring-a-mate";
 import { callingStreak, type Streak } from "@/lib/streak";
 
 export default function Home() {
@@ -74,6 +75,7 @@ export default function Home() {
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
       <AlsoOn />
+      {!season.is_replay && <BringAMate season={season.id} seasonName={season.name} />}
       <AlertsCard />
       <div className="grid2">
         {nextRound !== null && (

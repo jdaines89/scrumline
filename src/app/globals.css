@@ -897,6 +897,8 @@ button.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset
 button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
 @media (max-width: 560px) { button.lgc-invite { margin-left: 56px; } }
 .lgc-waiting { flex-basis: 100%; font-size: 13px; padding-left: 56px; }
+.lgc-organiser { flex-basis: 100%; padding: 2px 0 6px 56px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.lgc-organiser .linkish { font-size: 13px; color: var(--accent); }
 button.lgc-recruit { all: unset; box-sizing: border-box; flex-basis: 100%; margin-left: 56px; padding: 8px 12px; border-left: 2px solid var(--gold); background: var(--panel-2); border-radius: 0 8px 8px 0; font-size: 13px; color: var(--muted); cursor: pointer; }
 button.lgc-recruit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lgc-recruit strong { color: var(--text); font-weight: 600; }
@@ -1069,3 +1071,7 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
   .pack { border: 0; padding: 0; color: #111; background: #fff; }
   .pack-stats span { color: #555; }
 }
+
+/* Bring a mate: after a round's results, one calm line and one button. */
+.mate-card .mate-line { margin: 0 0 4px; font-weight: 600; }
+.mate-card .sub { margin-bottom: 12px; }
