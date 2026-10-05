@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AlertsCard } from "@/components/alerts-card";
 import { AllSet, type NextStep } from "@/components/all-set";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
@@ -297,7 +298,7 @@ function Predict() {
         {!done && (
           <details className="rules">
             <summary>How scoring works</summary>
-            6 for the right result, 5 more for the exact margin, 2 for each side within 3 points, and 5 more for the exact score. Back one match as your <strong>Banker</strong> and it counts double.
+            6 for the right result, 5 more for the exact margin, 2 for each side within 3 points, and 5 more for the exact score. Back one match as your <strong>Banker</strong> and it counts double. <Link href="/rules/">Full rules</Link>.
           </details>
         )}
         {ready !== `predict:${entry!.id}:${round}` ? ms.map((m) => <div key={m.id} className="match skeleton" style={{ height: 150 }} />) : ms.map((m) => {

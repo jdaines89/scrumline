@@ -833,6 +833,7 @@ svg.verified { display: inline-block; vertical-align: -2px; margin-left: 6px; co
 .proj-proof figure { margin: 0; display: grid; gap: 4px; }
 .proj-proof img, .proj-proof .skeleton { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
 .proj-proof p { grid-column: 1 / -1; margin: 0; }
+.proj-need { margin: 0 0 12px; }
 .proj-pledge { margin-top: 14px; }
 .proj-pledge .row { flex-wrap: wrap; }
 .proj-amt { display: flex; align-items: center; gap: 4px; flex: 0 0 120px; }
@@ -1045,3 +1046,26 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .also-on p { margin: 0; }
 .also-on button { flex: none; padding: 8px 14px; font-size: 14px; }
 @media (max-width: 560px) { .also-on { flex-direction: column; align-items: stretch; } .also-on button { align-self: flex-end; } }
+
+/* Rules: plain lists in calm cards. */
+.rules h3 { margin: 0 0 8px; }
+.rules ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.rules li { line-height: 1.5; }
+
+/* Sponsor pack: one printable page. */
+.pack { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: grid; gap: 18px; max-width: 720px; margin: 0 auto; }
+.pack h1 { margin: 4px 0 8px; font-size: 26px; line-height: 1.2; }
+.pack h3 { margin: 0 0 8px; }
+.pack ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.pack-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.pack-stats div { display: flex; flex-direction: column; gap: 2px; }
+.pack-stats b { font-size: 28px; }
+.pack-stats span { font-size: 13px; color: var(--muted); }
+.pack-actions { max-width: 720px; margin: 0 auto 12px; }
+@media (max-width: 560px) { .pack-stats { grid-template-columns: repeat(2, 1fr); } }
+@media print {
+  .no-print, header.top, nav.tabs, .switcher { display: none !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .pack { border: 0; padding: 0; color: #111; background: #fff; }
+  .pack-stats span { color: #555; }
+}

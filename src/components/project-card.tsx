@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
-import { projectPhotoUrl, randsToMinor, STATE_LABEL, type Evidence, type Project } from "@/lib/projects";
+import { projectPhotoUrl, randsToMinor, STATE_LABEL, type Evidence, type NeedPhoto, type Project } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 
@@ -38,6 +38,11 @@ export function ProjectCard({ p, businesses, asMe, onChange }: {
         <span className={`proj-state ${p.state}`}>{STATE_LABEL[p.state]}</span>
       </div>
       <p className="proj-why">{p.why}</p>
+      {(p.need?.length ?? 0) > 0 && (
+        <div className="proj-proof proj-need">
+          {p.need!.map((n) => <NeedFigure key={n.image_path} n={n} />)}
+        </div>
+      )}
       <p className="small">{p.items} <span className="muted">· from {p.supplier}</span></p>
       <p className="small muted proj-cost">{money(p.price_minor, p.currency)} for the items + {money(p.fee_minor, p.currency)} Scrumline project fee ({p.fee_bps / 100}%)</p>
 
@@ -80,6 +85,17 @@ export function ProjectCard({ p, businesses, asMe, onChange }: {
         <p className="small muted" style={{ marginBottom: 0 }}>Projects are backed in a business&apos;s name. <Link href="/sponsor/profile/">Set up your business profile</Link> first.</p>
       )}
     </div>
+  );
+}
+
+function NeedFigure({ n }: { n: NeedPhoto }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { projectPhotoUrl(n.image_path).then(setUrl); }, [n.image_path]);
+  return (
+    <figure>
+      {url ? <a href={url} target="_blank" rel="noreferrer"><img src={url} alt={n.caption ?? "Why the school needs it"} /></a> : <div className="skeleton" />}
+      {n.caption && <figcaption className="small muted">{n.caption}</figcaption>}
+    </figure>
   );
 }
 

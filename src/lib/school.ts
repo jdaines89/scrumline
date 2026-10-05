@@ -1,3 +1,5 @@
+import type { School } from "@/lib/types";
+
 /** Who at a school looks after its account. */
 export const ROLES: [string, string][] = [
   ["principal", "Principal"],
@@ -20,3 +22,13 @@ export interface Dashboard {
   bank_name: string | null; account_last4: string | null; account_name: string | null;
 }
 export interface Payout { id: number; amount_minor: number; currency: string; status: string; created_at: string; paid_at: string | null; confirmed_at: string | null; note: string | null }
+
+// The school picked on the For schools page, carried to the claim step after
+// the email link so nobody searches twice. Only public list details.
+const PICKED = "scrumline-claim-school";
+export function rememberPickedSchool(s: School | null): void {
+  try { if (s) localStorage.setItem(PICKED, JSON.stringify(s)); else localStorage.removeItem(PICKED); } catch { /* storage blocked: they search again */ }
+}
+export function pickedSchool(): School | null {
+  try { const raw = localStorage.getItem(PICKED); return raw ? (JSON.parse(raw) as School) : null; } catch { return null; }
+}

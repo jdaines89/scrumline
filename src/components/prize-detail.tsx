@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { prizePhotoUrl, whoWon, type PoolPrize } from "@/lib/prizes";
@@ -51,6 +52,7 @@ export function PrizeDetail({ prize, nameOf, onClose, label, state: given }: {
           </div>
           {!label && <p className="prize-meta pz-rule">Anyone in the league can win it except {nameOf(prize.offered_by)}, who offered it.</p>}
           <SponsorAbout about={prize.sponsor_about} website={prize.sponsor_website} />
+          <p className="prize-meta"><Link href="/rules/#prizes">Prize rules</Link></p>
         </div>
       </div>
     </div>
