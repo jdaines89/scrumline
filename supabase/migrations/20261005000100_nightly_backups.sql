@@ -6,9 +6,10 @@
 -- night overwrites the snapshot from two weeks ago. Nothing is ever deleted,
 -- which also keeps this migration and the job free of destructive statements.
 --
--- Covered: every table in public (new tables are picked up automatically)
--- except the reference list of schools, which a migration reloads; plus the
--- sign-in identities in auth.users (id, email, created, metadata).
+-- Covered: every table in public and analytics (new tables are picked up
+-- automatically) except the reference list of schools, which a migration
+-- reloads; plus the sign-in identities in auth.users (id, email, created,
+-- metadata). Tables outside public are named schema.table.
 --
 -- Restore is non-destructive: backup.restore_missing() puts back rows that are
 -- gone (matched on the primary key) and never overwrites a row that exists.
@@ -39,14 +40,17 @@ declare
   t record; n integer := 0; j jsonb; cnt integer;
 begin
   for t in
-    select pc.relname from pg_class pc join pg_namespace ns on ns.oid = pc.relnamespace
-    where ns.nspname = 'public' and pc.relkind in ('r', 'p') and pc.relname <> 'schools'
-    order by pc.relname
+    select ns.nspname, pc.relname,
+           case ns.nspname when 'public' then pc.relname else ns.nspname || '.' || pc.relname end as tbl
+    from pg_class pc join pg_namespace ns on ns.oid = pc.relnamespace
+    where ns.nspname in ('public', 'analytics') and pc.relkind in ('r', 'p')
+      and not (ns.nspname = 'public' and pc.relname = 'schools')
+    order by 3
   loop
-    execute format('select coalesce(jsonb_agg(to_jsonb(x)), ''[]''), count(*) from public.%I x', t.relname)
+    execute format('select coalesce(jsonb_agg(to_jsonb(x)), ''[]''), count(*) from %I.%I x', t.nspname, t.relname)
       into j, cnt;
     insert into backup.snapshots (slot, tbl, taken_at, row_count, rows)
-    values (s, t.relname, now(), cnt, j)
+    values (s, t.tbl, now(), cnt, j)
     on conflict (slot, tbl) do update
       set taken_at = excluded.taken_at, row_count = excluded.row_count, rows = excluded.rows;
     n := n + 1;
