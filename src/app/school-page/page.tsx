@@ -6,7 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { Crest, CrestUpload } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
-import { schoolHref, schoolKind } from "@/lib/crest";
+import { provinceName, schoolHref, schoolKind } from "@/lib/crest";
 import { ord } from "@/lib/growth";
 import { joinLink } from "@/lib/join-link";
 import { projectPhotoUrl, STATE_LABEL, type ProjectState } from "@/lib/projects";
@@ -81,7 +81,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
     s.learners ? `${fmt(s.learners)} learners` : null,
     s.no_fee ? "No-fee school" : null,
   ].filter(Boolean).join(" · ");
-  const place = [s.town, s.province].filter(Boolean).join(", ");
+  const place = [s.town, provinceName(s.province)].filter(Boolean).join(", ");
   const playing = p.players.filter((x) => x.playing);
 
   return (
