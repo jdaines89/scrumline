@@ -34,7 +34,7 @@ export default function AdminMetrics() {
   useEffect(() => {
     if (!me.is_admin) return;
     supabase.rpc("gate_metrics").then(({ data, error }) => {
-      if (error) setErr(error.message); else setG(data as Gates);
+      if (error || !data?.targets) setErr(error?.message ?? "No numbers yet."); else setG(data as Gates);
     });
   }, [me.is_admin]);
 
@@ -56,7 +56,7 @@ export default function AdminMetrics() {
         <Progress label="Weekly active callers" value={g.wac} target={next.wac} />
         <Progress label="Leagues with 4+ calling this week" value={g.live_leagues} target={next.live_leagues} />
         <p className="small muted" style={{ marginBottom: 0 }}>
-          {g.players} players · {g.leagues} leagues with 4+ members · {g.alerts === null ? "–" : `${Math.round(g.alerts * 100)}%`} get phone alerts
+          {g.players} players · {g.leagues} {g.leagues === 1 ? "league" : "leagues"} with 4+ members · {g.alerts === null ? "–" : `${Math.round(g.alerts * 100)}%`} get phone alerts
         </p>
       </div>
 
