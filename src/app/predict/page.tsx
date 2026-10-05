@@ -308,6 +308,8 @@ function Predict() {
           const p = preds.get(m.id);
           const started = matchStarted(m);
           const shut = done || started || myLocks.has(m.id);
+          // Full time: the real score takes the middle of the card; your call sits under it.
+          const final = shut && m.home_score !== null && (done || !season.is_replay);
           const bankerShut = ms.some((x) => preds.get(x.id)?.is_banker && (matchStarted(x) || myLocks.has(x.id)));
           return (
             <div key={m.id} className={p?.is_banker ? "match banker" : "match"}>
@@ -323,11 +325,19 @@ function Predict() {
               </div>
               <div className="pred">
                 <span className="pteam"><span className="ha home">Home</span><Crest team={h} size={30} /></span>
+                {final ? (
+                  <div className="pfinal" aria-label={`Full time: ${h.display_name} ${m.home_score}, ${a.display_name} ${m.away_score}`}>
+                    <span className="pfinal-k">Full time</span>
+                    <span className="pfinal-s">{m.home_score}<span className="muted">–</span>{m.away_score}</span>
+                    <span className="pfinal-mine">{p ? <>Your call <strong>{p.home_score}–{p.away_score}</strong></> : "You didn't call it"}</span>
+                  </div>
+                ) : <>
                 <input className={`pbox${bad(d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
                   aria-label={`${h.display_name} score`} onChange={(e) => save(m.id, e.target.value, d[1])} />
                 <span className="muted">–</span>
                 <input className={`pbox${bad(d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[1]}
                   aria-label={`${a.display_name} score`} onChange={(e) => save(m.id, d[0], e.target.value)} />
+                </>}
                 <span className="pteam away"><span className="ha">Away</span><Crest team={a} size={30} /></span>
               </div>
               <div className="pnames">
@@ -337,13 +347,10 @@ function Predict() {
               {!shut && (bad(d[0]) || bad(d[1])) && (
                 <p className="scorewarn">A rugby side can&apos;t score 1, 2 or 4, so this call isn&apos;t saved yet.</p>
               )}
-              {shut && m.home_score !== null && (done || !season.is_replay) && (
+              {final && (
                 <div className="presult">
-                  <div>
-                    <span>Real score <strong>{m.home_score}–{m.away_score}</strong></span>
-                    {scores.has(m.id) && <Breakdown s={scores.get(m.id)!} />}
-                  </div>
-                  <span className="pts">{scores.has(m.id) ? `+${scores.get(m.id)!.total_pts}` : "no call"}</span>
+                  {scores.has(m.id) ? <Breakdown s={scores.get(m.id)!} /> : <span className="muted">No points for this one</span>}
+                  <span className="pts">{scores.has(m.id) ? `+${scores.get(m.id)!.total_pts}` : "0"}</span>
                 </div>
               )}
               {crowd.has(m.id) && <Crowd c={crowd.get(m.id)!} home={h} away={a} />}
