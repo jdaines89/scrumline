@@ -308,7 +308,7 @@ function Predict() {
           const p = preds.get(m.id);
           const started = matchStarted(m);
           const shut = done || started || myLocks.has(m.id);
-          // Full time: the real score takes the middle of the card; your call sits under it.
+          // Full time: the real score takes the middle of the card; your call moves to the points row.
           const final = shut && m.home_score !== null && (done || !season.is_replay);
           const bankerShut = ms.some((x) => preds.get(x.id)?.is_banker && (matchStarted(x) || myLocks.has(x.id)));
           return (
@@ -329,7 +329,6 @@ function Predict() {
                   <div className="pfinal" aria-label={`Full time: ${h.display_name} ${m.home_score}, ${a.display_name} ${m.away_score}`}>
                     <span className="pfinal-k">Full time</span>
                     <span className="pfinal-s">{m.home_score}<span className="muted">–</span>{m.away_score}</span>
-                    <span className="pfinal-mine">{p ? <>Your call <strong>{p.home_score}–{p.away_score}</strong></> : "You didn't call it"}</span>
                   </div>
                 ) : <>
                 <input className={`pbox${bad(d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
@@ -349,7 +348,10 @@ function Predict() {
               )}
               {final && (
                 <div className="presult">
-                  {scores.has(m.id) ? <Breakdown s={scores.get(m.id)!} /> : <span className="muted">No points for this one</span>}
+                  <div className="presult-left">
+                    <span className="muted">{p ? <>You called <strong className="presult-call">{p.home_score}–{p.away_score}</strong></> : "You didn't call this one"}</span>
+                    {scores.has(m.id) && <Breakdown s={scores.get(m.id)!} />}
+                  </div>
                   <span className="pts">{scores.has(m.id) ? `+${scores.get(m.id)!.total_pts}` : "0"}</span>
                 </div>
               )}
