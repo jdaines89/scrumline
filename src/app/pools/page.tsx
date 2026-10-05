@@ -10,6 +10,7 @@ import { latestWin } from "@/components/prize-line";
 import type { PoolPrize } from "@/lib/prizes";
 import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
 import { supabase } from "@/lib/supabase";
+import { logEvent } from "@/lib/events";
 import { PoolName } from "@/components/pool-name";
 import { readCache, writeCache } from "@/lib/cache";
 import type { Pool } from "@/lib/types";
@@ -183,6 +184,7 @@ export default function PoolsPage() {
     const text = school
       ? `Play for ${poolName} on Scrumline in the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`
       : `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
+    logEvent("invite_shared", { from: school ? "school" : "league" }, id);
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);

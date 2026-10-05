@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:seed-sql": "tsx scripts/supabase-seed.ts",
-    "db:test": "sh supabase/tests/run.sh"
+    "db:test": "sh supabase/tests/run.sh",
+    "check:migrations": "node scripts/check-migrations.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.0",

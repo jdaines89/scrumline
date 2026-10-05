@@ -10,6 +10,7 @@ create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
   invited_at timestamptz,
+  created_at timestamptz default now(),
   raw_user_meta_data jsonb default '{}'
 );
 create function auth.uid() returns uuid language sql stable as

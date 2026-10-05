@@ -7,6 +7,7 @@ import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
 import { ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
+import { logEvent } from "@/lib/events";
 import type { School } from "@/lib/types";
 
 interface Holder { contact_name: string; role: string; status: string }
@@ -236,7 +237,7 @@ function ShareCard({ dash }: { dash: Dashboard }) {
       <h2>Tell your former pupils</h2>
       <p className="share-text">{text}</p>
       <div className="row">
-        <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer">Share on WhatsApp</a>
+        <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer" onClick={() => logEvent("invite_shared", { from: "school_page" })}>Share on WhatsApp</a>
         <button type="button" className="ghost" onClick={() => copy(text)}>{copied ? "Copied" : "Copy"}</button>
       </div>
       <p className="small muted" style={{ marginBottom: 6 }}>For parents and former pupils who own a business:</p>
