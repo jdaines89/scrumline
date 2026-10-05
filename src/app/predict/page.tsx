@@ -347,12 +347,12 @@ function Predict() {
                 <p className="scorewarn">A rugby side can&apos;t score 1, 2 or 4, so this call isn&apos;t saved yet.</p>
               )}
               {final && (
-                <div className="presult">
-                  <div className="presult-left">
-                    <span className="muted">{p ? <>You called <strong className="presult-call">{p.home_score}–{p.away_score}</strong></> : "You didn't call this one"}</span>
-                    {scores.has(m.id) && <Breakdown s={scores.get(m.id)!} />}
-                  </div>
-                  <span className="pts">{scores.has(m.id) ? `+${scores.get(m.id)!.total_pts}` : "0"}</span>
+                <div className="presult final">
+                  <span className="muted">
+                    {p ? <>You called <strong className="presult-call">{p.home_score}–{p.away_score}</strong></> : "You didn't call this one"}
+                    {" · "}<strong className="presult-call">{scores.has(m.id) ? `+${scores.get(m.id)!.total_pts}` : "0"} pts</strong>
+                  </span>
+                  {scores.has(m.id) && <Breakdown s={scores.get(m.id)!} />}
                 </div>
               )}
               {crowd.has(m.id) && <Crowd c={crowd.get(m.id)!} home={h} away={a} />}

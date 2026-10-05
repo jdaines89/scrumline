@@ -1155,5 +1155,6 @@ a.sch-link:hover { text-decoration: underline; }
 .pfinal-k { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .pfinal-s { display: flex; align-items: baseline; gap: 8px; font-size: 32px; font-weight: 750; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .pfinal-s .muted { font-weight: 400; font-size: 22px; }
-.presult-left { display: grid; gap: 6px; min-width: 0; }
+.presult.final { flex-direction: column; justify-content: center; gap: 6px; text-align: center; padding: 10px 12px; }
+.presult.final .breakdown { justify-content: center; }
 .presult-call { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
