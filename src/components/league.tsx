@@ -11,6 +11,7 @@ import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/li
 import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
 import { needsNames } from "@/lib/names";
+import { defaultSeason } from "@/lib/seasons";
 
 interface League {
   seasons: Season[];
@@ -53,10 +54,6 @@ function remember(key: string, value?: string): string | null {
   } catch { return null; }
 }
 
-/** The newest season that hasn't finished yet, else the newest. */
-function defaultSeason(seasons: Season[]): Season {
-  return seasons.find((s) => !s.is_replay) ?? seasons[0];
-}
 
 /**
  * Loads what every screen needs after sign-in: who you are, the tournaments,

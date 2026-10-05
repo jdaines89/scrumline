@@ -1,5 +1,11 @@
 export interface Competition { id: string; name: string; short_name: string }
-export interface Season { id: string; name: string; is_replay: boolean; competition_id: string; starts_on: string | null }
+export interface Season {
+  id: string; name: string; is_replay: boolean; competition_id: string; starts_on: string | null;
+  /** Last day of play, when known; open-ended otherwise. */
+  ends_on?: string | null;
+  /** Wikipedia page the try bonuses are read from; none for tournaments without a log check. */
+  wiki_page?: string | null;
+}
 export interface Pool { id: number; season: string; name: string; join_code: string; created_by: string; school_emis: string | null; school_stage: "primary" | "high" | null; school_year: number | null }
 export interface Team {
   id: string; display_name: string; short_name: string; stadium: string | null;
