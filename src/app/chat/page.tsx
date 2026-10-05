@@ -215,6 +215,9 @@ function Chat() {
   }, [missingKey]);
   const findMsg = (id: number) => msgs.find((x) => x.id === id) ?? quoted.get(id) ?? null;
 
+  // Replies need the reply_to column; until the database has it, the Reply action stays hidden.
+  const canReply = msgs.some((m) => "reply_to" in m);
+
   function startReply(m: ChatMessage) {
     setReplyTo(m); setPicked(null);
     requestAnimationFrame(() => box.current?.focus());
@@ -232,7 +235,7 @@ function Chat() {
   // Swipe right on a bubble to reply. Vertical drags stay as scrolling.
   const swipeHandlers = (m: ChatMessage) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.pointerType === "mouse") return;
+      if (e.pointerType === "mouse" || !canReply) return;
       swipe.current = { id: m.id, x: e.clientX, y: e.clientY, dx: 0, el: e.currentTarget, moved: false };
     },
     onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -526,7 +529,7 @@ function Chat() {
                           onClick={() => react(m.id, e)}>{e}</button>
                       ))}
                     </div>
-                    <button type="button" className="ghost" onClick={() => startReply(m)}>Reply</button>
+                    {canReply && <button type="button" className="ghost" onClick={() => startReply(m)}>Reply</button>}
                     {mine && <button type="button" className="danger" onClick={() => remove(m.id)}>Delete</button>}
                     {!mine && <button type="button" className="ghost" onClick={() => setReporting(m.id)}>Report</button>}
                     {!mine && <button type="button" className="ghost" onClick={() => setBlocking(m.author_id)}>Block</button>}
