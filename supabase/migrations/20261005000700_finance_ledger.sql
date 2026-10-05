@@ -263,7 +263,7 @@ grant execute on function public.finance_summary() to authenticated;
 select finance.post_booking(id) from public.sponsor_bookings where status in ('paid', 'live', 'ended') and paid_at is not null;
 
 -- The sponsor pack: live reach numbers and prices for the one-page pack an
--- admin prints or saves as a PDF and sends himself. Admins only.
+-- admin prints or saves as a PDF and sends on. Admins only.
 create or replace function public.sponsor_pack()
 returns jsonb language sql stable security definer set search_path = '' as $$
   with wk as (select date_trunc('week', now() at time zone 'Africa/Johannesburg')::date as this_week),
