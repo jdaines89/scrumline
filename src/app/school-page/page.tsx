@@ -87,7 +87,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
   return (
     <>
       <div className="card narrow sch-hero">
-        <Crest emis={s.emis} path={p.crest_path} size={84} name={s.name} />
+        <Crest emis={s.emis} path={p.crest_path} size={p.crest_path ? 84 : 52} name={s.name} />
         <h1 className="sch-name">{s.name}</h1>
         {place && <p className="sch-place">{place}</p>}
         <p className="small muted sch-facts">{facts}</p>
@@ -236,8 +236,7 @@ function GivenCard({ p }: { p: Page }) {
           <span className="small muted">{s.no_fee ? (p.partners.length === 1 ? "Partner school" : "Partner schools") : "Partner school"}</span>
           {p.partners.map((o) => (
             <Link key={o.emis} href={schoolHref(o.emis)} className="sch-partner-row">
-              <Crest emis={o.emis} size={28} />
-              <span className="sch-partner-text"><b>{o.name}</b>
+                            <span className="sch-partner-text"><b>{o.name}</b>
                 {(o.town || o.distance_km !== null) && <span className="small muted">{[o.town, o.distance_km !== null ? `${Math.round(o.distance_km)} km away` : null].filter(Boolean).join(" · ")}</span>}</span>
             </Link>
           ))}

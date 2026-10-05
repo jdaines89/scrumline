@@ -3,7 +3,7 @@
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
-import { Crest } from "@/components/crest";
+import { ListCrest, useCrests } from "@/components/crest";
 import { schoolHref } from "@/lib/crest";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -42,6 +42,7 @@ function standing(rows: Score[], me: string): Standing | null {
 
 export default function PoolsPage() {
   const { season, pools, pool, setPool, reloadPools, members, me } = useLeague();
+  const crests = useCrests();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -227,7 +228,7 @@ export default function PoolsPage() {
               return (
                 <div key={p.id} className="lg-panel">
                   <div className="lg-panel-head">
-                    <Crest emis={p.school_emis!} size={26} />
+                    <ListCrest emis={p.school_emis!} crests={crests} size={26} />
                     <span className="lg-panel-name"><PoolName pool={p} /></span>
                     <Link className="lg-panel-link" href={schoolHref(p.school_emis!)}>School page ›</Link>
                   </div>

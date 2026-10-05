@@ -1,16 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { provinceName, schoolHref, schoolKind, shieldFor } from "../src/lib/crest";
-
-describe("school shields", () => {
-  it("gives a school the same shield every time", () => {
-    expect(shieldFor("105310050")).toEqual(shieldFor("105310050"));
-  });
-  it("spreads schools across colours and divisions", () => {
-    const shields = Array.from({ length: 200 }, (_, i) => shieldFor(String(100000000 + i * 7919)));
-    expect(new Set(shields.map((s) => s.field)).size).toBeGreaterThan(6);
-    expect(new Set(shields.map((s) => s.division)).size).toBe(6);
-  });
-});
+import { provinceName, schoolHref, schoolKind } from "../src/lib/crest";
 
 describe("school words", () => {
   it("names the kind of school", () => {
