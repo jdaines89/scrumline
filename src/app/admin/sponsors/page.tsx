@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { randsToMinor } from "@/lib/projects";
 import { CATEGORIES, money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
+import { roundName } from "@/lib/format";
 
 interface Row {
   id: number; season_id: string; season_name: string; round: number | null; sponsor: string; category: string; email: string;
@@ -13,7 +14,7 @@ interface Row {
 }
 
 const day = (d: string) => new Date(d).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
-const slotName = (r: number | null) => (r === null ? "Whole tournament" : `Round ${r}`);
+const slotName = (r: number | null) => (r === null ? "Whole tournament" : `${roundName(r)}`);
 
 /** Tournament and round sponsors: approve one per slot, mark it paid to put it live. */
 export default function AdminSponsors() {

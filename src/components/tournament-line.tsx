@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { tournamentEvent, type SeasonSponsor } from "@/lib/tournament-sponsor";
+import { roundName } from "@/lib/format";
 
 /**
  * The tournament's sponsors in one quiet line each: "URC 2026-27 presented by"
@@ -21,7 +22,7 @@ export function TournamentLine({ sponsors, seasonName, round, title = true, sing
   return (
     <>
       {main && <One s={main} lead={`${seasonName} presented by`} />}
-      {ofRound && <One s={ofRound} lead={`Round ${ofRound.round} sponsored by`} />}
+      {ofRound && <One s={ofRound} lead={`${roundName(ofRound.round)} sponsored by`} />}
     </>
   );
 }

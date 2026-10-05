@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLeague } from "@/components/league";
 import { Team, stripe } from "@/components/team";
-import { kickoff } from "@/lib/format";
+import { kickoff, roundName, roundText } from "@/lib/format";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { StandingRow } from "@/lib/types";
@@ -55,8 +55,8 @@ export default function Home() {
   }, [entry, matches]);
   const allCalled = called !== null && called >= next.length;
   const nudge = nextRound === null || called === null ? null
-    : allCalled ? <>All {next.length} calls are in for round {nextRound}. <Link href="/predict/">See them</Link>.</>
-    : <>{called} of {next.length} called for round {nextRound}. <Link href="/predict/">Call the rest</Link>.</>;
+    : allCalled ? <>All {next.length} calls are in for {roundText(nextRound)}. <Link href="/predict/">See them</Link>.</>
+    : <>{called} of {next.length} called for {roundText(nextRound)}. <Link href="/predict/">Call the rest</Link>.</>;
 
   return (
     <>
@@ -78,7 +78,7 @@ export default function Home() {
       <div className="grid2">
         {nextRound !== null && (
           <div className="card">
-            <h2>Round {nextRound}</h2>
+            <h2>{roundName(nextRound)}</h2>
             <p className="sub">Up next{!allCalled && <> · <Link href="/predict/">call your scores</Link></>}</p>
             <table><tbody>
               {next.map((m) => (
@@ -93,7 +93,7 @@ export default function Home() {
         )}
         {lastRound !== null && (
           <div className="card">
-            <h2>Round {lastRound}</h2>
+            <h2>{roundName(lastRound)}</h2>
             <p className="sub">Latest results</p>
             <table><tbody>
               {latest.map((m) => (

@@ -15,7 +15,7 @@ import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { Form } from "@/components/form";
 import { buildDigest } from "@/lib/digest";
 import { Crest } from "@/components/team";
-import { kickoff } from "@/lib/format";
+import { kickoff, roundName, roundText } from "@/lib/format";
 import { isRugbyScore, scoreInput } from "@/lib/rugby";
 import { firstOpenRound, lockRound, useRoundLocks } from "@/lib/rounds";
 import { readCache, writeCache } from "@/lib/cache";
@@ -188,8 +188,8 @@ function Predict() {
       const bm = ms.find((m) => preds.get(m.id)?.is_banker);
       const bp = bm && preds.get(bm.id)!;
       const line = bm && bp
-        ? `My Banker for round ${round}: ${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}. Who's going against it?`
-        : `My calls are in for round ${round}. Who's going against me?`;
+        ? `My Banker for ${roundText(round)}: ${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}. Who's going against it?`
+        : `My calls are in for ${roundText(round)}. Who's going against me?`;
       steps.push({
         title: bm ? `Tell ${talk.name} your Banker` : `Tell ${talk.name} you're in`,
         detail: bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the pool chat",
@@ -200,7 +200,7 @@ function Predict() {
     const nextMs = matches.filter((m) => m.round === after);
     if (after !== undefined && nextMs.length && !nextMs.some((m) => matchStarted(m))) {
       steps.push({
-        title: `Get round ${after} in early`,
+        title: `Get ${roundText(after)} in early`,
         detail: `${nextMs.length} games, first on ${kickoff(nextMs.map((m) => m.kickoff_at).sort()[0])}`,
         onClick: () => { setRound(after); window.scrollTo({ top: 0, behavior: "smooth" }); },
       });
@@ -243,7 +243,7 @@ function Predict() {
 
   async function clearRound() {
     const ids = ms.filter((m) => preds.has(m.id) && !(done || matchStarted(m) || myLocks.has(m.id))).map((m) => m.id);
-    if (!ids.length || !window.confirm(`Clear your ${ids.length} unlocked call${ids.length === 1 ? "" : "s"} for round ${round}?`)) return;
+    if (!ids.length || !window.confirm(`Clear your ${ids.length} unlocked call${ids.length === 1 ? "" : "s"} for ${roundText(round)}?`)) return;
     setMsg(null);
     const { error } = await supabase.from("predictions").delete().eq("entry_id", entry!.id).in("match_id", ids);
     if (error) setMsg(error.message);
@@ -284,7 +284,7 @@ function Predict() {
       {!welcome && <AlertsCard />}
       <RoundPicker rounds={rounds} round={round} onPick={setRound} locked={locked} matches={matches} />
       <div className="card">
-        <h2>Round {round} {done && <span className="badge win">locked</span>}</h2>
+        <h2>{roundName(round)} {done && <span className="badge win">locked</span>}</h2>
         <p className="sub">
           {done ? <>You scored <strong>{total}</strong> this round.</>
             : <>{filled} of {ms.length} called{hasBanker ? ", Banker picked" : ", no Banker yet"}.</>}
@@ -399,7 +399,7 @@ function Predict() {
           <>
             <p className="small muted">Locking in a round can't be undone. Then you see how it scored.</p>
             <button type="button" disabled={filled < ms.length || !hasBanker} onClick={lockIn}>
-              {filled < ms.length ? `Call ${ms.length - filled} more` : !hasBanker ? "Pick your Banker" : `Lock in round ${round}`}
+              {filled < ms.length ? `Call ${ms.length - filled} more` : !hasBanker ? "Pick your Banker" : `Lock in ${roundText(round)}`}
             </button>
           </>
         )}

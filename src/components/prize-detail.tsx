@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { prizePhotoUrl, whoWon, type PoolPrize } from "@/lib/prizes";
+import { roundName } from "@/lib/format";
 
 const STATE: Partial<Record<PoolPrize["status"], string>> = {
   upcoming: "Up for grabs", "in play": "Round in play", "no winner": "No winner this round",
@@ -31,7 +32,7 @@ export function PrizeDetail({ prize, nameOf, onClose, label, state: given }: {
   const winners = prize.winners?.length ? whoWon(prize as PoolPrize, nameOf) : null;
   const state = given !== undefined ? given
     : prize.status === "awaiting" ? `Won by ${winners}, on its way` : winners ? `Won by ${winners}` : prize.status && STATE[prize.status];
-  const heading = label ?? `Round ${prize.round} prize`;
+  const heading = label ?? `${roundName(prize.round)} prize`;
 
   return (
     <div className="pz-back" onClick={onClose}>

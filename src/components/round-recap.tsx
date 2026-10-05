@@ -9,6 +9,7 @@ import type { PoolPrize } from "@/lib/prizes";
 import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
+import { roundName } from "@/lib/format";
 
 interface Scored {
   entry_id: number; round: number; match_id: string; total_pts: number; is_banker: boolean;
@@ -104,7 +105,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     return { round, complete, lines, table, biz: biz ? { name: biz.sponsor, logo: biz.sponsor_logo } : null };
   }, [scored, entries, matches, teams, prizes, only]);
 
-  const title = recap ? `Round ${recap.round} ${recap.complete ? "recap" : "so far"}` : "";
+  const title = recap ? `${roundName(recap.round)} ${recap.complete ? "recap" : "so far"}` : "";
   // Everyone who backed this round, biggest first: the tournament, its round, this league, the round's prize.
   const backers = useMemo(() => {
     const out: Backer[] = [];
@@ -112,9 +113,9 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     const add = (label: string, name: string, logo: string | null) => { if (!out.some((b) => b.name === name)) out.push({ label, name, logo }); };
     const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
     if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
-    if (roundSponsor) add(`Round ${recap.round} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
+    if (roundSponsor) add(`${roundName(recap.round)} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
     if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
-    if (recap.biz) add(`Round ${recap.round} prize by`, recap.biz.name, recap.biz.logo);
+    if (recap.biz) add(`${roundName(recap.round)} prize by`, recap.biz.name, recap.biz.logo);
     return out;
   }, [recap, tournament, sponsor]);
   const sub = `${pool!.name} · ${season.name}`;

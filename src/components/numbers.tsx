@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { setPreview, usePreview } from "@/lib/preview";
+import { roundName } from "@/lib/format";
 
 interface Week { week: string; players: number; new_players: number; active: number; callers: number; returners: number; retained: number | null; calls: number }
 interface Round { round: number; teams: number; callers: number; share: number | null }
@@ -59,7 +60,7 @@ export function Numbers({ season, seasonName }: { season: string; seasonName: st
           <table>
             <tbody>
               {rounds.map((r) => (
-                <tr key={r.round}><td>Round {r.round}</td><td className="num">{r.callers} of {r.teams}</td><td className="num">{pct(r.share)}</td></tr>
+                <tr key={r.round}><td>{roundName(r.round)}</td><td className="num">{r.callers} of {r.teams}</td><td className="num">{pct(r.share)}</td></tr>
               ))}
             </tbody>
           </table>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { useLeague } from "@/components/league";
 import type { PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
+import { roundName } from "@/lib/format";
 
 interface Msg { id: number; author_id: string; body: string; created_at: string }
 
@@ -62,7 +63,7 @@ export function PrizeChat({ prize, onClose }: { prize: PoolPrize; onClose: () =>
       <div className="pz-sheet pchat" role="dialog" aria-modal="true" aria-label={`Messages with ${withWho}`} onClick={(e) => e.stopPropagation()}>
         <button type="button" className="pz-close" aria-label="Close" onClick={onClose}>×</button>
         <div className="pchat-head">
-          <span className="prize-label">Round {prize.round} prize · private</span>
+          <span className="prize-label">{roundName(prize.round)} prize · private</span>
           <strong>{withWho}</strong>
           <span className="prize-meta">{prize.prize} from {prize.sponsor}. Only you{others.length ? ` and ${withWho}` : ""} can see this.</span>
         </div>

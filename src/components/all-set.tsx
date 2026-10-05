@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { kickoff } from "@/lib/format";
+import { kickoff, roundText } from "@/lib/format";
 
 export interface NextStep { title: string; detail: string; href?: string; onClick?: () => void }
 
@@ -10,7 +10,7 @@ export function AllSet({ round, firstKick, steps }: { round: number; firstKick: 
   const started = new Date(firstKick).getTime() <= Date.now();
   return (
     <div className="allset">
-      <h3>You&apos;re set for round {round}</h3>
+      <h3>You&apos;re set for {roundText(round)}</h3>
       <p className="small muted">
         {started ? "Points land here as each game finishes." : <>First kickoff {kickoff(firstKick)}. Points land here as each game finishes.</>}
       </p>
