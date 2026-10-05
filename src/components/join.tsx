@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { CodeForm } from "@/components/code-form";
 import { readJoinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 
@@ -15,7 +16,7 @@ export function Join() {
   const [info, setInfo] = useState<Info | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<"sent" | "exists" | null>(null);
+  const [done, setDone] = useState<"code" | "sent" | "exists" | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,8 +28,8 @@ export function Join() {
     supabase.rpc("invite_info", { p_code: c }).then(({ data }) => setInfo(((data ?? []) as Info[])[0] ?? null));
   }, []);
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function submit(e?: FormEvent) {
+    e?.preventDefault();
     setBusy(true); setMsg(null);
     const { data, error } = await supabase.functions.invoke("join", { body: { code, email, pool: league ? pool : null } });
     setBusy(false);
@@ -38,7 +39,7 @@ export function Join() {
       setMsg(text);
       return;
     }
-    setDone((data as { status: "sent" | "exists" }).status);
+    setDone((data as { status: "code" | "sent" | "exists" }).status);
   }
 
   const home = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`;
@@ -49,6 +50,14 @@ export function Join() {
         <h2>This invite link has expired</h2>
         <p className="sub">{info ? `${info.inviter}'s link has been used as often as it can be.` : "It may have been reset."} Ask whoever sent it for a fresh one.</p>
         <a href={home}>Already on Scrumline? Sign in</a>
+      </div>
+    );
+  }
+  if (done === "code") {
+    return (
+      <div className="card narrow join">
+        {league && <p className="kicker">Joining {league.pool_name}</p>}
+        <CodeForm email={email} onBack={() => { setDone(null); setMsg(null); }} resend={() => submit()} />
       </div>
     );
   }

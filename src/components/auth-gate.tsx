@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
+import { CodeForm } from "@/components/code-form";
 import { Join } from "@/components/join";
 import { isBusinessSession, isPublicPath, isSchoolSession } from "@/lib/account";
 import { clearCache } from "@/lib/cache";
@@ -46,10 +47,29 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [byCode, setByCode] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+
+  async function sendCode() {
+    const { data, error } = await supabase.functions.invoke("join", { body: { email, mode: "signin" } });
+    if (error) {
+      let text = "We couldn't send a code. Try again in a minute.";
+      try { text = (await (error as { context?: Response }).context?.json())?.error ?? text; } catch { /* keep the default */ }
+      setMsg(text);
+      return false;
+    }
+    return (data as { status?: string })?.status === "code";
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(null);
+    if (byCode) {
+      const ok = await sendCode();
+      setBusy(false);
+      if (ok) setCodeSent(true);
+      return;
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) setMsg("That email and password don't match an account.");
@@ -61,15 +81,24 @@ function SignIn() {
     setMsg("If that email has an account, a reset link is on its way. Check spam if it doesn't show up in a minute.");
   }
 
+  if (codeSent) {
+    return (
+      <div className="card narrow">
+        <CodeForm email={email} onBack={() => { setCodeSent(false); setMsg(null); }} resend={async () => { await sendCode(); }} />
+      </div>
+    );
+  }
+
   return (
     <div className="card narrow">
       <h2>Sign in</h2>
-      <p className="sub">Use the email your invite or sign-up link went to.</p>
+      <p className="sub">Use the email you joined with.</p>
       <form onSubmit={submit} className="stack">
         <input type="email" required placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" required placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-        <button type="button" className="linkish forgot" onClick={forgot}>Forgot your password?</button>
+        {!byCode && <input type="password" required placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
+        <button type="submit" disabled={busy}>{busy ? (byCode ? "Sending…" : "Signing in…") : byCode ? "Email me a code" : "Sign in"}</button>
+        <button type="button" className="linkish forgot" onClick={() => { setByCode(!byCode); setMsg(null); }}>{byCode ? "Use my password instead" : "No password? Email me a code"}</button>
+        {!byCode && <button type="button" className="linkish forgot" onClick={forgot}>Forgot your password?</button>}
       </form>
       {msg && <p className="small muted" style={{ marginBottom: 0 }}>{msg}</p>}
       <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link>

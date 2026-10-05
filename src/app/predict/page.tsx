@@ -59,6 +59,9 @@ export default function PredictPage() {
 
 function Predict() {
   const { entry, season, matches, rounds, teams, me, members, pools, pool, reloadPools } = useLeague();
+  // Just arrived from a league invite (/join sends ?welcome=1): say where they are and what to do.
+  const [welcome, setWelcome] = useState(false);
+  useEffect(() => { setWelcome(new URLSearchParams(window.location.search).get("welcome") === "1"); }, []);
   const [code, setCode] = useState("");
   const [remind, setRemind] = useState(me.email_reminders);
   const { locked, isLocked, matchStarted, reload: reloadLocks } = useRoundLocks(entry!.id, season, matches);
@@ -270,7 +273,14 @@ function Predict() {
           </span>
         </form>
       )}
-      <AlertsCard />
+      {welcome && pool && (
+        <div className="card welcome-card">
+          <strong>You&apos;re in {pool.name}</strong>
+          <span className="small muted">Call the score of each game below. One Banker a round doubles your points. Your calls count in every league you join.</span>
+          <button type="button" className="ghost" onClick={() => setWelcome(false)}>Got it</button>
+        </div>
+      )}
+      {!welcome && <AlertsCard />}
       <RoundPicker rounds={rounds} round={round} onPick={setRound} locked={locked} matches={matches} />
       <div className="card">
         <h2>Round {round} {done && <span className="badge win">locked</span>}</h2>
