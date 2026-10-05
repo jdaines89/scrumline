@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Crest } from "@/components/crest";
 import { useLeague } from "@/components/league";
+import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 
@@ -59,9 +61,10 @@ export function SchoolTable() {
                 <li key={r.emis} className={r.mine ? "me" : ""}>
                   <div className="brow">
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
+                    <Crest emis={r.emis} size={30} />
                     <div className="who">
-                      <strong>{r.name}</strong>
-                      <span className="small muted">{[r.town, `${r.confirmed} confirmed`, `counted in ${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
+                      <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
+                      <span className="small muted">{[r.town, `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
                     </div>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
                   </div>
@@ -75,13 +78,16 @@ export function SchoolTable() {
               <ol className="board schools-table waiting">
                 {waiting.map((r) => (
                   <li key={r.emis} className={r.mine ? "me" : ""}>
+                    <div className="brow">
+                    <Crest emis={r.emis} size={30} />
                     <div className="who">
-                      <strong>{r.name}</strong>
+                      <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
                       <span className="small muted">
                         {r.confirmed < MINIMUM
                           ? `${r.confirmed} of ${MINIMUM} confirmed players needed · ${r.members} in the league`
                           : `${r.confirmed} confirmed · needs ${MINIMUM} to play in the same round`}
                       </span>
+                    </div>
                     </div>
                   </li>
                 ))}

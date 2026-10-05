@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { schoolHref } from "@/lib/crest";
 import { useEffect, useState, type FormEvent } from "react";
 import { projectPhotoUrl, randsToMinor, STATE_LABEL, type Evidence, type NeedPhoto, type Project } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
@@ -33,7 +34,7 @@ export function ProjectCard({ p, businesses, asMe, onChange }: {
       <div className="proj-head">
         <div>
           <h3>{p.title}</h3>
-          <span className="small muted">{[p.school, p.town, p.no_fee ? "no-fee school" : null].filter(Boolean).join(" · ")}</span>
+          <span className="small muted"><Link href={schoolHref(p.emis)} className="sch-link">{p.school}</Link>{[p.town, p.no_fee ? "no-fee school" : null].filter(Boolean).map((x) => ` · ${x}`).join("")}</span>
         </div>
         <span className={`proj-state ${p.state}`}>{STATE_LABEL[p.state]}</span>
       </div>

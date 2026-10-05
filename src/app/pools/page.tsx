@@ -3,6 +3,8 @@
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
+import { Crest } from "@/components/crest";
+import { schoolHref } from "@/lib/crest";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
@@ -221,13 +223,16 @@ export default function PoolsPage() {
           <div className="lg">
             {schoolLeagues.map((p) => {
               const c = classOf(p);
-              if (!c) return card(p);
-              // A school and your class in it: one panel under the school's name, two equal rows.
+              // Each school in one panel under its crest and full name, with your class in it as an equal row.
               return (
                 <div key={p.id} className="lg-panel">
-                  <div className="lg-panel-head"><PoolName pool={p} /></div>
+                  <div className="lg-panel-head">
+                    <Crest emis={p.school_emis!} size={26} />
+                    <span className="lg-panel-name"><PoolName pool={p} /></span>
+                    <Link className="lg-panel-link" href={schoolHref(p.school_emis!)}>School page ›</Link>
+                  </div>
                   {card(p, "Whole school")}
-                  {card(c, `Class of ${c.school_year}`)}
+                  {c && card(c, `Class of ${c.school_year}`)}
                 </div>
               );
             })}
