@@ -17,7 +17,7 @@
 create table if not exists public.school_crests (
   emis       text primary key references public.schools(emis),
   image_path text not null check (image_path ~ '^[0-9]{6,12}/[A-Za-z0-9-]+\.(png|jpg|webp)$'),
-  set_by     uuid references auth.users(id) on delete set null,
+  set_by     uuid,  -- who set it; no foreign key, so removing an account never touches crests
   set_at     timestamptz not null default now()
 );
 alter table public.school_crests enable row level security;
