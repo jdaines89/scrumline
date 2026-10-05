@@ -1039,3 +1039,9 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .code-input::placeholder { letter-spacing: normal; font-size: 16px; }
 .code-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .code-foot .linkish { font-weight: 500; font-size: 14px; }
+
+/* Another tournament is on while this one rests (the URC break): one calm line on Home. */
+.also-on { display: flex; gap: 14px; align-items: center; justify-content: space-between; }
+.also-on p { margin: 0; }
+.also-on button { flex: none; padding: 8px 14px; font-size: 14px; }
+@media (max-width: 560px) { .also-on { flex-direction: column; align-items: stretch; } .also-on button { align-self: flex-end; } }

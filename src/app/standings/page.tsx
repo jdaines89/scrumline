@@ -46,6 +46,8 @@ export default function StandingsPage() {
       <div className="notice">
         {season.is_replay
           ? "BP is bonus points, read off the season's published final table."
+          : !season.wiki_page
+          ? "BP is bonus points: 1 for losing by 7 or less, counted from the score. The free results feed has no try counts, so try bonuses aren't shown for this tournament."
           : <>BP is bonus points: 1 for losing by 7 or less, counted from the score as soon as a result lands, and 1 for scoring 4+ tries, read from Wikipedia&apos;s {competitions.get(season.competition_id)?.short_name ?? ""} log every two hours because the free results feed has no try counts.{pending && " * means Wikipedia hasn't caught up with that team's latest match yet, so a try bonus may still be added."}</>}
       </div>
     </>
