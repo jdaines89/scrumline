@@ -22,7 +22,7 @@ export default function StandingsPage() {
       <MatchesSwitch />
       <div className="card scroll-x">
         <h2>{competitions.get(season.competition_id)?.short_name ?? "The"} log</h2>
-        <p className="sub">{season.name}. Built live from the results in the database.</p>
+        <p className="sub">{season.name}. Updated after every result.</p>
         <table>
           <thead><tr>
             <th>#</th><th>Team</th><th className="num">P</th><th className="num">W</th><th className="num">D</th>
@@ -47,8 +47,8 @@ export default function StandingsPage() {
         {season.is_replay
           ? "BP is bonus points, read off the season's published final table."
           : !season.wiki_page
-          ? "BP is bonus points: 1 for losing by 7 or less, counted from the score. The free results feed has no try counts, so try bonuses aren't shown for this tournament."
-          : <>BP is bonus points: 1 for losing by 7 or less, counted from the score as soon as a result lands, and 1 for scoring 4+ tries, read from Wikipedia&apos;s {competitions.get(season.competition_id)?.short_name ?? ""} log every two hours because the free results feed has no try counts.{pending && " * means Wikipedia hasn't caught up with that team's latest match yet, so a try bonus may still be added."}</>}
+          ? "BP is bonus points: 1 for losing by 7 or less. Try bonuses aren't counted for this tournament yet."
+          : <>BP is bonus points: 1 for losing by 7 or less, and 1 for scoring four or more tries.{pending && " * means a try bonus from that team's latest match may still be added."}</>}
       </div>
     </>
   );

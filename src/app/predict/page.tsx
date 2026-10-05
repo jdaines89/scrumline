@@ -277,8 +277,12 @@ function Predict() {
       )}
       {welcome && pool && (
         <div className="card welcome-card">
-          <strong>You&apos;re in {poolTitle(pool)}</strong>
-          <span className="small muted">Call the score of each game below. One Banker a round doubles your points. Your calls count in every league you join.</span>
+          <strong>Welcome to {poolTitle(pool)}</strong>
+          <ol className="welcome-steps small">
+            <li>Type your score for each game below. It saves as you go.</li>
+            <li>Make one game your Banker to double its points.</li>
+            <li>Each game locks at kick-off. Your calls count in every league you&apos;re in.</li>
+          </ol>
           <button type="button" className="ghost" onClick={() => setWelcome(false)}>Got it</button>
         </div>
       )}

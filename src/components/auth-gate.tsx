@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
+import { HowItWorks } from "@/components/how-it-works";
 import { usePathname } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import { CodeForm } from "@/components/code-form";
@@ -90,6 +91,7 @@ function SignIn() {
   }
 
   return (
+    <>
     <div className="card narrow">
       <h2>Sign in</h2>
       <p className="sub">Use the email you joined with.</p>
@@ -104,6 +106,8 @@ function SignIn() {
       <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link>
         <br />Run a school? <Link href="/schools/">Claim it</Link></p>
     </div>
+    <HowItWorks />
+    </>
   );
 }
 

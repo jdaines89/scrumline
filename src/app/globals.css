@@ -326,7 +326,9 @@ details.mates li .pts { text-align: left; color: var(--accent); font-weight: 700
 .chat-where { display: grid; gap: 1px; min-width: 0; }
 .chat-pool, .chat-season { position: relative; display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--muted); cursor: pointer; }
 .chat-pool.one, .chat-season.one { cursor: default; }
-.chat-pool h2 { margin: 0; min-width: 0; font-size: 15px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-pool h2 { margin: 0; min-width: 0; font-size: 15px; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; text-wrap: balance; }
+.chat-head { align-items: flex-start; }
+.chat-head .spline.compact { margin-top: 2px; }
 .chat-season { font-size: 12px; }
 .chat-pool select, .chat-season select { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
 .spline.compact { margin: 0; flex: 0 1 auto; max-width: 48%; }
@@ -1158,3 +1160,18 @@ a.sch-link:hover { text-decoration: underline; }
 .presult.final { flex-direction: column; justify-content: center; gap: 6px; text-align: center; padding: 10px 12px; }
 .presult.final .breakdown { justify-content: center; }
 .presult-call { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* How it works, under the join and sign-in cards */
+.how { max-width: 520px; margin: 20px auto 0; padding: 0 4px; }
+.how-h { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.how ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.how li { display: flex; gap: 14px; align-items: flex-start; }
+.how li > span:last-child { display: grid; gap: 2px; min-width: 0; }
+.how li strong { font-size: 15px; font-weight: 600; }
+.how li .small { line-height: 1.45; }
+.how-ic { flex: none; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--panel); border: 1px solid var(--line); color: var(--accent); }
+.how-foot { margin: 18px 0 0; }
+.welcome-steps { margin: 2px 0 4px; padding-left: 20px; display: grid; gap: 4px; color: var(--muted); }
+.welcome-steps li::marker { color: var(--accent); font-weight: 700; }
+.board-prizes { margin-top: 16px; display: grid; gap: 12px; }
+.board-prizes:empty { display: none; }
