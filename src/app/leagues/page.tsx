@@ -55,6 +55,7 @@ export default function PoolsPage() {
   // The league you just started, until you've sent it to your group.
   const [made, setMade] = useState<{ id: number; name: string; code: string } | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
   const ids = pools.map((p) => p.id).join(",");
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
   const [unread, setUnread] = useState<Unread[]>([]);
@@ -186,18 +187,21 @@ export default function PoolsPage() {
     supabase.rpc("my_businesses").then(({ data }) => setBusiness(((data ?? []) as unknown[]).length > 0));
   }, []);
 
+  // The form stays put with a working button until the league exists, then the "ready" card replaces it at once.
   async function create(e: FormEvent) {
-    e.preventDefault(); setMsg(null);
-    setOpen(null);
+    e.preventDefault(); setMsg(null); setBusy(true);
     const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id }).select().single();
+    setBusy(false);
     if (error) { setMsg(error.message); return; }
-    setName(""); await reloadPools(); setPool(data.id);
+    setOpen(null); setName("");
     setMade({ id: data.id, name: data.name, code: data.join_code }); setLinkCopied(false);
+    await reloadPools(); setPool(data.id);
   }
 
   async function join(e: FormEvent) {
-    e.preventDefault(); setMsg(null);
+    e.preventDefault(); setMsg(null); setBusy(true);
     const { data, error } = await supabase.rpc("join_pool", { p_code: code });
+    setBusy(false);
     if (error) { setMsg(error.message); return; }
     setCode(""); setOpen(null); await reloadPools(); setPool(data as number);
   }
@@ -258,7 +262,7 @@ export default function PoolsPage() {
           <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>
         </div>
         {made && (
-          <div className="lg-made">
+          <div className="lg-made" role="status">
             <strong>{made.name} is ready</strong>
             <p className="small muted">Send it to your group. Anyone who taps the link lands straight in your league.</p>
             <div className="row">
@@ -278,7 +282,7 @@ export default function PoolsPage() {
             <p className="small muted">Next you send it to your group on WhatsApp.</p>
             <div className="row">
               <input required autoFocus maxLength={40} placeholder="League name" value={name} onChange={(e) => setName(e.target.value)} />
-              <button type="submit">Start</button>
+              <button type="submit" disabled={busy}>{busy ? "Starting…" : "Start"}</button>
             </div>
           </form>
         )}
@@ -288,7 +292,7 @@ export default function PoolsPage() {
             <div className="row">
               <input required autoFocus maxLength={6} placeholder="e.g. 7K2Q9D" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
                 style={{ textTransform: "uppercase", letterSpacing: ".12em" }} />
-              <button type="submit">Join</button>
+              <button type="submit" disabled={busy}>{busy ? "Joining…" : "Join"}</button>
             </div>
           </form>
         )}
