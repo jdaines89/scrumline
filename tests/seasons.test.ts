@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultSeason, pickerGroups, worthSwitching } from "../src/lib/seasons";
+import { defaultSeason, pickerGroups, seasonLine, worthSwitching } from "../src/lib/seasons";
 import type { Season } from "../src/lib/types";
 
 // Newest first, as the app loads them.
@@ -60,5 +60,17 @@ describe("pickerGroups", () => {
   it("drops one that finished over a year ago, unless you're on it", () => {
     expect(pickerGroups(all, "urc-2026-27", at("2026-12-10T12:00:00Z")).flatMap((g) => g.seasons).map((s) => s.id)).not.toContain("nations-2025");
     expect(pickerGroups(all, "nations-2025", at("2026-12-10T12:00:00Z")).flatMap((g) => g.seasons).map((s) => s.id)).toContain("nations-2025");
+  });
+});
+
+describe("seasonLine", () => {
+  const nations = seasons[0], urc = seasons[1], replay = seasons[2];
+  it("says when each tournament runs", () => {
+    expect(seasonLine(nations, at("2026-10-10T12:00:00Z"))).toBe("Starts 6 Nov 2026");
+    expect(seasonLine(nations, at("2026-11-10T12:00:00Z"))).toBe("Until 29 Nov 2026");
+    expect(seasonLine(nations, at("2026-12-10T12:00:00Z"))).toBe("Ended 29 Nov 2026");
+    expect(seasonLine(urc, at("2026-10-10T12:00:00Z"))).toBeNull();
+    expect(seasonLine(replay, at("2026-10-10T12:00:00Z"))).toBe("Play a finished season again");
+    expect(seasonLine({ ...nations, starts_on: "2027-02-01", ends_on: null }, at("2026-10-10T12:00:00Z"))).toBe("Starts Feb 2027");
   });
 });

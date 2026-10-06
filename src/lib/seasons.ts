@@ -53,3 +53,20 @@ export function pickerGroups(seasons: Season[], currentId: string, now = new Dat
     { label: "Practice", seasons: practice },
   ].filter((g) => g.seasons.length > 0);
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const longDate = (d: string) => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
+
+/**
+ * The quiet line under a tournament in the picker: when it runs. Far-off
+ * starts give only the month, since the date often isn't fixed yet.
+ */
+export function seasonLine(s: Season, now = new Date()): string | null {
+  const today = now.toISOString().slice(0, 10);
+  const far = new Date(now.getTime() + 60 * 86400000).toISOString().slice(0, 10);
+  if (s.is_replay) return "Play a finished season again";
+  if (s.ends_on && s.ends_on < today) return `Ended ${longDate(s.ends_on)}`;
+  if (s.starts_on && s.starts_on > far) return `Starts ${MONTHS[Number(s.starts_on.slice(5, 7)) - 1]} ${s.starts_on.slice(0, 4)}`;
+  if (s.starts_on && s.starts_on > today) return `Starts ${longDate(s.starts_on)}`;
+  return s.ends_on ? `Until ${longDate(s.ends_on)}` : null;
+}
