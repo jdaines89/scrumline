@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 // Supabase checks each kind separately, so try them in turn.
 const KINDS = ["email", "invite", "magiclink"] as const;
 
-/** Type the 6-digit code from the email, right here: no links, no password. */
+/** Type the 6-digit code from the email, right here: no links. A newcomer chooses a password next. */
 export function CodeForm({ email, onBack, resend }: { email: string; onBack: () => void; resend: () => Promise<void> }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
