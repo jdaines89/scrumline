@@ -23,6 +23,8 @@ import { RecruiterPrizeLine } from "@/components/recruiter-prize";
 import type { LeaderRow } from "@/lib/types";
 import { PoolName } from "@/components/pool-name";
 import { fullName, useSchoolLabels } from "@/lib/names";
+import { ord } from "@/lib/growth";
+import { roundText } from "@/lib/format";
 
 const PARTS = [
   ["res_pts", "RES"], ["mar_pts", "MAR"], ["cls_pts", "CLS"], ["exa_pts", "EXA"], ["banker_pts", "BNK"],
@@ -65,12 +67,46 @@ function Leaderboard() {
       .then(({ data }) => { const r = (data ?? []) as LeaderRow[]; writeCache(`board:${pool!.id}`, r); setRows(r); });
   }, [pool]);
 
+  // Members with no calls in their last two rounds sit under the table, points kept, until they call again.
+  const playing = rows?.filter((r) => !r.resting) ?? [];
+  const resting = rows?.filter((r) => r.resting) ?? [];
+  const meResting = resting.find((r) => r.user_id === me.user_id);
+
   // The table comes first; what's up for grabs sits straight under it.
   const prizeBlock = (
     <div className="board-prizes">
       <PrizeLine prizes={prizes} onChange={reloadPrizes} />
       <RecruiterPrizeLine prizes={recruiterPrizes} onChange={reloadRecruiterPrizes} compact={roundPrizeShowing} />
     </div>
+  );
+
+  const row = (r: LeaderRow, rank: number | null) => (
+    <li key={r.user_id} className={`${r.user_id === me.user_id ? "me" : ""}${picked === r.user_id ? " open" : ""}`}
+      onClick={() => r.entry_id && setPicked(picked === r.user_id ? null : r.user_id)}>
+      <div className="brow">
+        <span className="rank">{rank ?? "–"}</span>
+        <div className="who">
+          <strong>{r.team_name ?? r.manager}</strong>
+          <span className="small muted bname">{fullName(person(r.user_id)) || r.manager}</span>
+          {schools.get(r.user_id) && <span className="small bschool">{schools.get(r.user_id)}</span>}
+        </div>
+        <span className="btotal">{r.total_points}</span>
+      </div>
+      {picked === r.user_id && (
+        <div className="bmore">
+          <button type="button" className="bprofile" onClick={(e) => { e.stopPropagation(); setProfile(r.user_id); }}>
+            View {r.user_id === me.user_id ? "your" : `${person(r.user_id)?.known_as ?? person(r.user_id)?.first_name ?? r.manager}'s`} profile ›
+          </button>
+          <p className="small muted">{r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</p>
+          <div className="bparts">
+            {PARTS.map(([k, code]) => (
+              <span key={code} className={r[k] > 0 ? "pchip on" : "pchip"}>{code} {r[k]}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {picked === r.user_id && r.entry_id && <HeadToHead mine={mine} theirs={r.entry_id} name={r.team_name ?? r.manager} />}
+    </li>
   );
 
   return (
@@ -89,37 +125,16 @@ function Leaderboard() {
       {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
-        {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={rows} />}
-        <ol className="board">
-          {rows.map((r, i) => (
-            <li key={r.user_id} className={`${r.user_id === me.user_id ? "me" : ""}${picked === r.user_id ? " open" : ""}`}
-              onClick={() => r.entry_id && setPicked(picked === r.user_id ? null : r.user_id)}>
-              <div className="brow">
-                <span className="rank">{i + 1}</span>
-                <div className="who">
-                  <strong>{r.team_name ?? r.manager}</strong>
-                  <span className="small muted bname">{fullName(person(r.user_id)) || r.manager}</span>
-                  {schools.get(r.user_id) && <span className="small bschool">{schools.get(r.user_id)}</span>}
-                </div>
-                <span className="btotal">{r.total_points}</span>
-              </div>
-              {picked === r.user_id && (
-                <div className="bmore">
-                  <button type="button" className="bprofile" onClick={(e) => { e.stopPropagation(); setProfile(r.user_id); }}>
-                    View {r.user_id === me.user_id ? "your" : `${person(r.user_id)?.known_as ?? person(r.user_id)?.first_name ?? r.manager}'s`} profile ›
-                  </button>
-                  <p className="small muted">{r.matches_scored} match{r.matches_scored === 1 ? "" : "es"} · {r.right_results} right result{r.right_results === 1 ? "" : "s"} · {r.exact_scores} exact{broughtIn.get(r.user_id) ? ` · brought in ${broughtIn.get(r.user_id)}` : ""}</p>
-                  <div className="bparts">
-                    {PARTS.map(([k, code]) => (
-                      <span key={code} className={r[k] > 0 ? "pchip on" : "pchip"}>{code} {r[k]}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {picked === r.user_id && r.entry_id && <HeadToHead mine={mine} theirs={r.entry_id} name={r.team_name ?? r.manager} />}
-            </li>
-          ))}
-        </ol>
+        {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={playing} />}
+        {meResting && <BreakCard me={meResting} playing={playing} matches={matches} />}
+        <ol className="board">{playing.map((r, i) => row(r, i + 1))}</ol>
+        {resting.length > 0 && (
+          <details className="board-break" open={!!meResting}>
+            <summary>Taking a break <span className="muted">· {resting.length}</span></summary>
+            <p className="small muted">No calls in their last two rounds. Their points are kept, and their next call puts them straight back in the table.</p>
+            <ol className="board resting">{resting.map((r) => row(r, null))}</ol>
+          </details>
+        )}
         {prizeBlock}
         <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />
         {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
@@ -151,5 +166,21 @@ function SkeletonRows() {
     <ol className="board" aria-busy="true" aria-label="Loading the table">
       {[0, 1, 2].map((i) => <li key={i} className="skeleton" style={{ height: 64 }} />)}
     </ol>
+  );
+}
+
+// A calm nudge for someone on a break: their points are safe and one call puts them back in.
+function BreakCard({ me, playing, matches }: { me: LeaderRow; playing: LeaderRow[]; matches: { round: number; kickoff_at: string }[] }) {
+  const back = playing.filter((r) => r.total_points > me.total_points).length + 1;
+  const now = Date.now();
+  const next = matches.filter((m) => new Date(m.kickoff_at).getTime() > now).map((m) => m.round);
+  const round = next.length ? Math.min(...next) : null;
+  return (
+    <div className="break-card">
+      <strong>You&apos;re taking a break</strong>
+      <p className="small muted">No calls in your last two rounds, so you&apos;re listed under the table for now. Your {me.total_points} points are safe.</p>
+      <p className="small">{round !== null ? `Call ${roundText(round)}` : "Make your next call"} and you&apos;re straight back in at {ord(back)}.</p>
+      <Link className="btn" href="/predict/">Make your calls</Link>
+    </div>
   );
 }
