@@ -332,7 +332,7 @@ export default function PoolsPage() {
       </div>
       <InviteCard />
       {inviting && (
-        <InviteSheet poolId={inviting.id} poolName={inviting.name} onClose={() => setInviting(null)}
+        <InviteSheet poolId={inviting.id} poolName={inviting.name} joinCode={inviting.join_code} onClose={() => setInviting(null)}
           onSendLink={() => { const p = inviting; setInviting(null); share(p.id, p.join_code, p.name); }} />
       )}
     </>

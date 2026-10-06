@@ -12,10 +12,16 @@ interface Waiting { pool_id: number; pool_name: string; season_name: string | nu
  * Invite to one league: everyone you already play with in another league, one
  * tap each. Someone not on Scrumline yet still needs the link.
  */
-export function InviteSheet({ poolId, poolName, onClose, onSendLink }: {
-  poolId: number; poolName: string; onClose: () => void; onSendLink: () => void;
+export function InviteSheet({ poolId, poolName, joinCode, onClose, onSendLink }: {
+  poolId: number; poolName: string; joinCode?: string | null; onClose: () => void; onSendLink: () => void;
 }) {
   const [people, setPeople] = useState<Candidate[] | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function copyCode() {
+    if (!joinCode) return;
+    try { await navigator.clipboard.writeText(joinCode); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* no clipboard */ }
+  }
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -55,6 +61,16 @@ export function InviteSheet({ poolId, poolName, onClose, onSendLink }: {
           <span className="small muted">Someone not on Scrumline yet?</span>
           <button type="button" className="ghost" onClick={onSendLink}>Send them the link</button>
         </div>
+        {joinCode && (
+          <div className="inv-code">
+            <div>
+              <span className="small muted">League code</span>
+              <strong className="inv-code-value">{joinCode}</strong>
+              <span className="small muted">Anyone can join with it under Leagues, Join with a code.</span>
+            </div>
+            <button type="button" className="ghost" onClick={copyCode} aria-label={`Copy league code ${joinCode}`}>{copied ? "Copied" : "Copy"}</button>
+          </div>
+        )}
         <button type="button" className="wip-save" onClick={onClose}>Done</button>
       </div>
     </div>

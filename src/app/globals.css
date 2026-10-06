@@ -1382,3 +1382,9 @@ button.pcell, button.pcell:hover { position: relative; display: block; aspect-ra
   border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; font-size: 28px; line-height: 1; }
 .gallery-nav.prev { left: 8px; }
 .gallery-nav.next { right: 8px; }
+
+/* The league's code in the invite sheet, always one tap from copied. */
+.inv-code { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); }
+.inv-code > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.inv-code-value { font-size: 22px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.inv-code button { flex: none; }
