@@ -1208,3 +1208,15 @@ button.sch-skip { display: block; width: 100%; margin-top: 8px; padding: 10px; b
 .break-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 14px; margin: 12px 0; display: grid; gap: 6px; }
 .break-card p { margin: 0; }
 .break-card .btn { justify-self: start; margin-top: 4px; }
+
+/* In-app league invites. */
+.inv-list { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.inv-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.inv-list li:first-child { border-top: 0; }
+.inv-list .inv-name { flex: 1; min-width: 0; }
+.inv-list button { padding: 6px 14px; }
+.inv-done { color: var(--accent); }
+.inv-new { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.inv-waiting { display: grid; gap: 10px; margin: 0 0 14px; }
+.inv-card { display: grid; gap: 4px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--panel-2); padding: 12px 14px; }
+.inv-card .row { margin-top: 8px; gap: 8px; }
