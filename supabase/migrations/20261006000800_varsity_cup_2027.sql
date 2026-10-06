@@ -461,7 +461,24 @@ join public.pool_members pm on pm.pool_id = p.id
 join public.pools n on n.season = 'varsity-cup-2027' and n.name = p.name and n.created_by = p.created_by
 where p.season = 'urc-2026-27' and p.school_emis is null
 on conflict do nothing;
-select public.sync_school_pools(u.user_id) from (select distinct user_id from public.member_schools) u;
+-- (Only adds: the same pools and memberships sync_school_pools makes, for this tournament.)
+insert into public.pools (season, name, created_by, school_emis, school_stage)
+select distinct on (ms.emis, ms.stage) 'varsity-cup-2027', left(sc.name, 40), ms.user_id, ms.emis, ms.stage
+from public.member_schools ms join public.schools sc on sc.emis = ms.emis
+order by ms.emis, ms.stage, ms.user_id
+on conflict (season, school_emis, school_stage) where school_emis is not null and school_year is null do nothing;
+insert into public.pools (season, name, created_by, school_emis, school_stage, school_year)
+select distinct on (ms.emis, ms.stage, ms.last_year) 'varsity-cup-2027', public.class_pool_name(sc.name, ms.last_year), ms.user_id, ms.emis, ms.stage, ms.last_year
+from public.member_schools ms join public.schools sc on sc.emis = ms.emis
+where ms.last_year is not null
+order by ms.emis, ms.stage, ms.last_year, ms.user_id
+on conflict (season, school_emis, school_stage, school_year) where school_year is not null do nothing;
+insert into public.pool_members (pool_id, user_id)
+select p.id, ms.user_id
+from public.member_schools ms
+join public.pools p on p.season = 'varsity-cup-2027' and p.school_emis = ms.emis and p.school_stage = ms.stage
+                   and (p.school_year is null or p.school_year = ms.last_year)
+on conflict do nothing;
 
 do $$ begin
   if exists (select 1 from pg_namespace where nspname = 'cron') then
