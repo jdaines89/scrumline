@@ -33,6 +33,8 @@ function Chat() {
   const { me, members: everyone, pool, pools, setPool, season, seasons, setSeason } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
+  // One chat per league, whichever tournament you're looking at: it lives on the league's first table.
+  const chatId = pool!.league_id ?? pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
   const members = useMemo(() => everyone.filter((m) => inPool.has(m.user_id)), [everyone, inPool]);
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
@@ -118,15 +120,15 @@ function Chat() {
   }, []);
 
   useEffect(() => {
-    supabase.from("pool_members").select("user_id").eq("pool_id", poolId)
+    supabase.from("pool_members").select("user_id").eq("pool_id", chatId)
       .then(({ data }) => setInPool(new Set((data ?? []).map((r: { user_id: string }) => r.user_id))));
-  }, [poolId]);
+  }, [chatId]);
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", poolId).order("id", { ascending: false }).limit(PAGE);
+    const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId).order("id", { ascending: false }).limit(PAGE);
     setMsgs(((data ?? []) as ChatMessage[]).reverse());
     setMore((data ?? []).length === PAGE);
-  }, [poolId]);
+  }, [chatId]);
 
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
@@ -159,16 +161,16 @@ function Chat() {
   // Live: new and deleted messages arrive as they happen.
   useEffect(() => {
     load();
-    const ch = supabase.channel(`chat:${poolId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `pool_id=eq.${poolId}` },
+    const ch = supabase.channel(`chat:${chatId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `pool_id=eq.${chatId}` },
         (p) => setMsgs((xs) => xs.some((x) => x.id === (p.new as ChatMessage).id) ? xs : [...xs, p.new as ChatMessage]))
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages", filter: `pool_id=eq.${poolId}` },
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages", filter: `pool_id=eq.${chatId}` },
         (p) => setMsgs((xs) => xs.map((x) => x.id === (p.new as ChatMessage).id ? p.new as ChatMessage : x)))
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
         (p) => setMsgs((xs) => xs.filter((x) => x.id !== (p.old as { id: number }).id)))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [load, poolId]);
+  }, [load, chatId]);
 
   // The log fills the screen down to the message box, whatever the phone:
   // measured, not guessed.
@@ -304,16 +306,16 @@ function Chat() {
     const late = setTimeout(again, 400);
     document.fonts?.ready.then(again);
     return () => { t.forEach(cancelAnimationFrame); clearTimeout(late); };
-  }, [poolId, hasMsgs, toBottom]);
+  }, [chatId, hasMsgs, toBottom]);
 
   // Mark the newest read.
   const lastId = msgs.length ? msgs[msgs.length - 1].id : 0;
   useEffect(() => {
     if (lastId) {
-      supabase.from("chat_reads").upsert({ user_id: me.user_id, pool_id: poolId, last_read_id: lastId }).then(() =>
+      supabase.from("chat_reads").upsert({ user_id: me.user_id, pool_id: chatId, last_read_id: lastId }).then(() =>
         window.dispatchEvent(new Event("chat-read")));
     }
-  }, [lastId, me.user_id, poolId]);
+  }, [lastId, me.user_id, chatId]);
 
   const matches = tag === null ? [] :
     members.filter((m) => m.user_id !== me.user_id && m.display_name.toLowerCase().startsWith(tag.toLowerCase())).slice(0, 5);
@@ -339,7 +341,7 @@ function Chat() {
     if ((!body && !photo) || sending) return;
     setErr(null); setSending(true);
     // Checked before anything is uploaded, so a refused message never leaves a photo behind.
-    const { data: why } = await supabase.rpc("chat_check", { p_pool: poolId, p_body: body });
+    const { data: why } = await supabase.rpc("chat_check", { p_pool: chatId, p_body: body });
     if (why) {
       setSending(false); setErr(why as string);
       supabase.rpc("my_chat_ban").then(({ data }) => setBan((data as string | null) ?? null));
@@ -347,11 +349,11 @@ function Chat() {
     }
     let image_path: string | null = null;
     if (photo) {
-      image_path = `${poolId}/${me.user_id}/${await sizedName(photo.blob)}.jpg`;
+      image_path = `${chatId}/${me.user_id}/${await sizedName(photo.blob)}.jpg`;
       const up = await supabase.storage.from("chat-photos").upload(image_path, photo.blob, { contentType: "image/jpeg" });
       if (up.error) { setSending(false); setErr(up.error.message); return; }
     }
-    const row: Record<string, unknown> = { body, pool_id: poolId };
+    const row: Record<string, unknown> = { body, pool_id: chatId };
     if (image_path) row.image_path = image_path;
     if (replyTo) row.reply_to = replyTo.id;
     const { data, error } = await supabase.from("chat_messages").insert(row).select().single();
@@ -401,7 +403,7 @@ function Chat() {
     if (!more || loadingOlder || !msgs.length || !log.current) return;
     setLoadingOlder(true);
     const el = log.current, before = el.scrollHeight;
-    const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", poolId)
+    const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId)
       .lt("id", msgs[0].id).order("id", { ascending: false }).limit(PAGE);
     const page = ((data ?? []) as ChatMessage[]).reverse();
     setMore(page.length === PAGE);

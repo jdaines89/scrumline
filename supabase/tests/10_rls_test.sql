@@ -99,7 +99,7 @@ exception when insufficient_privilege then raise notice 'ok: members cannot edit
 end $$;
 reset role;
 
-select join_code as code, id as poolid from public.pools where name = 'Test pool' \gset
+select join_code as code, id as poolid from public.pools where name = 'Test pool' and (league_id is null or league_id = id) \gset
 
 -- Andy: joins with the code, sees Justin on the pool leaderboard, cannot touch his picks
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
@@ -233,7 +233,7 @@ insert into public.seasons (id, name, is_replay, competition_id, feed_season) va
 insert into public.pools (season, name, created_by) values ('2027', 'Live pool', '00000000-0000-0000-0000-00000000000a');
 insert into public.pool_members (pool_id, user_id)
 select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c']::uuid[]) u
-where name = 'Live pool';
+where name = 'Live pool' and (league_id is null or league_id = id);
 insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
   ('t-started', '2027', 1, now() - interval '1 minute', '142072', '142073', 'SCHEDULED', 'test'),
   ('t-soon',    '2027', 1, now() + interval '30 minutes', '142075', '142070', 'SCHEDULED', 'test'),
@@ -545,17 +545,17 @@ reset role;
 -- Chat history: a newcomer sees the pool's chat from when they joined
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into public.pools (season, name, created_by) values ('2026', 'History', auth.uid());
-insert into public.chat_messages (pool_id, body) select id, 'before you got here' from public.pools where name = 'History';
+insert into public.chat_messages (pool_id, body) select id, 'before you got here' from public.pools where name = 'History' and (league_id is null or league_id = id);
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 do $$ declare c text; begin
-  reset role; select join_code into c from public.pools where name = 'History';
+  reset role; select join_code into c from public.pools where name = 'History' and (league_id is null or league_id = id);
   perform pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
   perform public.join_pool(c);
 end $$;
 select pg_temp.check((select count(*) from public.chat_messages c join public.pools p on p.id = c.pool_id where p.name = 'History') = 0,
   'a newcomer doesn''t see chat from before they joined');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-insert into public.chat_messages (pool_id, body) select id, 'welcome' from public.pools where name = 'History';
+insert into public.chat_messages (pool_id, body) select id, 'welcome' from public.pools where name = 'History' and (league_id is null or league_id = id);
 select pg_temp.check((select count(*) from public.chat_messages c join public.pools p on p.id = c.pool_id where p.name = 'History') = 2,
   'the pool''s starter still sees everything');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
@@ -652,7 +652,7 @@ reset role;
 -- Chat photos: only in your pools, only from your own folder, only pool members see them
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 do $$ declare pid bigint; begin
-  select id into pid from public.pools where name = 'History';
+  select id into pid from public.pools where name = 'History' and (league_id is null or league_id = id);
   insert into storage.objects (bucket_id, name) values ('chat-photos', pid || '/' || auth.uid() || '/pic1.jpg');
   insert into public.chat_messages (pool_id, body, image_path) values (pid, '', pid || '/' || auth.uid() || '/pic1.jpg');
   raise notice 'ok: a photo can be posted without words';
@@ -752,9 +752,9 @@ insert into public.pools (season, name, created_by) values ('prize', 'Prize pool
 insert into public.pool_members (pool_id, user_id, joined_at)
 select id, u, now() - interval '30 days' from public.pools,
        unnest(array['00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c']::uuid[]) u
-where name = 'Prize pool'
+where name = 'Prize pool' and (league_id is null or league_id = id)
 on conflict (pool_id, user_id) do update set joined_at = excluded.joined_at;
-update public.pool_members set joined_at = now() - interval '30 days' where pool_id = (select id from public.pools where name = 'Prize pool');
+update public.pool_members set joined_at = now() - interval '30 days' where pool_id = (select id from public.pools where name = 'Prize pool' and (league_id is null or league_id = id));
 insert into public.matches (id, season, round, kickoff_at, home_team_id, away_team_id, status, source) values
   ('p1a', 'prize', 1, now() + interval '1 day', '142072', '142073', 'SCHEDULED', 'test'),
   ('p1b', 'prize', 1, now() + interval '1 day 2 hours', '142075', '142070', 'SCHEDULED', 'test'),
@@ -763,7 +763,7 @@ insert into public.matches (id, season, round, kickoff_at, home_team_id, away_te
 insert into public.entries (user_id, season, team_name)
 select u, 'prize', 'Team' from unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
                                              '00000000-0000-0000-0000-00000000000c']::uuid[]) u;
-create temp table pp as select id from public.pools where name = 'Prize pool';
+create temp table pp as select id from public.pools where name = 'Prize pool' and (league_id is null or league_id = id);
 grant select on pp to authenticated;
 -- a runs Joe's Pub on Scrumline and b runs Cool Folks
 insert into public.pool_members (pool_id, user_id, joined_at) select id, '00000000-0000-0000-0000-00000000000a', now() - interval '30 days' from pp
@@ -969,8 +969,8 @@ reset role;
 insert into public.pools (season, name, created_by) values ('2027', 'Push pool', '00000000-0000-0000-0000-00000000000a');
 insert into public.pool_members (pool_id, user_id)
 select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b']::uuid[]) u
-where name = 'Push pool' on conflict do nothing;
-select id as pushpool from public.pools where name = 'Push pool' \gset
+where name = 'Push pool' and (league_id is null or league_id = id) on conflict do nothing;
+select id as pushpool from public.pools where name = 'Push pool' and (league_id is null or league_id = id) \gset
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select public.save_push_subscription('https://push.example/b1', repeat('k', 87), repeat('a', 22));
 select pg_temp.check((select count(*) from public.push_subscriptions) = 1, 'a player saves their phone for push');
@@ -1124,8 +1124,8 @@ insert into public.pools (season, name, created_by) values ('spon', 'Sponsored m
 insert into public.pool_members (pool_id, user_id)
   select id, u from public.pools, unnest(array['00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
                                                 '00000000-0000-0000-0000-00000000000c']::uuid[]) u
-  where name = 'Sponsored mates' on conflict do nothing;
-create temp table sp as select id from public.pools where name = 'Sponsored mates';
+  where name = 'Sponsored mates' and (league_id is null or league_id = id) on conflict do nothing;
+create temp table sp as select id from public.pools where name = 'Sponsored mates' and (league_id is null or league_id = id);
 grant select on sp to authenticated;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select not available and reason like 'Opens once 5 players%' from public.sponsor_quote((select id from sp))),
@@ -1644,7 +1644,7 @@ select pg_temp.check(moderation.verdict('the Zorblat River school') is null, 'an
 select pg_temp.check(moderation.verdict('great tackle, 35-10 up') is null, 'ordinary chat passes');
 select pg_temp.check(moderation.verdict('blimeyfied') is null, 'a whole word does not catch longer words');
 
-select id as modpool from public.pools where name = 'Test pool' \gset
+select id as modpool from public.pools where name = 'Test pool' and (league_id is null or league_id = id) \gset
 select set_config('x.p', :'modpool', false);
 insert into public.pool_members (pool_id, user_id) values (:modpool, '00000000-0000-0000-0000-00000000000c') on conflict do nothing;
 insert into public.pools (season, name, created_by, school_emis, school_stage, school_year)
