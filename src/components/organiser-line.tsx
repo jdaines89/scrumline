@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { kickoff, roundName } from "@/lib/format";
 import { logEvent } from "@/lib/events";
+import { readCache, writeCache } from "@/lib/cache";
 import { nameList, stillToCall, type OrganiserRow } from "@/lib/growth";
 import { supabase } from "@/lib/supabase";
 
@@ -11,9 +12,12 @@ import { supabase } from "@/lib/supabase";
  * WhatsApp nudge for the rest. Counts only; nobody's scores.
  */
 export function OrganiserLine({ poolId, poolName, me, site }: { poolId: number; poolName: string; me: string; site: string }) {
-  const [rows, setRows] = useState<OrganiserRow[] | null>(null);
+  // Last visit's copy first, so the line is there from the start instead of pushing the page down when it arrives.
+  const [rows, setRows] = useState<OrganiserRow[] | null>(() => readCache<OrganiserRow[]>(`organiser:${poolId}`) ?? null);
   useEffect(() => {
-    supabase.rpc("organiser_round", { p_pool: poolId }).then(({ data }) => setRows((data ?? []) as OrganiserRow[]));
+    supabase.rpc("organiser_round", { p_pool: poolId }).then(({ data }) => {
+      const r = (data ?? []) as OrganiserRow[]; writeCache(`organiser:${poolId}`, r); setRows(r);
+    });
   }, [poolId]);
 
   if (!rows || rows.length < 2) return null;

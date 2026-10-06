@@ -28,8 +28,10 @@ export const viewport: Viewport = { themeColor: "#0d1412", interactiveWidget: "r
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        {/* Signed in last time: keep the tabs' row open while the app starts, so the page doesn't drop down when they appear. */}
+        <script dangerouslySetInnerHTML={{ __html: "try{for(var k in localStorage)if(/^sb-.*-auth-token$/.test(k)){document.documentElement.setAttribute('data-signed-in','');break}}catch(e){}" }} />
         {/* Chrome fires "beforeinstallprompt" once, often before the app's code has loaded. */}
         <script dangerouslySetInnerHTML={{ __html: "addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e})" }} />
         <PwaSetup />
