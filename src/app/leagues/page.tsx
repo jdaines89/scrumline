@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
+import { InviteSheet, WaitingInvites } from "@/components/league-invites";
 import { latestWin } from "@/components/prize-line";
 import type { PoolPrize } from "@/lib/prizes";
 import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
@@ -56,6 +57,8 @@ export default function PoolsPage() {
   const [made, setMade] = useState<{ id: number; name: string; code: string } | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [busy, setBusy] = useState(false);
+  // The league whose invite sheet is open.
+  const [inviting, setInviting] = useState<Pool | null>(null);
   const ids = pools.map((p) => p.id).join(",");
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
   const [unread, setUnread] = useState<Unread[]>([]);
@@ -164,7 +167,7 @@ export default function PoolsPage() {
           <span className="lgc-chev" aria-hidden="true">›</span>
         </button>
         {!p.school_emis && (
-          <button type="button" className="ghost lgc-invite" onClick={() => share(p.id, p.join_code, p.name)}>{copied === p.id ? "Copied" : "Invite"}</button>
+          <button type="button" className="ghost lgc-invite" onClick={() => setInviting(p)}>{copied === p.id ? "Copied" : "Invite"}</button>
         )}
         {!p.school_emis && p.created_by === me.user_id && (
           <OrganiserLine poolId={p.id} poolName={p.name} me={me.user_id} site={`${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`} />
@@ -231,6 +234,7 @@ export default function PoolsPage() {
       <div className="card">
         <h2>Your leagues</h2>
         <p className="sub">Your calls count in every league you&apos;re in.</p>
+        <WaitingInvites onJoined={async (id) => { await reloadPools(); setPool(id); }} />
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code from a mate.</p>}
         {mateLeagues.length > 0 && <>
           <div className="lg-sect">Mates</div>
@@ -300,6 +304,10 @@ export default function PoolsPage() {
         {business && <p className="small muted" style={{ margin: "14px 0 0" }}>Putting up a prize from your business? That&apos;s in <Link href="/sponsor/prizes/">Business, Prizes</Link>.</p>}
       </div>
       <InviteCard />
+      {inviting && (
+        <InviteSheet poolId={inviting.id} poolName={inviting.name} onClose={() => setInviting(null)}
+          onSendLink={() => { const p = inviting; setInviting(null); share(p.id, p.join_code, p.name); }} />
+      )}
     </>
   );
 }
