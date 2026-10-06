@@ -1,5 +1,6 @@
 "use client";
 
+import { PollCard, PollComposer, type PollVote } from "@/components/chat-poll";
 import { LeaguePicture } from "@/components/league-picture";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
@@ -72,6 +73,37 @@ function Chat() {
   const swipe = useRef<{ id: number; x: number; y: number; dx: number; el: HTMLElement; moved: boolean } | null>(null);
   const [flash, setFlash] = useState<number | null>(null);
 
+  // Polls on the messages on screen, and their votes, refreshed whenever anyone votes.
+  const [polls, setPolls] = useState<Map<number, string[]>>(new Map());
+  const [votes, setVotes] = useState<PollVote[]>([]);
+  // Polls need their tables; until the database has them the poll button stays hidden.
+  const [pollsOn, setPollsOn] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const loadPolls = useCallback(async () => {
+    const ids = shownIds.current;
+    const [p, v] = await Promise.all([
+      supabase.from("chat_polls").select("message_id, options").in("message_id", ids.length ? ids : [0]),
+      supabase.from("chat_poll_votes").select("message_id, user_id, choice").in("message_id", ids.length ? ids : [0]),
+    ]);
+    setPollsOn(!p.error);
+    setPolls(new Map(((p.data ?? []) as { message_id: number; options: string[] }[]).map((x) => [x.message_id, x.options])));
+    setVotes((v.data ?? []) as PollVote[]);
+  }, []);
+  useEffect(() => {
+    const ch = supabase.channel(`polls:${poolId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_poll_votes" }, () => loadPolls())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_polls" }, () => loadPolls())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [poolId, loadPolls]);
+
+  async function vote(messageId: number, choice: number) {
+    setPicked(null);
+    setVotes((vs) => [...vs.filter((x) => !(x.message_id === messageId && x.user_id === me.user_id)), { message_id: messageId, user_id: me.user_id, choice }]);
+    const { error } = await supabase.from("chat_poll_votes").upsert({ message_id: messageId, choice }, { onConflict: "message_id,user_id" });
+    if (error) { setErr(error.message); loadPolls(); }
+  }
+
   // Reactions for the messages on screen, refreshed whenever anyone reacts.
   const loadReactions = useCallback(async () => {
     const ids = shownIds.current;
@@ -82,7 +114,8 @@ function Chat() {
   useEffect(() => {
     shownIds.current = idsKey ? idsKey.split(",").map(Number) : [];
     loadReactions();
-  }, [idsKey, loadReactions]);
+    loadPolls();
+  }, [idsKey, loadReactions, loadPolls]);
   useEffect(() => {
     const ch = supabase.channel(`reactions:${poolId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_reactions" }, () => loadReactions())
@@ -516,11 +549,13 @@ function Chat() {
                     {m.hidden_at ? (mine ? "Your message is held while it's checked." : "Message held while it's checked.") : "You reported this message."}
                   </div>
                 ) : (<>
-                <div className={`bubble${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !m.body.trim() ? " photoonly" : ""}`}
+                <div className={`bubble${polls.has(m.id) ? " withpoll" : ""}${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !m.body.trim() ? " photoonly" : ""}`}
                   onClick={() => setPicked(picked === m.id ? null : m.id)} {...swipeHandlers(m)}>
                   {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
                   {m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
-                  {m.body.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
+                  {polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!} votes={votes.filter((v) => v.message_id === m.id)}
+                    me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} />
+                  : m.body.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
                     : <span key={j} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{people.get(p.userId)?.display_name ?? "someone"}</span>)}</span>}
                 </div>
                 <Reactions list={reactions.filter((r) => r.message_id === m.id)} me={me.user_id} people={people}
@@ -607,11 +642,19 @@ function Chat() {
             <rect x="3" y="5" width="18" height="14" rx="2.5" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" />
           </svg>
         </button>
-        <textarea ref={box} rows={1} maxLength={900} placeholder={photo ? "Add a caption" : "Message · @ to tag"} value={text}
+        {pollsOn && (
+          <button type="button" className="ghost photobtn" aria-label="Start a poll" disabled={sending} onClick={() => setAsking(true)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+              <path d="M5 20V12M12 20V5M19 20v-9" />
+            </svg>
+          </button>
+        )}
+        <textarea ref={box} rows={1} maxLength={900} placeholder={photo ? "Add a caption" : pollsOn ? "Message" : "Message · @ to tag"} value={text}
           onChange={(e) => onType(e.target.value)} onKeyDown={onKey} />
         <button type="submit" disabled={sending || (!text.trim() && !photo)}>{sending ? "Sending…" : "Send"}</button>
       </form>
       )}
+      {asking && <PollComposer pool={chatId} onClose={() => setAsking(false)} onSent={() => { setAsking(false); atBottom.current = true; load(); }} />}
       {viewing && (
         <div className="photoview" role="dialog" aria-label="Photo" onClick={() => setViewing(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
