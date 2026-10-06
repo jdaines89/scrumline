@@ -77,7 +77,7 @@ function Chat() {
   const [flash, setFlash] = useState<number | null>(null);
 
   // Polls on the messages on screen, and their votes, refreshed whenever anyone votes.
-  const [polls, setPolls] = useState<Map<number, string[]>>(new Map());
+  const [polls, setPolls] = useState<Map<number, { options: string[]; closed: boolean }>>(new Map());
   const [votes, setVotes] = useState<PollVote[]>([]);
   // Polls need their tables; until the database has them the poll button stays hidden.
   const [pollsOn, setPollsOn] = useState(false);
@@ -93,17 +93,18 @@ function Chat() {
   const loadPolls = useCallback(async () => {
     const ids = shownIds.current;
     const [p, v] = await Promise.all([
-      supabase.from("chat_polls").select("message_id, options").in("message_id", ids.length ? ids : [0]),
+      supabase.from("chat_polls").select("*").in("message_id", ids.length ? ids : [0]),
       supabase.from("chat_poll_votes").select("message_id, user_id, choice").in("message_id", ids.length ? ids : [0]),
     ]);
     setPollsOn(!p.error);
-    setPolls(new Map(((p.data ?? []) as { message_id: number; options: string[] }[]).map((x) => [x.message_id, x.options])));
+    setPolls(new Map(((p.data ?? []) as { message_id: number; options: string[]; closed_at?: string | null }[])
+      .map((x) => [x.message_id, { options: x.options, closed: !!x.closed_at }])));
     setVotes((v.data ?? []) as PollVote[]);
   }, []);
   useEffect(() => {
     const ch = supabase.channel(`polls:${poolId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_poll_votes" }, () => loadPolls())
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_polls" }, () => loadPolls())
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_polls" }, () => loadPolls())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [poolId, loadPolls]);
@@ -113,6 +114,13 @@ function Chat() {
     setVotes((vs) => [...vs.filter((x) => !(x.message_id === messageId && x.user_id === me.user_id)), { message_id: messageId, user_id: me.user_id, choice }]);
     const { error } = await supabase.rpc("vote_in_poll", { p_message: messageId, p_choice: choice });
     if (error) { setErr(error.message); loadPolls(); }
+  }
+
+  async function closePoll(messageId: number) {
+    setPolls((ps) => { const x = ps.get(messageId); return x ? new Map(ps).set(messageId, { ...x, closed: true }) : ps; });
+    const { error } = await supabase.rpc("close_poll", { p_message: messageId });
+    if (error) setErr(error.message);
+    loadPolls();
   }
 
   // Reactions for the messages on screen, refreshed whenever anyone reacts.
@@ -596,8 +604,8 @@ function Chat() {
                   {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
                   {group ? <PhotoGrid paths={group.map((x) => x.image_path!)} onOpen={(i) => setGallery({ paths: group.map((x) => x.image_path!), i })} />
                     : m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
-                  {polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!} votes={votes.filter((v) => v.message_id === m.id)}
-                    me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} />
+                  {polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!.options} closed={polls.get(m.id)!.closed} votes={votes.filter((v) => v.message_id === m.id)}
+                    me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} onClosePoll={mine ? () => closePoll(m.id) : undefined} />
                   : caption.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
                     : <span key={j} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{people.get(p.userId)?.display_name ?? "someone"}</span>)}</span>}
                 </div>

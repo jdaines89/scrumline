@@ -74,4 +74,16 @@ select pg_temp.check(not pg_temp.fails($$insert into public.chat_messages (pool_
 reset role;
 select pg_temp.check(exists (select 1 from public.chat_messages where body = 'Bulls by 10' and reply_to = (select id from t_poll)), 'the reply points at the message it answers');
 
+-- Closing a poll: only whoever asked, and votes stop.
+select pg_temp.as_user((select b from t));
+select pg_temp.check(pg_temp.fails($$select public.close_poll((select id from t_poll))$$), 'only the person who asked can close a poll');
+select pg_temp.as_user((select a from t));
+select public.close_poll((select id from t_poll));
+reset role;
+select pg_temp.check((select closed_at is not null from public.chat_polls where message_id = (select id from t_poll)), 'the person who asked can close it');
+select pg_temp.as_user((select b from t));
+select pg_temp.check(pg_temp.fails($$select public.vote_in_poll((select id from t_poll), 0::smallint)$$), 'nobody can change their vote once it is closed');
+reset role;
+select pg_temp.check((select choice from public.chat_poll_votes where message_id = (select id from t_poll) and user_id = (select b from t)) = 2, 'and the results stay as they were');
+
 do $$ begin raise notice 'CHAT POLL CHECKS PASSED'; end $$;
