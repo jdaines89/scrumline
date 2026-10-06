@@ -17,5 +17,7 @@ export function track(kind: Visit) {
 
 export function pageKind(path: string): Visit | null {
   const k = path.split("/").filter(Boolean)[0];
+  // The Leagues screen moved from /pools/ to /leagues/; it still logs as "pools" so the numbers stay continuous.
+  if (k === "leagues") return "pools";
   return k === "predict" || k === "leaderboard" || k === "chat" || k === "pools" || k === "fixtures" ? k : null;
 }

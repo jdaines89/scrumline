@@ -109,7 +109,7 @@ export default function SponsorResults() {
         {r && (
           <>
             <div className="kpis">
-              <div className="kpi"><b>{n(r.players)}</b><span>players in the pool</span></div>
+              <div className="kpi"><b>{n(r.players)}</b><span>players in the league</span></div>
               <div className="kpi"><b>{n(r.seen)}</b><span>times your name was seen</span></div>
               <div className="kpi"><b>{n(r.shares)}</b><span>recap cards shared</span></div>
               <div className="kpi"><b>{n(r.taps)}</b><span>taps through to your site</span></div>

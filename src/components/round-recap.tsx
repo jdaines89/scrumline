@@ -98,7 +98,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     lines.push({ label: "Worst call", text: `${name.get(worst.entry_id)} said ${worst.pred_home}–${worst.pred_away}, it finished ${worst.real_home}–${worst.real_away} (${matchName(worst.match_id)})` });
 
     const leaders = entries.filter((r) => rank(round, r.entry_id!) === 1).map((r) => r.entry_id!);
-    lines.push({ label: "Top of the pool", text: `${who(leaders)} on ${upTo(round, leaders[0])} pts` });
+    lines.push({ label: "Top of the league", text: `${who(leaders)} on ${upTo(round, leaders[0])} pts` });
     const table = entries.map((r) => ({ name: r.team_name ?? r.manager, pts: upTo(round, r.entry_id!), rank: rank(round, r.entry_id!) }))
       .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)).slice(0, 6);
     // A round prize's business is that round's backer, even before its winner is known.

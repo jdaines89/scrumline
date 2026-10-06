@@ -65,7 +65,7 @@ export default function AdminModeration() {
             {h.body.trim() && <blockquote className="modquote">{h.body.replace(/<@[0-9a-f-]{36}>/g, "@someone")}</blockquote>}
             <div className="small muted">
               Reported {h.reports} time{h.reports === 1 ? "" : "s"}{h.reasons ? ` for ${h.reasons.split(", ").map((r) => REASON[r] ?? r).join(", ")}` : ""}
-              {h.school ? " · school pool" : ""}
+              {h.school ? " · school league" : ""}
               {h.author_removed + h.author_caught > 0 ? ` · in 30 days: ${h.author_removed} removed, ${h.author_caught} stopped by the filter` : ""}
             </div>
             <div className="modacts">
@@ -148,7 +148,7 @@ function Words({ onMessage }: { onMessage: (m: { ok: boolean; text: string }) =>
   return (
     <div className="card narrow">
       <h2>Word list</h2>
-      <p className="sub">Racist and hateful words and threats are stopped everywhere. Sexual words and swearing are stopped in names and in school and class pools. The filter sees through capitals, accents, numbers for letters, spaced-out letters and * for a vowel.</p>
+      <p className="sub">Racist and hateful words and threats are stopped everywhere. Sexual words and swearing are stopped in names and in school and class leagues. The filter sees through capitals, accents, numbers for letters, spaced-out letters and * for a vowel.</p>
       <form onSubmit={tryIt} className="row">
         <input placeholder="Try a message" value={trial} onChange={(e) => { setTrial(e.target.value); setVerdict(undefined); }} />
         <button type="submit" className="ghost" disabled={!trial.trim()}>Check</button>

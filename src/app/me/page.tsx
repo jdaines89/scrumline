@@ -67,7 +67,7 @@ export default function MePage() {
             <p className="small muted recruited">
               {recruited > 0
                 ? <>Brought in <strong>{recruited}</strong> player{recruited === 1 ? "" : "s"}. Thanks for growing the league.</>
-                : <>You haven&apos;t brought anyone in yet. Your invite link is on <Link href="/pools/">Leagues</Link>.</>}
+                : <>You haven&apos;t brought anyone in yet. Your invite link is on <Link href="/leagues/">Leagues</Link>.</>}
             </p>
           )}
 

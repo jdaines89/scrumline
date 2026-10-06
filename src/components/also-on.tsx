@@ -27,13 +27,17 @@ export function AlsoOn() {
   if (!worthSwitching(mine, other, now)) return null;
   const target = seasons.find((s) => s.id === other!.season);
   if (!target) return null;
-  // "the URC rests", but "the Nations Championship rests" rather than "the Nations".
+  // "the URC", but "the Nations Championship" rather than "the Nations".
   const comp = competitions.get(season.competition_id);
-  const resting = comp ? (/^[A-Z]+$/.test(comp.short_name) ? comp.short_name : comp.name) : season.name;
+  const here = comp ? (/^[A-Z]+$/.test(comp.short_name) ? comp.short_name : comp.name) : season.name;
+  // Only a tournament that has already kicked off can be resting; one still to come simply starts later.
+  const started = matches.some((m) => new Date(m.kickoff_at).getTime() <= now);
   return (
     <div className="card also-on">
       <p>
-        <strong>{target.name}</strong> is on while the {resting} rests. {roundName(other!.round)} starts {kickoff(other!.kickoff_at)}.
+        {started
+          ? <><strong>{target.name}</strong> is on while the {here} rests. {roundName(other!.round)} starts {kickoff(other!.kickoff_at)}.</>
+          : <><strong>{target.name}</strong> is on now, with {roundName(other!.round).toLowerCase()} starting {kickoff(other!.kickoff_at)}. The {here} starts {mine ? kickoff(mine) : "later"}.</>}
       </p>
       <button type="button" onClick={() => setSeason(target.id)}>Play it</button>
     </div>

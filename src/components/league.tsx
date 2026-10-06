@@ -211,20 +211,33 @@ function Switcher() {
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
-      <label className="season-pick">
-        <span className="season-pick-kicker">Tournament</span>
-        <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}{seasons.length > 1 && <span className="season-pick-chev" aria-hidden="true">⌄</span>}</span>
-        <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Tournament">
-          {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
-        </select>
-      </label>
+      {seasons.length > 1 ? (
+        <label className="season-pick">
+          <span className="season-pick-kicker">Tournament</span>
+          <span className="season-pick-box">
+            <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+            <span className="season-pick-change" aria-hidden="true">
+              Change
+              <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
+          </span>
+          <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Change tournament">
+            {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
+          </select>
+        </label>
+      ) : (
+        <div className="season-pick">
+          <span className="season-pick-kicker">Tournament</span>
+          <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+        </div>
+      )}
       {showPool && <label>
-        <span>Pool</span>
+        <span>League</span>
         {pools.length ? (
           <select value={pool?.id ?? ""} onChange={(e) => setPool(Number(e.target.value))}>
             {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
           </select>
-        ) : <Link href="/pools/" className="nopool">Start or join a league</Link>}
+        ) : <Link href="/leagues/" className="nopool">Start or join a league</Link>}
       </label>}
     </div>
   );
@@ -238,7 +251,7 @@ export function NeedsPool({ children }: { children: ReactNode }) {
     <div className="card narrow">
       <h2>No league yet</h2>
       <p className="sub">You&apos;re not in a league for {season.name}. Start one or join with a code from a mate.</p>
-      <Link className="btn" href="/pools/">Go to leagues</Link>
+      <Link className="btn" href="/leagues/">Go to leagues</Link>
     </div>
   );
 }
@@ -266,7 +279,7 @@ export function NeedsEntry({ children }: { children: ReactNode }) {
   return (
     <div className="card narrow">
       <h2>Name your team for {season.name}</h2>
-      <p className="sub">One team per tournament. Your calls count in every pool you&apos;re in, and you back one match a round as your Banker.</p>
+      <p className="sub">One team per tournament. Your calls count in every league you&apos;re in, and you back one match a round as your Banker.</p>
       <form onSubmit={create} className="row">
         <input required maxLength={40} placeholder="Team name" value={name} onChange={(e) => setName(e.target.value)} />
         <button type="submit">Create</button>

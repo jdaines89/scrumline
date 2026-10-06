@@ -75,9 +75,9 @@ function Leaderboard() {
 
   return (
     <div className="card">
-      <Link href="/pools/" className="lg-back">‹ Your leagues</Link>
+      <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
-      {view === "schools" && <p className="sub">Every school in the league, not just this pool.</p>}
+      {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}

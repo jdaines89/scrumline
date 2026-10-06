@@ -39,7 +39,7 @@ export default function BusinessSignUp() {
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
-        <p className="sub">Your name in front of a school&apos;s former pupils all season, on their pool, their table and the round cards they share.</p>
+        <p className="sub">Your name in front of a school&apos;s former pupils all season, on their league, their table and the round cards they share.</p>
         <form onSubmit={submit} className="stack">
           <input required minLength={2} maxLength={60} placeholder="Business name" autoComplete="organization" value={business} onChange={(e) => setBusiness(e.target.value)} />
           <input type="email" required placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />

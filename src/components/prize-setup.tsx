@@ -81,7 +81,7 @@ export function PrizeSetup() {
     if (error) {
       if (image_path) await supabase.storage.from("prize-photos").remove([image_path]);
       setMsg(error.message.includes("reword") ? error.message
-        : "That didn't go through. Prizes can only go on rounds that haven't kicked off, in pools of up to 50, and not while a prize you offered is still waiting to be marked received.");
+        : "That didn't go through. Prizes can only go on rounds that haven't kicked off, in leagues of up to 50, and not while a prize you offered is still waiting to be marked received.");
       return;
     }
     setPrize(""); setDetails(""); setEvery(false); clearPhoto(); reload();

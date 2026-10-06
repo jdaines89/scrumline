@@ -10,8 +10,8 @@ export function PoolName({ pool }: { pool: Pool }) {
       {name.slice(0, cut)}
       <span className="nowrap">{name.slice(cut)}
       {(
-        <svg className="verified" viewBox="0 0 16 16" width="15" height="15" role="img" aria-label="Official school pool">
-          <title>Official school pool, set up by Scrumline</title>
+        <svg className="verified" viewBox="0 0 16 16" width="15" height="15" role="img" aria-label="Official school league">
+          <title>Official school league, set up by Scrumline</title>
           <path fill="currentColor" d="M8 0l1.9 1.4 2.3-.2.8 2.2 2 1.2-.5 2.3.9 2.1-1.6 1.7-.2 2.3-2.3.6-1.4 1.9-2.2-.7-2.2.7-1.4-1.9-2.3-.6-.2-2.3L0 9.1l.9-2.1-.5-2.3 2-1.2.8-2.2 2.3.2z" />
           <path fill="none" stroke="var(--bg)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M5 8.2l2 2 4-4.2" />
         </svg>
