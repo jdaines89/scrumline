@@ -183,7 +183,12 @@ export default function PoolsPage() {
           <span className="lgc-chev" aria-hidden="true">›</span>
         </button>
         {!p.school_emis && (
-          <button type="button" className="ghost lgc-invite" onClick={() => setInviting(p)}>{copied === p.id ? "Copied" : "Invite"}</button>
+          <button type="button" className="lgc-invite" onClick={() => setInviting(p)}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M19 8v6M16 11h6" />
+            </svg>
+            {copied === p.id ? "Link copied" : "Invite mates"}
+          </button>
         )}
         {!p.school_emis && p.created_by === me.user_id && (
           <OrganiserLine poolId={p.id} poolName={p.name} me={me.user_id} site={`${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`} />
