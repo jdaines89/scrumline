@@ -92,7 +92,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
   return (
     <>
       <div className="card narrow sch-hero">
-        <Crest emis={s.emis} path={p.crest_path} size={p.crest_path ? 84 : 52} name={s.name} />
+        <div className="sch-crest-slot"><Crest emis={s.emis} path={p.crest_path} size={p.crest_path ? 84 : 52} name={s.name} /></div>
         <h1 className="sch-name">{s.name}</h1>
         {place && <p className="sch-place">{place}</p>}
         <p className="small muted sch-facts">{facts}</p>

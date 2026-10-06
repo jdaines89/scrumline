@@ -10,9 +10,12 @@ import { supabase } from "@/lib/supabase";
  */
 export function Crest({ emis, path, size = 40, name }: { emis: string; path?: string | null; size?: number; name?: string }) {
   const [broken, setBroken] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   if (path && !broken) {
     const url = supabase.storage.from("school-crests").getPublicUrl(path).data.publicUrl;
-    return <img className="school-mark" src={url} alt={name ? `${name} crest` : ""} width={size} height={size} onError={() => setBroken(true)} />;
+    // Fades in once it has arrived; the box is its full size from the start so nothing moves.
+    return <img className={`school-mark${loaded ? "" : " loading"}`} src={url} alt={name ? `${name} crest` : ""} width={size} height={size}
+      onLoad={() => setLoaded(true)} ref={(el) => { if (el?.complete && el.naturalWidth) setLoaded(true); }} onError={() => setBroken(true)} />;
   }
   return (
     <span className="school-mark plain" data-emis={emis} aria-hidden style={{ width: size, height: size }}>
@@ -39,7 +42,8 @@ export function CrestUpload({ emis, hasCrest, onDone, note }: { emis: string; ha
     try {
       const blob = await squarePng(file);
       const path = `${emis}/${crypto.randomUUID()}.png`;
-      const up = await supabase.storage.from("school-crests").upload(path, blob, { contentType: "image/png" });
+      // Every upload gets a new name, so phones can keep the picture for a year.
+      const up = await supabase.storage.from("school-crests").upload(path, blob, { contentType: "image/png", cacheControl: "31536000" });
       if (up.error) throw new Error(up.error.message);
       const { error } = await supabase.rpc("set_school_crest", { p_emis: emis, p_path: path });
       if (error) throw new Error(error.message);
