@@ -1,5 +1,6 @@
 "use client";
 
+import { LeaguePicture } from "@/components/league-picture";
 import { RoundOptions } from "@/components/counts-from";
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
@@ -164,7 +165,7 @@ export default function PoolsPage() {
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>
           <span className="lgc-rank">{st ? <>{st.rank}<small>of {st.of}</small></> : <small>—</small>}</span>
           <span className="lgc-text">
-            <strong>{label ?? <PoolName pool={p} />}</strong>
+            <strong>{label ?? <><LeaguePicture pool={p} size={24} /> <PoolName pool={p} /></>}</strong>
             <span className="lgc-line">{line(p)}</span>
           </span>
           {u && u.unread > 0 && <span className={u.tagged > 0 ? "lgc-dot at" : "lgc-dot"} aria-label={`${u.unread} unread`}>{u.tagged > 0 ? "@" : u.unread}</span>}
