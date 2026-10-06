@@ -46,6 +46,7 @@ header.top .shell { padding-top: 16px; padding-bottom: 0; }
 }
 
 nav.tabs { display: flex; gap: 4px; margin-top: 16px; flex-wrap: wrap; }
+html[data-signed-in] nav.tabs:empty { min-height: 38px; }
 nav.tabs a {
   padding: 8px 14px; border-radius: var(--radius) var(--radius) 0 0;
   color: var(--muted); font-size: 14px; font-weight: 500;

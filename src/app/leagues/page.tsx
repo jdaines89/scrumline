@@ -65,32 +65,43 @@ export default function PoolsPage() {
   const [inviting, setInviting] = useState<Pool | null>(null);
   const ids = pools.map((p) => p.id).join(",");
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
-  const [unread, setUnread] = useState<Unread[]>([]);
-  const [prizes, setPrizes] = useState<Map<number, Prize>>(new Map());
-  const [recruiter, setRecruiter] = useState<Map<number, RecruiterPrize>>(new Map());
-  const [toConfirm, setToConfirm] = useState<Map<string, number>>(new Map());
+  // Each card's extras draw from last visit's copy straight away, so nothing arrives late and pushes the cards down.
+  const [unread, setUnread] = useState<Unread[]>(() => readCache<Unread[]>(`leagues-unread:${ids}`) ?? []);
+  const [prizes, setPrizes] = useState<Map<number, Prize>>(() => new Map(readCache<[number, Prize][]>(`leagues-prizes:${ids}`) ?? []));
+  const [recruiter, setRecruiter] = useState<Map<number, RecruiterPrize>>(() => new Map(readCache<[number, RecruiterPrize][]>(`leagues-recruiter:${ids}`) ?? []));
+  const [toConfirm, setToConfirm] = useState<Map<string, number>>(() => new Map(readCache<[string, number][]>(`leagues-confirm:${ids}`) ?? []));
 
   // Every league's table in one go, for your rank on each card.
   useEffect(() => {
     if (!pools.length) { setScores([]); return; }
     setScores(readCache<Score[]>(`leagues:${ids}`) ?? []);
+    setUnread(readCache<Unread[]>(`leagues-unread:${ids}`) ?? []);
+    setPrizes(new Map(readCache<[number, Prize][]>(`leagues-prizes:${ids}`) ?? []));
+    setRecruiter(new Map(readCache<[number, RecruiterPrize][]>(`leagues-recruiter:${ids}`) ?? []));
+    setToConfirm(new Map(readCache<[string, number][]>(`leagues-confirm:${ids}`) ?? []));
     supabase.from("pool_leaderboard").select("pool_id, user_id, total_points").in("pool_id", pools.map((p) => p.id))
       .then(({ data }) => { const r = (data ?? []) as Score[]; writeCache(`leagues:${ids}`, r); setScores(r); });
     supabase.from("chat_unread").select("pool_id, unread, tagged").in("pool_id", pools.map((p) => leagueOf(p)))
-      .then(({ data }) => setUnread((data ?? []) as Unread[]));
+      .then(({ data }) => { const r = (data ?? []) as Unread[]; writeCache(`leagues-unread:${ids}`, r); setUnread(r); });
     // This round's prize, for mates' leagues (school leagues don't take round prizes).
     Promise.all(pools.filter((p) => !p.school_emis).map((p) =>
       supabase.rpc("pool_prizes", { p_pool: p.id }).then(({ data }) => {
         const list = (data ?? []) as Prize[];
         const now = list.find((x) => x.status === "in play") ?? list.find((x) => x.status === "upcoming") ?? latestWin(list);
         return [p.id, now] as const;
-      }))).then((pairs) => setPrizes(new Map(pairs.filter((x): x is readonly [number, Prize] => !!x[1]))));
+      }))).then((pairs) => {
+        const got = pairs.filter((x): x is readonly [number, Prize] => !!x[1]);
+        writeCache(`leagues-prizes:${ids}`, got); setPrizes(new Map(got));
+      });
     // This month's recruiter prize, shown by the Invite button, since inviting is how it's won.
     Promise.all(pools.map((p) =>
       supabase.rpc("pool_recruiter_prizes", { p_pool: p.id }).then(({ data }) => {
         const list = (data ?? []) as RecruiterPrize[];
         return [p.id, list.find((x) => x.status === "open")] as const;
-      }))).then((pairs) => setRecruiter(new Map(pairs.filter((x): x is readonly [number, RecruiterPrize] => !!x[1]))));
+      }))).then((pairs) => {
+        const got = pairs.filter((x): x is readonly [number, RecruiterPrize] => !!x[1]);
+        writeCache(`leagues-recruiter:${ids}`, got); setRecruiter(new Map(got));
+      });
     // Schoolmates at your schools you haven't confirmed yet.
     const schools = pools.filter((p) => p.school_emis && !p.school_year);
     if (schools.length) {
@@ -104,7 +115,7 @@ export default function PoolsPage() {
           if (r.user_id === me.user_id || done.has(`${r.user_id}:${r.stage}`)) continue;
           counts.set(`${r.emis}:${r.stage}`, (counts.get(`${r.emis}:${r.stage}`) ?? 0) + 1);
         }
-        setToConfirm(counts);
+        writeCache(`leagues-confirm:${ids}`, [...counts]); setToConfirm(counts);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
