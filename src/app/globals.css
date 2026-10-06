@@ -1341,6 +1341,13 @@ button.img-tap:focus-visible { outline: 2px solid var(--accent); outline-offset:
 .composer .photobtn.open { color: var(--accent); border-color: var(--accent); }
 .composer .photobtn svg { transition: transform .15s ease; }
 .composer .photobtn.open svg { transform: rotate(45deg); }
+.poll-acts { display: flex; gap: 14px; }
+button.poll-opt.shut, button.poll-opt.shut:hover { cursor: default; opacity: 1; border-color: var(--line); }
+button.poll-opt.shut.on { border-color: var(--accent); }
+.poll-opt.shut:not(.on) .poll-mark { display: none; }
+.poll-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.poll-confirm span { flex: 1 1 100%; color: var(--muted); }
+.poll-confirm button { flex: 1; padding: 8px 10px; }
 .poll-who-n { color: var(--text); font-variant-numeric: tabular-nums; margin-right: 4px; }
 
 /* Several photos waiting to send: a row of thumbnails, each with its own ×, and + for more. */

@@ -11,11 +11,12 @@ export interface PollVote { message_id: number; user_id: string; choice: number 
  * tap to vote, filling with its share of the votes. Your answer is ticked,
  * and you can change it. "See votes" lists who picked what.
  */
-export function PollCard({ question, options, votes, me, people, onVote }: {
-  question: string; options: string[]; votes: PollVote[]; me: string;
-  people: Map<string, Member>; onVote: (choice: number) => void;
+export function PollCard({ question, options, closed, votes, me, people, onVote, onClosePoll }: {
+  question: string; options: string[]; closed: boolean; votes: PollVote[]; me: string;
+  people: Map<string, Member>; onVote: (choice: number) => void; onClosePoll?: () => void;
 }) {
   const [who, setWho] = useState(false);
+  const [closing, setClosing] = useState(false);
   const mine = votes.find((v) => v.user_id === me)?.choice;
   const total = votes.length;
   const count = (i: number) => votes.filter((v) => v.choice === i).length;
@@ -24,15 +25,16 @@ export function PollCard({ question, options, votes, me, people, onVote }: {
   return (
     <div className="poll" onClick={(e) => e.stopPropagation()}>
       <p className="poll-q">{question}</p>
-      <p className="poll-hint small">{mine === undefined ? "Pick one" : "Tap another answer to change your vote"}</p>
+      <p className="poll-hint small">{closed ? "Poll closed · final results" : mine === undefined ? "Pick one" : "Tap another answer to change your vote"}</p>
       <div className="poll-opts" role="radiogroup" aria-label={question}>
         {options.map((o, i) => {
           const n = count(i);
           const share = total ? Math.round((n / total) * 100) : 0;
           const on = mine === i;
           return (
-            <button key={i} type="button" role="radio" aria-checked={on} className={`poll-opt${on ? " on" : ""}${n > 0 && n === top ? " lead" : ""}`}
-              onClick={() => { if (!on) onVote(i); }}>
+            <button key={i} type="button" role="radio" aria-checked={on} disabled={closed}
+              className={`poll-opt${on ? " on" : ""}${n > 0 && n === top ? " lead" : ""}${closed ? " shut" : ""}`}
+              onClick={() => { if (!on && !closed) onVote(i); }}>
               <span className="poll-fill" style={{ width: `${share}%` }} aria-hidden="true" />
               <span className="poll-mark" aria-hidden="true">{on ? "✓" : ""}</span>
               <span className="poll-text">{o}</span>
@@ -43,8 +45,18 @@ export function PollCard({ question, options, votes, me, people, onVote }: {
       </div>
       <div className="poll-foot small">
         <span>{total === 0 ? "No votes yet" : `${total} ${total === 1 ? "vote" : "votes"}`}</span>
-        {total > 0 && <button type="button" className="linkish small" onClick={() => setWho(!who)}>{who ? "Hide votes" : "See votes"}</button>}
+        <span className="poll-acts">
+          {total > 0 && <button type="button" className="linkish small" onClick={() => setWho(!who)}>{who ? "Hide votes" : "See votes"}</button>}
+          {onClosePoll && !closed && !closing && <button type="button" className="linkish small" onClick={() => setClosing(true)}>Close poll</button>}
+        </span>
       </div>
+      {closing && !closed && (
+        <div className="poll-confirm small">
+          <span>Close it? Voting stops for everyone.</span>
+          <button type="button" className="ghost small" onClick={() => setClosing(false)}>Cancel</button>
+          <button type="button" className="small" onClick={() => { setClosing(false); onClosePoll?.(); }}>Close</button>
+        </div>
+      )}
       {who && (
         <ul className="poll-who small">
           {options.map((o, i) => {
