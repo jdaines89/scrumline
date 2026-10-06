@@ -12,7 +12,7 @@ import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
 import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
-import { defaultSeason, pickerGroups } from "@/lib/seasons";
+import { defaultSeason, pickerGroups, seasonLine } from "@/lib/seasons";
 
 interface League {
   seasons: Season[];
@@ -217,6 +217,7 @@ const POOL_SCREENS: string[] = [];
 function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
   const path = usePathname() ?? "";
+  const [picking, setPicking] = useState(false);
   if (isSponsorPath(path)) return <SponsorTabs />;
   // Chat picks its pool in its own header, so the conversation gets the screen.
   if (isSchoolPath(path) || path.startsWith("/admin") || path.startsWith("/chat")) return null;
@@ -224,23 +225,19 @@ function Switcher() {
   return (
     <div className="switcher">
       {seasons.length > 1 ? (
-        <label className="season-pick">
-          <span className="season-pick-kicker">Tournament</span>
-          <span className="season-pick-box">
-            <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
-            <span className="season-pick-change" aria-hidden="true">
-              Change
-              <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <>
+          <button type="button" className="season-pick" onClick={() => setPicking(true)} aria-haspopup="dialog">
+            <span className="season-pick-kicker">Tournament</span>
+            <span className="season-pick-box">
+              <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+              <span className="season-pick-change" aria-hidden="true">
+                Change
+                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
             </span>
-          </span>
-          <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Change tournament">
-            {pickerGroups(seasons, season.id).map((g) => (
-              <optgroup key={g.label} label={g.label}>
-                {g.seasons.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+          </button>
+          {picking && <TournamentSheet onClose={() => setPicking(false)} />}
+        </>
       ) : (
         <div className="season-pick">
           <span className="season-pick-kicker">Tournament</span>
@@ -255,6 +252,47 @@ function Switcher() {
           </select>
         ) : <Link href="/leagues/" className="nopool">Start or join a league</Link>}
       </label>}
+    </div>
+  );
+}
+
+/**
+ * Picking a tournament: a calm sheet grouped into what's on now, coming up,
+ * finished and practice, each with one line saying when it runs.
+ */
+function TournamentSheet({ onClose }: { onClose: () => void }) {
+  const { seasons, season, setSeason } = useLeague();
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [onClose]);
+  return (
+    <div className="wip-dim" onClick={onClose}>
+      <div className="wip-sheet tsheet" role="dialog" aria-modal="true" aria-labelledby="tsheet-title" onClick={(e) => e.stopPropagation()}>
+        <div className="tsheet-head">
+          <h2 id="tsheet-title">Choose a tournament</h2>
+          <button type="button" className="ghost tsheet-done" onClick={onClose}>Done</button>
+        </div>
+        {pickerGroups(seasons, season.id).map((g) => (
+          <section key={g.label} className="tsheet-group">
+            <h3>{g.label}</h3>
+            {g.seasons.map((s) => {
+              const on = s.id === season.id;
+              return (
+                <button key={s.id} type="button" className={on ? "tsheet-row on" : "tsheet-row"} aria-current={on ? "true" : undefined}
+                  onClick={() => { if (!on) setSeason(s.id); onClose(); }}>
+                  <span className="tsheet-text">
+                    <span className="tsheet-name">{s.name}</span>
+                    {seasonLine(s) && <span className="tsheet-when">{seasonLine(s)}</span>}
+                  </span>
+                  {on && <svg className="tsheet-tick" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                </button>
+              );
+            })}
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
