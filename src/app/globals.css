@@ -1195,3 +1195,16 @@ a.sch-link:hover { text-decoration: underline; }
 .sch-joined li + li { border-top: 1px solid var(--line); }
 .wip-sheet .school-hits { margin-top: 6px; }
 button.sch-skip { display: block; width: 100%; margin-top: 8px; padding: 10px; background: none; border: none; color: var(--muted); font-weight: 500; }
+
+/* Taking a break: quiet members folded under the league table, points kept. */
+.board-break { margin-top: 12px; }
+.board-break > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; padding: 10px 2px; font-weight: 600; }
+.board-break > summary::-webkit-details-marker { display: none; }
+.board-break > summary::after { content: ""; width: 7px; height: 7px; margin-left: auto; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .2s; }
+.board-break[open] > summary::after { transform: rotate(-135deg); }
+.board-break > p { margin: 0 2px 10px; }
+.board.resting li .rank { background: var(--panel); border-color: var(--line); color: var(--muted); }
+.board.resting .btotal { color: var(--muted); }
+.break-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 14px; margin: 12px 0; display: grid; gap: 6px; }
+.break-card p { margin: 0; }
+.break-card .btn { justify-self: start; margin-top: 4px; }
