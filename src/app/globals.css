@@ -1180,3 +1180,16 @@ a.sch-link:hover { text-decoration: underline; }
 .welcome-steps li::marker { color: var(--accent); font-weight: 700; }
 .board-prizes { margin-top: 16px; display: grid; gap: 12px; }
 .board-prizes:empty { display: none; }
+
+/* School question after "Who's playing?" */
+.sch-stage { display: flex; gap: 0; margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+.sch-stage button { flex: 1; padding: 8px 6px; font-size: 13px; font-weight: 500; background: none; border: none; border-radius: 7px; color: var(--muted); }
+.sch-stage button.on { background: var(--line); color: var(--text); }
+.sch-pick { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.sch-pick > div { min-width: 0; }
+.sch-joined-name { font-weight: 600; overflow-wrap: anywhere; }
+.sch-joined { list-style: none; margin: 14px 0 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; }
+.sch-joined li { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; }
+.sch-joined li + li { border-top: 1px solid var(--line); }
+.wip-sheet .school-hits { margin-top: 6px; }
+button.sch-skip { display: block; width: 100%; margin-top: 8px; padding: 10px; background: none; border: none; color: var(--muted); font-weight: 500; }
