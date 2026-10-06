@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { CodeForm } from "@/components/code-form";
 import { HowItWorks } from "@/components/how-it-works";
+import { InviteCalls } from "@/components/invite-calls";
 import { readJoinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 
@@ -19,6 +20,7 @@ export function Join() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<"code" | "sent" | "exists" | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [calls, setCalls] = useState(0);
 
   useEffect(() => {
     const { invite: c, league: p } = readJoinLink(window.location.search);
@@ -67,6 +69,7 @@ export function Join() {
       <div className="card narrow">
         <h2>Check your email</h2>
         <p className="sub">We&apos;ve sent an invite to {email}. Tap the link in it to set your password and you&apos;re in{league ? <>, already in <strong>{league.pool_name}</strong></> : null}. If it isn&apos;t there in a minute, check spam.</p>
+        {calls > 0 && <p className="small muted" style={{ marginBottom: 0 }}>Open the link on this phone and your {calls === 1 ? "call comes" : "calls come"} with you.</p>}
       </div>
     );
   }
@@ -99,9 +102,10 @@ export function Join() {
       )}
       <form onSubmit={submit} className="stack">
         <input type="email" required placeholder="Your email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <button type="submit" disabled={busy}>{busy ? "Sending…" : league ? "Join the league" : "Send my invite"}</button>
+        <button type="submit" disabled={busy}>{busy ? "Sending…" : calls ? `Join and save my ${calls === 1 ? "call" : `${calls} calls`}` : league ? "Join the league" : "Send my invite"}</button>
       </form>
       {msg && <p className="small" style={{ color: "var(--danger)", marginBottom: 0 }}>{msg}</p>}
+      <InviteCalls league={league ? pool : ""} onCount={setCalls} />
       <p className="small muted join-foot">Already on Scrumline? <a href={home}>Sign in</a></p>
     </div>
     <HowItWorks />
