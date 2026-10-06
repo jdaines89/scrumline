@@ -68,4 +68,10 @@ select pg_temp.as_user((select outsider from t));
 select pg_temp.check(pg_temp.fails($$select public.vote_in_poll((select id from t_poll), 0::smallint)$$), 'vote_in_poll won''t let an outsider vote');
 reset role;
 
+-- Replies (the app sends reply_to with the message), including to a photo.
+select pg_temp.as_user((select b from t));
+select pg_temp.check(not pg_temp.fails($$insert into public.chat_messages (pool_id, body, reply_to) values ((select pool from t), 'Bulls by 10', (select id from t_poll))$$), 'a player can reply to a message');
+reset role;
+select pg_temp.check(exists (select 1 from public.chat_messages where body = 'Bulls by 10' and reply_to = (select id from t_poll)), 'the reply points at the message it answers');
+
 do $$ begin raise notice 'CHAT POLL CHECKS PASSED'; end $$;
