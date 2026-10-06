@@ -107,3 +107,40 @@ export function ListCrest({ emis, crests, size }: { emis: string; crests: Map<st
   const path = crests.get(emis);
   return path ? <Crest emis={emis} path={path} size={size} /> : null;
 }
+
+/**
+ * A crest we found for the school, shown only to the school's verified contact
+ * until they answer. "Use this crest" puts it up; "Not ours" sets it aside for good.
+ */
+export function CrestFind({ emis, name, onDone }: { emis: string; name: string; onDone: () => void }) {
+  const [find, setFind] = useState<{ image_path: string; source_url: string } | null>(null);
+  const [busy, setBusy] = useState<"use" | "no" | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.rpc("crest_find", { p_emis: emis }).then(({ data }) => {
+      setFind(((data ?? []) as { image_path: string; source_url: string }[])[0] ?? null);
+    });
+  }, [emis]);
+  if (!find) return null;
+  async function answer(use: boolean) {
+    setBusy(use ? "use" : "no"); setMsg(null);
+    const { error } = await supabase.rpc("decide_crest_find", { p_emis: emis, p_use: use });
+    setBusy(null);
+    if (error) { setMsg(error.message); return; }
+    setFind(null); onDone();
+  }
+  return (
+    <div className="crest-find">
+      <Crest emis={emis} path={find.image_path} size={96} name={name} />
+      <div className="crest-find-text">
+        <b>Is this your school&apos;s crest?</b>
+        <span className="small muted">We found it on <a href={find.source_url} target="_blank" rel="noreferrer">Wikipedia</a>. Nobody sees it until you say yes.</span>
+      </div>
+      <div className="crest-find-actions">
+        <button type="button" className="btn" disabled={!!busy} onClick={() => answer(true)}>{busy === "use" ? "Putting it up…" : "Use this crest"}</button>
+        <button type="button" className="btn ghost" disabled={!!busy} onClick={() => answer(false)}>{busy === "no" ? "Setting it aside…" : "Not ours"}</button>
+      </div>
+      {msg && <p className="small" style={{ margin: 0, color: "var(--danger)" }}>{msg}</p>}
+    </div>
+  );
+}

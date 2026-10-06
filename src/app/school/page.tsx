@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Crest, CrestUpload } from "@/components/crest";
+import { Crest, CrestFind, CrestUpload } from "@/components/crest";
 import { SchoolSearch } from "@/components/school-search";
 import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
 import { pickedSchool, rememberPickedSchool, ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
@@ -91,6 +91,7 @@ export default function SchoolPage() {
         {d.sponsors.length > 0
           ? <p className="small muted" style={{ marginBottom: 0 }}>Backed by {d.sponsors.join(", ")}.</p>
           : <p className="small muted" style={{ marginBottom: 0 }}>No sponsor yet. Share the link below with parents and former pupils who own a business.</p>}
+        {d.claim_status === "verified" && !preview && !crest && <CrestFind emis={d.emis} name={d.name} onDone={load} />}
         {d.claim_status === "verified" && !preview && (
           <CrestUpload emis={d.emis} hasCrest={!!crest} onDone={load}
             note="Your crest shows on the school's page, in the schools table and next to its league." />
