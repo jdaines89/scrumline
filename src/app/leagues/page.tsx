@@ -1,6 +1,6 @@
 "use client";
 
-import { LeaguePicture } from "@/components/league-picture";
+import { LeaguePicture, leagueOf } from "@/components/league-picture";
 import { RoundOptions } from "@/components/counts-from";
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
@@ -76,7 +76,7 @@ export default function PoolsPage() {
     setScores(readCache<Score[]>(`leagues:${ids}`) ?? []);
     supabase.from("pool_leaderboard").select("pool_id, user_id, total_points").in("pool_id", pools.map((p) => p.id))
       .then(({ data }) => { const r = (data ?? []) as Score[]; writeCache(`leagues:${ids}`, r); setScores(r); });
-    supabase.from("chat_unread").select("pool_id, unread, tagged").in("pool_id", pools.map((p) => p.id))
+    supabase.from("chat_unread").select("pool_id, unread, tagged").in("pool_id", pools.map((p) => leagueOf(p)))
       .then(({ data }) => setUnread((data ?? []) as Unread[]));
     // This round's prize, for mates' leagues (school leagues don't take round prizes).
     Promise.all(pools.filter((p) => !p.school_emis).map((p) =>
@@ -157,7 +157,7 @@ export default function PoolsPage() {
   /** One league row; `label` replaces the name when it sits in its school's group. */
   function card(p: Pool, label?: string) {
     const st = standing(byPool.get(p.id) ?? [], me.user_id);
-    const u = unread.find((x) => x.pool_id === p.id);
+    const u = unread.find((x) => x.pool_id === leagueOf(p));
     const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
     const rp = recruiterShownOn.has(p.id) ? recruiter.get(p.id) : undefined;
     return (
@@ -288,7 +288,7 @@ export default function PoolsPage() {
         )}
         {open === "start" && (
           <form className="lg-form" onSubmit={create}>
-            <p className="small muted">Next you send it to your group on WhatsApp.</p>
+            <p className="small muted">Your league plays every tournament on Scrumline, with one chat for the group. Next you send it to your group on WhatsApp.</p>
             <div className="row">
               <input required autoFocus maxLength={40} placeholder="League name" value={name} onChange={(e) => setName(e.target.value)} />
               <button type="submit" disabled={busy}>{busy ? "Starting…" : "Start"}</button>
