@@ -197,7 +197,7 @@ export default function PoolsPage() {
   // The form stays put with a working button until the league exists, then the "ready" card replaces it at once.
   async function create(e: FormEvent) {
     e.preventDefault(); setMsg(null); setBusy(true);
-    const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id, counts_from_round: from ? Number(from) : null }).select().single();
+    const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id, ...(from ? { counts_from_round: Number(from) } : {}) }).select().single();
     setBusy(false);
     if (error) { setMsg(error.message); return; }
     setOpen(null); setName(""); setFrom("");
