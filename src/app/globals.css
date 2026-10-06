@@ -1286,3 +1286,18 @@ a.smeter-row:hover .smeter-name { color: var(--accent); }
 .smeter-line { font-size: 14px; }
 .smeter .proj-bar { display: block; margin: 8px 0 6px; }
 .smeter-foot { margin: 4px 0 0; }
+
+/* A small picture you can tap to see full size: no button look of its own. */
+button.img-tap, button.img-tap:hover, button.img-tap:focus { all: unset; display: inline-flex; flex: none; cursor: zoom-in; border-radius: 10px; }
+button.img-tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Straight into a league's chat from its table or its school's page. */
+.chat-btn { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); font-weight: 600; font-size: 14px; line-height: 1; text-decoration: none; }
+.chat-btn:hover { border-color: var(--accent); color: var(--text); text-decoration: none; }
+.chat-btn svg { color: var(--accent); }
+.chat-btn-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #07140e;
+  font-size: 11px; font-weight: 700; display: inline-grid; place-items: center; }
+.league-title h2 { flex: 1; min-width: 0; }
+.sch-chat { width: 100%; margin-top: 10px; }
+.sch-chat .chat-btn { width: 100%; justify-content: center; padding: 11px 14px; font-size: 15px; }
