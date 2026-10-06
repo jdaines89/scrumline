@@ -1342,3 +1342,32 @@ button.img-tap:focus-visible { outline: 2px solid var(--accent); outline-offset:
 .composer .photobtn svg { transition: transform .15s ease; }
 .composer .photobtn.open svg { transform: rotate(45deg); }
 .poll-who-n { color: var(--text); font-variant-numeric: tabular-nums; margin-right: 4px; }
+
+/* Several photos waiting to send: a row of thumbnails, each with its own ×, and + for more. */
+.photodraft { max-width: calc(100% - 36px); overflow-x: auto; scrollbar-width: none; }
+.photodraft::-webkit-scrollbar { display: none; }
+.pd-item { position: relative; flex: none; }
+.composer .photodraft button.pd-x, .composer .photodraft button.pd-x:hover { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 0;
+  display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: rgba(0, 0, 0, .6); color: #fff; font-size: 15px; line-height: 1; }
+.composer .photodraft button.pd-add, .composer .photodraft button.pd-add:hover { flex: none; width: 72px; height: 72px; padding: 0; border-radius: 10px;
+  border: 1px dashed var(--line); background: transparent; color: var(--muted); font-size: 26px; font-weight: 400; }
+
+/* Photos sent together, as one tidy grid in a single bubble. */
+.bubble.withgrid { padding: 4px; }
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: min(260px, 66vw); border-radius: 12px; overflow: hidden; }
+.pgrid.n3 .pcell:first-child { grid-column: 1 / -1; aspect-ratio: 2 / 1; }
+button.pcell, button.pcell:hover { position: relative; display: block; aspect-ratio: 1; padding: 0; border: 0; border-radius: 0; background: var(--panel-2); cursor: zoom-in; overflow: hidden; }
+.pcell img, .pcell .skeleton { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pmore { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .5); color: #fff; font-size: 24px; font-weight: 700; }
+.bubble.withgrid .btext { display: block; padding: 6px 8px 4px; max-width: 260px; }
+
+/* Full-size photos, one at a time. */
+.gallery img { max-height: calc(100% - 60px); }
+.gallery-wait { width: 60vw; height: 40vh; border-radius: 8px; }
+.gallery-count { position: absolute; top: calc(14px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; font-weight: 600; opacity: .85; }
+.photoview button.gallery-close, .photoview button.gallery-close:hover { position: absolute; top: calc(6px + env(safe-area-inset-top)); right: 8px; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(255, 255, 255, .1); color: #fff; font-size: 24px; }
+.photoview button.gallery-nav, .photoview button.gallery-nav:hover { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; font-size: 28px; line-height: 1; }
+.gallery-nav.prev { left: 8px; }
+.gallery-nav.next { right: 8px; }

@@ -24,6 +24,7 @@ const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
 const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "Bullying"], ["sexual", "Sexual"], ["other", "Something else"]];
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
+const MAX_PHOTOS = 10;
 interface Notice { id: number; kind: "prize_won" | "round_recap"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string }
 
 export default function ChatPage() {
@@ -54,7 +55,9 @@ function Chat() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const idsKey = msgs.map((m) => m.id).join(",");
   const shownIds = useRef<number[]>([]);
-  const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null);
+  // Photos waiting to go, like WhatsApp: pick several at once and they send together.
+  const [photos, setPhotos] = useState<{ blob: Blob; url: string }[]>([]);
+  const [gallery, setGallery] = useState<{ paths: string[]; i: number } | null>(null);
   const [sending, setSending] = useState(false);
   const [viewing, setViewing] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -244,7 +247,7 @@ function Chat() {
     return () => { window.removeEventListener("resize", fit); window.visualViewport?.removeEventListener("resize", fit); };
   }, []);
 
-  useEffect(() => { fitRef.current(); }, [photo, err, ban, note, replyTo]);
+  useEffect(() => { fitRef.current(); }, [photos, err, ban, note, replyTo]);
 
   // Look up any quoted message that isn't on screen.
   const missingKey = msgs.filter((m) => m.reply_to && !msgs.some((x) => x.id === m.reply_to) && !quoted.has(m.reply_to))
@@ -259,6 +262,24 @@ function Chat() {
     }));
   }, [missingKey]);
   const findMsg = (id: number) => msgs.find((x) => x.id === id) ?? quoted.get(id) ?? null;
+
+  // Photos sent together show as one grid, like WhatsApp: a run of photo
+  // messages from one person, a minute or less apart, with words only on the last.
+  const { groups, inGroup } = useMemo(() => {
+    const groups = new Map<number, ChatMessage[]>(), inGroup = new Set<number>();
+    let run: ChatMessage[] = [];
+    const close = () => { if (run.length > 1) { groups.set(run[0].id, run); run.slice(1).forEach((x) => inGroup.add(x.id)); } run = []; };
+    for (const m of msgs) {
+      const prev = run[run.length - 1];
+      const joins = prev && m.image_path && !m.hidden_at && !m.reply_to && m.author_id === prev.author_id
+        && !prev.body.trim() && Date.parse(m.created_at) - Date.parse(prev.created_at) <= 60_000;
+      if (joins) { run.push(m); continue; }
+      close();
+      if (m.image_path && !m.hidden_at) run = [m];
+    }
+    close();
+    return { groups, inGroup };
+  }, [msgs]);
 
   // Replies need the reply_to column; until the database has it, the Reply action stays hidden.
   const canReply = msgs.some((m) => "reply_to" in m);
@@ -379,7 +400,7 @@ function Chat() {
   async function send(e?: FormEvent) {
     e?.preventDefault();
     const body = encodeMentions(text.trim(), members);
-    if ((!body && !photo) || sending) return;
+    if ((!body && !photos.length) || sending) return;
     setErr(null); setSending(true);
     // Checked before anything is uploaded, so a refused message never leaves a photo behind.
     const { data: why } = await supabase.rpc("chat_check", { p_pool: chatId, p_body: body });
@@ -388,43 +409,51 @@ function Chat() {
       supabase.rpc("my_chat_ban").then(({ data }) => setBan((data as string | null) ?? null));
       return;
     }
-    let image_path: string | null = null;
-    if (photo) {
-      image_path = `${chatId}/${me.user_id}/${await sizedName(photo.blob)}.jpg`;
-      const up = await supabase.storage.from("chat-photos").upload(image_path, photo.blob, { contentType: "image/jpeg" });
-      if (up.error) { setSending(false); setErr(up.error.message); return; }
+    // Several photos go as one message each, in order, so the chat groups them.
+    // A reply belongs to the first; the caption rides on the last.
+    const queue: ({ blob: Blob; url: string } | null)[] = photos.length ? photos : [null];
+    for (let i = 0; i < queue.length; i++) {
+      const ph = queue[i], last = i === queue.length - 1;
+      let image_path: string | null = null;
+      if (ph) {
+        image_path = `${chatId}/${me.user_id}/${await sizedName(ph.blob)}.jpg`;
+        const up = await supabase.storage.from("chat-photos").upload(image_path, ph.blob, { contentType: "image/jpeg" });
+        if (up.error) { setSending(false); setErr(up.error.message); return; }
+      }
+      const row: Record<string, unknown> = { body: last ? body : "", pool_id: chatId };
+      if (image_path) row.image_path = image_path;
+      if (replyTo && i === 0) row.reply_to = replyTo.id;
+      const { data, error } = await supabase.from("chat_messages").insert(row).select().single();
+      if (error) {
+        if (image_path) supabase.storage.from("chat-photos").remove([image_path]);
+        setSending(false); setErr(error.message); return;
+      }
+      // What's sent leaves the draft straight away, so a failure part-way keeps only what's left.
+      if (ph) { URL.revokeObjectURL(ph.url); setPhotos((xs) => xs.filter((x) => x !== ph)); }
+      if (i === 0) setReplyTo(null);
+      atBottom.current = true;
+      setMsgs((xs) => xs.some((x) => x.id === data.id) ? xs : [...xs, data as ChatMessage]);
     }
-    const row: Record<string, unknown> = { body, pool_id: chatId };
-    if (image_path) row.image_path = image_path;
-    if (replyTo) row.reply_to = replyTo.id;
-    const { data, error } = await supabase.from("chat_messages").insert(row).select().single();
     setSending(false);
-    if (error) {
-      if (image_path) supabase.storage.from("chat-photos").remove([image_path]);
-      setErr(error.message); return;
-    }
-    setText(""); setTag(null); clearPhoto(); setReplyTo(null);
-    atBottom.current = true;
-    setMsgs((xs) => xs.some((x) => x.id === data.id) ? xs : [...xs, data as ChatMessage]);
+    setText(""); setTag(null);
   }
 
   async function pickPhoto(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []).slice(0, Math.max(0, MAX_PHOTOS - photos.length));
     e.target.value = "";
-    if (!file) return;
+    if (!files.length) { if (photos.length >= MAX_PHOTOS) setErr(`Up to ${MAX_PHOTOS} photos at a time.`); return; }
     setErr(null);
     try {
-      const blob = await shrinkPhoto(file);
-      clearPhoto();
-      setPhoto({ blob, url: URL.createObjectURL(blob) });
+      const shrunk = await Promise.all(files.map((f) => shrinkPhoto(f)));
+      setPhotos((xs) => [...xs, ...shrunk.map((blob) => ({ blob, url: URL.createObjectURL(blob) }))].slice(0, MAX_PHOTOS));
       box.current?.focus();
     } catch (x) {
       setErr((x as Error).message);
     }
   }
 
-  function clearPhoto() {
-    setPhoto((p) => { if (p) URL.revokeObjectURL(p.url); return null; });
+  function dropPhoto(i: number) {
+    setPhotos((xs) => { URL.revokeObjectURL(xs[i].url); return xs.filter((_, j) => j !== i); });
   }
 
   function onKey(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -453,11 +482,13 @@ function Chat() {
   }
 
   async function remove(id: number) {
-    const path = msgs.find((x) => x.id === id)?.image_path;
-    const { error } = await supabase.from("chat_messages").delete().eq("id", id);
+    // Deleting a group of photos deletes all of them.
+    const ids = (groups.get(id) ?? [msgs.find((x) => x.id === id)!]).filter(Boolean).map((x) => x.id);
+    const paths = msgs.filter((x) => ids.includes(x.id) && x.image_path).map((x) => x.image_path!);
+    const { error } = await supabase.from("chat_messages").delete().in("id", ids);
     if (!error) {
-      setMsgs((xs) => xs.filter((x) => x.id !== id));
-      if (path) supabase.storage.from("chat-photos").remove([path]);
+      setMsgs((xs) => xs.filter((x) => !ids.includes(x.id)));
+      if (paths.length) supabase.storage.from("chat-photos").remove(paths);
     }
     setPicked(null);
   }
@@ -533,9 +564,12 @@ function Chat() {
           const t = Date.parse(m.created_at), from = i === 0 ? (more ? t : -Infinity) : Date.parse(msgs[i - 1].created_at);
           const before = notices.filter((n) => Date.parse(n.created_at) > from && Date.parse(n.created_at) <= t);
           const after = i === msgs.length - 1 ? notices.filter((n) => Date.parse(n.created_at) > t) : [];
+          if (inGroup.has(m.id)) return null;
+          const group = groups.get(m.id);
+          const caption = group ? group[group.length - 1].body : m.body;
           const who = people.get(m.author_id);
           const mine = m.author_id === me.user_id;
-          const parts = splitMentions(m.body);
+          const parts = splitMentions(caption);
           const q = m.reply_to ? findMsg(m.reply_to) : null;
           const tagsMe = parts.some((p) => "userId" in p && p.userId === me.user_id) || (!mine && q?.author_id === me.user_id);
           const grouped = i > 0 && !before.length && msgs[i - 1].author_id === m.author_id
@@ -557,13 +591,14 @@ function Chat() {
                     {m.hidden_at ? (mine ? "Your message is held while it's checked." : "Message held while it's checked.") : "You reported this message."}
                   </div>
                 ) : (<>
-                <div className={`bubble${polls.has(m.id) ? " withpoll" : ""}${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !m.body.trim() ? " photoonly" : ""}`}
+                <div className={`bubble${polls.has(m.id) ? " withpoll" : ""}${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !caption.trim() ? " photoonly" : ""}${group ? " withgrid" : ""}`}
                   onClick={() => setPicked(picked === m.id ? null : m.id)} {...swipeHandlers(m)}>
                   {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
-                  {m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
+                  {group ? <PhotoGrid paths={group.map((x) => x.image_path!)} onOpen={(i) => setGallery({ paths: group.map((x) => x.image_path!), i })} />
+                    : m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
                   {polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!} votes={votes.filter((v) => v.message_id === m.id)}
                     me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} />
-                  : m.body.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
+                  : caption.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
                     : <span key={j} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{people.get(p.userId)?.display_name ?? "someone"}</span>)}</span>}
                 </div>
                 <Reactions list={reactions.filter((r) => r.message_id === m.id)} me={me.user_id} people={people}
@@ -636,14 +671,21 @@ function Chat() {
             <button type="button" className="ghost" aria-label="Cancel reply" onClick={() => setReplyTo(null)}>×</button>
           </div>
         )}
-        {photo && (
+        {photos.length > 0 && (
           <div className="photodraft">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt="Photo to send" />
-            <button type="button" className="ghost" onClick={clearPhoto}>Remove</button>
+            {photos.map((ph, i) => (
+              <span key={ph.url} className="pd-item">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={ph.url} alt={`Photo ${i + 1} to send`} />
+                <button type="button" className="pd-x" aria-label={`Remove photo ${i + 1}`} onClick={() => dropPhoto(i)}>×</button>
+              </span>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button type="button" className="pd-add" aria-label="Add more photos" onClick={() => fileInput.current?.click()}>+</button>
+            )}
           </div>
         )}
-        <input ref={fileInput} type="file" accept="image/*" hidden onChange={pickPhoto} />
+        <input ref={fileInput} type="file" accept="image/*" multiple hidden onChange={pickPhoto} />
         {attach && (
           <div className="attachmenu" role="menu">
             <button type="button" role="menuitem" onClick={() => { setAttach(false); fileInput.current?.click(); }}>
@@ -674,12 +716,13 @@ function Chat() {
             </svg>
           )}
         </button>
-        <textarea ref={box} rows={1} maxLength={900} placeholder={photo ? "Add a caption" : "Message · @ to tag"} value={text}
+        <textarea ref={box} rows={1} maxLength={900} placeholder={photos.length ? "Add a caption" : "Message · @ to tag"} value={text}
           onChange={(e) => onType(e.target.value)} onKeyDown={onKey} />
-        <button type="submit" disabled={sending || (!text.trim() && !photo)}>{sending ? "Sending…" : "Send"}</button>
+        <button type="submit" disabled={sending || (!text.trim() && !photos.length)}>{sending ? "Sending…" : photos.length > 1 ? `Send ${photos.length}` : "Send"}</button>
       </form>
       )}
       {asking && <PollComposer pool={chatId} onClose={() => setAsking(false)} onSent={() => { setAsking(false); atBottom.current = true; load(); }} />}
+      {gallery && <Gallery paths={gallery.paths} start={gallery.i} onClose={() => setGallery(null)} />}
       {viewing && (
         <div className="photoview" role="dialog" aria-label="Photo" onClick={() => setViewing(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -709,6 +752,64 @@ function Photo({ path, onLoad, onOpen }: { path: string; onLoad: () => void; onO
     <img className="photo" src={url} alt="Photo" style={box} width={size?.w} height={size?.h}
       onLoad={(e) => { rememberPhotoSize(path, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight); onLoad(); }}
       onClick={(e) => { e.stopPropagation(); onOpen(url); }} />
+  );
+}
+
+/** Photos sent together: two side by side, three as one wide and two below, four or more as a 2×2 with "+N" on the last. */
+function PhotoGrid({ paths, onOpen }: { paths: string[]; onOpen: (i: number) => void }) {
+  const shown = paths.slice(0, 4);
+  return (
+    <div className={`pgrid n${shown.length}`}>
+      {shown.map((p, i) => (
+        <GridPhoto key={p} path={p} more={i === 3 && paths.length > 4 ? paths.length - 4 : 0} onOpen={() => onOpen(i)} />
+      ))}
+    </div>
+  );
+}
+
+function GridPhoto({ path, more, onOpen }: { path: string; more: number; onOpen: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    photoUrl(path).then((u) => { if (live) setUrl(u); });
+    return () => { live = false; };
+  }, [path]);
+  return (
+    <button type="button" className="pcell" aria-label={more ? `${more} more photos` : "Open photo"} onClick={(e) => { e.stopPropagation(); onOpen(); }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {url ? <img src={url} alt="" /> : <span className="skeleton" />}
+      {more > 0 && <span className="pmore">+{more}</span>}
+    </button>
+  );
+}
+
+/** Photos full size, one at a time: swipe or use the arrows, tap the picture or × to close. */
+function Gallery({ paths, start, onClose }: { paths: string[]; start: number; onClose: () => void }) {
+  const [i, setI] = useState(start);
+  const [urls, setUrls] = useState<(string | null)[]>(() => paths.map(() => null));
+  const touch = useRef<number | null>(null);
+  useEffect(() => {
+    let live = true;
+    paths.forEach((p, j) => photoUrl(p).then((u) => { if (live) setUrls((xs) => xs.map((x, k) => (k === j ? u : x))); }));
+    return () => { live = false; };
+  }, [paths]);
+  const go = useCallback((d: number) => setI((n) => Math.max(0, Math.min(paths.length - 1, n + d))), [paths.length]);
+  useEffect(() => {
+    const key = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") onClose(); if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [go, onClose]);
+  return (
+    <div className="photoview gallery" role="dialog" aria-label={`Photo ${i + 1} of ${paths.length}`} onClick={onClose}
+      onTouchStart={(e) => { touch.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => { if (touch.current === null) return; const dx = e.changedTouches[0].clientX - touch.current; touch.current = null; if (Math.abs(dx) > 40) { e.preventDefault(); go(dx < 0 ? 1 : -1); } }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {urls[i] ? <img src={urls[i]!} alt="" /> : <span className="skeleton gallery-wait" />}
+      <span className="gallery-count">{i + 1} of {paths.length}</span>
+      <button type="button" className="gallery-close" aria-label="Close" onClick={onClose}>×</button>
+      {i > 0 && <button type="button" className="gallery-nav prev" aria-label="Previous photo" onClick={(e) => { e.stopPropagation(); go(-1); }}>‹</button>}
+      {i < paths.length - 1 && <button type="button" className="gallery-nav next" aria-label="Next photo" onClick={(e) => { e.stopPropagation(); go(1); }}>›</button>}
+    </div>
   );
 }
 
