@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
 import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
+import { callsToSave, readPendingCalls, writePendingCalls } from "@/lib/pending-calls";
 import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
 import { defaultSeason, pickerGroups, seasonLine } from "@/lib/seasons";
@@ -149,8 +150,9 @@ function Loaded({ children }: { children: ReactNode }) {
         if (lp) { remember("season", lp.season); remember(`pool:${lp.season}`, String(lp.id)); }
         window.history.replaceState(null, "", window.location.pathname);
       }
-      const saved = remember("season");
-      setSeasonId(ss.some((s) => s.id === saved) ? saved : defaultSeason(ss).id);
+      // A newcomer's first visit opens the tournament they called on the invite link.
+      const saved = remember("season") ?? readPendingCalls()?.season ?? null;
+      setSeasonId(ss.some((s) => s.id === saved) ? saved! : defaultSeason(ss).id);
     })();
   }, []);
 
@@ -162,7 +164,14 @@ function Loaded({ children }: { children: ReactNode }) {
       supabase.from("pools").select("*").eq("season", seasonId).order("created_at"),
     ]);
     const ps = (pools.data ?? []) as Pool[];
-    const fresh: SeasonData = { matches: (matches.data ?? []) as Match[], entry: (entries.data?.[0] as Entry | undefined) ?? null, pools: ps };
+    const entry = (entries.data?.[0] as Entry | undefined) ?? null;
+    // Calls made on an invite link before signing up go in once there's a team to hold them.
+    const waiting = entry ? callsToSave(readPendingCalls(), seasonId) : [];
+    if (entry && waiting.length) {
+      const { error } = await supabase.from("predictions").upsert(waiting.map((c) => ({ entry_id: entry.id, ...c })), { onConflict: "entry_id,match_id", ignoreDuplicates: true });
+      if (!error) writePendingCalls(null);
+    } else if (entry && readPendingCalls()?.season === seasonId) writePendingCalls(null);
+    const fresh: SeasonData = { matches: (matches.data ?? []) as Match[], entry, pools: ps };
     writeCache(`season:${seasonId}`, fresh);
     if (shownSeason.current !== seasonId) return;
     setData(fresh);
