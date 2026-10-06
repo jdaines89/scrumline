@@ -38,6 +38,11 @@ interface Page {
 const MINIMUM = 10;
 const SHOW = 12;
 const fmt = (n: number) => n.toLocaleString("en-ZA");
+/** Learner numbers come from a government list that is a year or so old, so we only ever show a rough figure. */
+const about = (n: number) => {
+  const step = n < 100 ? 10 : n < 1000 ? 100 : 500;
+  return `~${fmt(Math.max(step, Math.round(n / step) * step))}`;
+};
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
 
 /** A school's own page: the school, its players, how it's doing, and what has been given to it. */
@@ -78,7 +83,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
   const s = p.school;
   const facts = [
     schoolKind(s),
-    s.learners ? `${fmt(s.learners)} learners` : null,
+    s.learners ? `${about(s.learners)} learners` : null,
     s.no_fee ? "No-fee school" : null,
   ].filter(Boolean).join(" · ");
   const place = [s.town, provinceName(s.province)].filter(Boolean).join(", ");
