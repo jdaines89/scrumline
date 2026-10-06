@@ -11,6 +11,7 @@ import { Crowd, type CrowdRow } from "@/components/crowd";
 import { RoundDigest } from "@/components/round-digest";
 import { PrizeLine } from "@/components/prize-line";
 import { usePoolPrizes } from "@/lib/prizes";
+import { SeasonAhead } from "@/components/season-ahead";
 import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { Form } from "@/components/form";
@@ -148,7 +149,8 @@ function Predict() {
   }, [pool]);
   useEffect(() => { load(); }, [load]);
 
-  if (round === null) return null;
+  // A tournament whose fixtures aren't out yet: when it starts, instead of an empty round.
+  if (round === null) return matches.length === 0 ? <SeasonAhead /> : null;
   const done = isLocked(round);
   const total = [...scores.values()].reduce((a, b) => a + b.total_pts, 0);
   const filled = ms.filter((m) => preds.has(m.id)).length;

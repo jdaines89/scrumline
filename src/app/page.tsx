@@ -11,6 +11,7 @@ import type { StandingRow } from "@/lib/types";
 import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { AlertsCard } from "@/components/alerts-card";
+import { SeasonAhead } from "@/components/season-ahead";
 import { AlsoOn } from "@/components/also-on";
 import { BringAMate } from "@/components/bring-a-mate";
 import { callingStreak, type Streak } from "@/lib/streak";
@@ -74,6 +75,7 @@ export default function Home() {
         )}
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
+      <SeasonAhead />
       <AlsoOn />
       {!season.is_replay && <BringAMate season={season.id} seasonName={season.name} />}
       <AlertsCard />

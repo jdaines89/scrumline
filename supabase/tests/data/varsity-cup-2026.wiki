@@ -1,0 +1,1741 @@
+{{Short description|South African college rugby competition}}
+{{About|the 2026 Varsity Cup FNB rugby tournament|the Varsity Shield tournament|2026 Varsity Shield|all things related to Varsity Rugby|Varsity Rugby}}
+{{Use dmy dates|date=February 2026}}
+{{Use South African English|date=February 2026}}
+{{Infobox rugby union season
+| name                = 2026 Varsity Cup
+| image               = VARSITY CUP PRIMARY LOGO 1-1 CMYK 150719 FAC1.jpg
+| imagesize           = 180px
+| caption             = 
+| countries           = [[South Africa]]
+| date                = 16 February – 13 April 2026
+| champions           = {{Rut|UP Tuks}}
+| count               = 6
+| runnersup           = {{Rut|NWU Eagles}}
+| promoted            = {{Rut|Wits}} <ref>{{Cite web |title=FNB Varsity Shield Players That Impressed - Round 7 |url=https://www.varsitycup.co.za/news/fnb-varsity-shield-players-that-impressed-round-7-1#:~:text=FNB%20Wits%20stamped%20their%20authority,confirmed%20their%20semi%2Dfinal%20spots. |website=Varsity Cup |access-date=30 March 2026}}</ref><br><small>([[2026 Varsity Shield]])</small>
+| relegated           = {{Rut|CUT Ixias}}
+| matches             = 56
+| attendance          = 
+| tries               = 297
+| top point scorer    = [[Alex Vermeulen (rugby union)|Alex Vermeulen]] (82)<br />'''<small>{{Rut|UCT Ikey Tigers}}</small>'''
+| top try scorer      = [[Jack Benade]] (9)<br />'''<small>{{Rut|UCT Ikey Tigers}}</small>'''
+| prevseason          = [[2025 Varsity Cup|2025]]
+| nextseason          = [[2027 Varsity Cup|2027]]
+| website = varsitycup.co.za
+}}
+
+The '''2026 Varsity Cup''' was the 19th season of the [[Varsity Rugby#Varsity Cup|Varsity Cup]], the premier competition in the annual [[Varsity Rugby]] series in South Africa for men's [[rugby union]]. The tournament took place between eight university teams and played between 16 February and 13 April 2026.<ref name="VC2026">{{Cite web |title=Varsity Cup 2026 Fixtures & Results |url=https://www.varsitycup.co.za/varsity-cup-fixtures-logs |website=Varsity Cup |access-date=16 February 2026}}</ref> {{Rut|UP Tuks}} were crowned champions, securing a record sixth [[Varsity Cup]] title, the most by any team in the competition's history.<ref>{{Cite web |title=Tuks claim record-breaking title |url= https://www.sarugbymag.co.za/tuks-claim-record-breaking-title/#:~:text=Tuks%20dominated%20the%20NWU%20Eagles,tight%20exchanges%20among%20the%20forwards. |website=SA Rugby May |access-date=13 April 2026}}</ref>
+
+This competition forms part of the broader Varsity Rugby programme administered by Varsity Sport, which aims to promote university rugby and provide a pathway for emerging talent into professional rugby structures.<ref>{{Cite web |title=About Varsity Rugby |url=https://www.varsitycup.co.za/about/ |website=Varsity Cup |access-date=16 February 2026}}</ref> Matches were broadcast nationally on [[SuperSport (South African broadcaster)|SuperSport]].
+
+The {{Rut|UCT Ikey Tigers}} entered the 2026 season as the former winners of the Varsity Cup Trophy after beating Maties in the 2025 final.<ref>{{Cite web |title=Ikey Tigers Pounce into the Varsity Cup Season|url=https://varsitynewspaper.substack.com/p/ikey-tigers-pounce-into-the-varsity |website=Varsity Newspaper|access-date=9 March 2026}}</ref> The 2026 edition was staged under the campaign theme "Who's NXT?", highlighting Varsity Cup's role as a launchpad for future professional and international players and introducing the new Tap-or-Kick post-try power play law to further encourage attacking rugby.<ref>{{Cite web |title=FNB Varsity Cup and Shield 2026 to Showcase Rugby's Future Talent |url=https://www.varsitycup.co.za/news/fnb-varsity-cup-and-shield-2026-to-showcase-rugby-s-future-talent |website=Varsity Cup |access-date=16 February 2026}}</ref><ref>{{Cite web |title=Varsity Cup rule tweaks favour attack in 2026 |url=https://www.dailymaverick.co.za/article/2026-02-16-varsity-cup-rule-tweaks-favour-attack-in-2026/ |website=Daily maverick|access-date=9 March 2026}}</ref> Matches were broadcast nationally on [[SuperSport (South African broadcaster)|SuperSport]].
+
+==Competition rules and information==
+
+Eight university teams participated in the 2026 Varsity Cup. During the pool stage, each team played the other seven sides once, either home or away.<ref name="VC2026" />
+
+Teams were awarded:
+* four points for a win
+* two points for a draw
+* one bonus point for scoring four or more tries in a match
+* one bonus point for losing by seven points or fewer
+
+Teams were ranked primarily by log points, and then by points difference (points scored minus points conceded).<ref name="VC2026" />
+
+The top four teams at the conclusion of the pool stage advanced to the [[#Semifinals|semi-finals]]. The two highest-ranked teams hosted the semi-finals, and the highest-ranked remaining finalist hosted the [[#Final|final]].<ref>{{Cite web |title=Varsity Cup Competition Rules |url=https://www.varsitycup.co.za/rules/ |website=Varsity Cup |access-date=16 February 2026}}</ref>
+
+==Teams==
+
+{| class="wikitable floatright" style="text-align:right; margin: 1em auto;"
+|-
+! colspan="100%" | Location of teams in the 2026 Varsity Cup
+|-
+|
+{{Location map+ | South Africa | float=right | width=250 | caption= |places=
+{{Location map~ | South Africa | lat=-29.124428 | long=26.215782 | mark=Red pog.svg | label=<small>{{Rut|CUT Ixias}}</small>                    }}
+{{Location map~ | South Africa | lat=-26.693162 | long=27.100284 | mark=Red pog.svg | label=<small>{{Rut|NWU Eagles}}</small>   | position=left  }}
+{{Location map~ | South Africa | lat=-29.108672 | long=26.172352 | mark=Red pog.svg | label=<small>{{Rut|UFS Shimlas}}</small> | position=left  }}
+{{Location map~ | South Africa | lat=-26.178286 | long=27.992494 | mark=Red pog.svg | label=<small>{{Rut|UJ}}</small>          | position=left  }}
+{{Location map~ | South Africa | lat=-25.750959 | long=28.248736 | mark=Red pog.svg | label=<small>{{Rut|UP Tuks}}</small>     | position=right }}
+{{Location map~ | South Africa | lat=-26.187536 | long=28.031394 | mark=Red pog.svg | label=<small>{{Rut|Wits}}</small>        | position=right }}
+{{Location map~ | South Africa | lat=-29.775945| long=31.042820 | mark=Red pog.svg | label=<small>[[Varsity College (South Africa)|Emeris]]</small>        | position=right }}
+
+{{Location map~ | South Africa | lat=-29.857431| long=31.023906 | mark=5X5 PXC ROUGE.png | label_size=80 | label={{nowrap|[[#Durban|Durban]]}} | position=bottom }}
+{{Location map~ | South Africa | lat=-33.771839 | long=19.534016 | mark=5X5 PXC ROUGE.png | label_size=80 | label={{nowrap|[[#Western Cape|Western Cape]]}} | position=bottom }}
+}}
+|-
+! {{anchor|Western Cape}}Western Cape
+|-
+||
+{{Location map+ | South Africa Western Cape | float=center | width=250 | caption= | places=
+{{Location map~ | South Africa Western Cape | lat=-33.940080 | long=18.873525 | mark=Red pog.svg | label=<small>{{Rut|Maties}}</small>          | position=right }}
+{{Location map~ | South Africa Western Cape | lat=-33.959050 | long=18.462648 | mark=Red pog.svg | label=<small>{{Rut|UCT Ikey Tigers}}</small> | position=left  }}
+{{Location map~ | South Africa Western Cape | lat=-33.934254 | long=18.631960 | mark=Red pog.svg | label=<small>{{Rut|UWC}}</small>             | position=top   }}
+}}
+|}
+
+The teams that played in the 2026 Varsity Cup were:
+
+{| class="wikitable collapsible sortable" style="text-align:left; width:60%;"
+|-
+! colspan="100%" align=center | 2026 Varsity Cup teams
+|-
+! width="20%" | Team name
+! width="40%" | University
+! width="40%" | Stadium
+|-
+| {{Rut|NWU Eagles}}       || [[North-West University]] || {{Rus|Fanie du Toit Stadium}}
+|-
+| {{Rut|Maties}}          || [[Stellenbosch University]] || {{Rus|Danie Craven Stadium}}
+|-
+| {{Rut|UFS Shimlas}}     || [[University of the Free State]]     || {{Rus|Shimla Park}}
+|-
+| {{Rut|UCT Ikey Tigers}} || [[University of Cape Town]]          || {{Rus|UCT Rugby Fields}}
+|-
+| [[Varsity College (South Africa)|Emeris]]            || [[Varsity College (South Africa)|Varsity College]]  || [[University of KwaZulu Natal]]
+|-
+| {{Rut|UJ}}              || [[University of Johannesburg]]       || {{Rus|UJ Stadium}}
+|-
+| {{Rut|CUT Ixias}}       || [[Central University of Technology]] || {{Rus|CUT Stadium}}
+|-
+| {{Rut|UP Tuks}}         || [[University of Pretoria]]           || {{Rus|Fanie du Toit Stadium}}
+|}
+
+===Team records===
+{| class="wikitable sortable" style="width:100%;"
+|-
+!width=13%|Team
+!width=15% style="background:#FFD700;" |Champions
+!width=15% style="background:#C0C0C0;" |Runners-up
+!width=13% style="background:#CC9966;" |Third/Fourth
+!width=8%|{{tooltip|Apps|Appearances}} to knockouts
+!width=13% style="background:#FDBCB4;" |Relegations
+|-
+! {{rh}} class="table-rh" |'''{{Rut|UP Tuks}}'''
+|'''6''' ([[2012 Varsity Cup|2012]], [[2013 Varsity Cup|2013]], [[2017 Varsity Cup|2017]], [[2021 Varsity Cup|2021]], [[2022 Varsity Cup|2022]], 2026)
+|'''2''' ([[2011 Varsity Cup|2011]], [[2019 Varsity Cup|2019]])
+|'''5''' ([[2008 Varsity Cup|2008]], [[2009 Varsity Cup|2009]], [[2015 Varsity Cup|2015]], [[2016 Varsity Cup|2016]], [[2025 Varsity Cup|2025]])
+|align=center|'''13'''
+| '''1''' ([[2023 Varsity Cup|2023]])
+|-
+! {{rh}} class="table-rh" |'''{{Rut|Maties}}'''
+|'''5''' ([[2008 Varsity Cup|2008]], [[2009 Varsity Cup|2009]], [[2010 Varsity Cup|2010]], [[2018 Varsity Cup|2018]], [[2019 Varsity Cup|2019]])
+|'''6''' ([[2012 Varsity Cup|2012]], [[2013 Varsity Cup|2013]], [[2016 Varsity Cup|2016]], [[2017 Varsity Cup|2017]], [[2022 Varsity Cup|2022]], [[2025 Varsity Cup|2025]])
+|'''5''' ([[2014 Varsity Cup|2014]], [[2021 Varsity Cup|2021]], [[2023 Varsity Cup|2023]], [[2024 Varsity Cup|2024]], 2026)
+|align=center|'''16'''
+|{{N/A}}
+|-
+! {{rh}} class="table-rh" |'''{{Rut|UCT Ikey Tigers}}'''
+|'''3''' ([[2011 Varsity Cup|2011]], [[2014 Varsity Cup|2014]], [[2025 Varsity Cup|2025]])
+|'''5''' ([[2008 Varsity Cup|2008]], [[2010 Varsity Cup|2010]], [[2021 Varsity Cup|2021]], [[2023 Varsity Cup|2023]], [[2024 Varsity Cup|2024]])
+|'''3''' ([[2009 Varsity Cup|2009]], [[2015 Varsity Cup|2015]], [[2022 Varsity Cup|2022]])
+|align=center|'''11'''
+|{{N/A}}
+|-
+! {{rh}} class="table-rh" |'''{{Rut|NWU Pukke}}'''
+|'''2''' ([[2016 Varsity Cup|2016]], [[2023 Varsity Cup|2023]])
+|'''5''' ([[2009 Varsity Cup|2009]], [[2014 Varsity Cup|2014]], [[2015 Varsity Cup|2015]], [[2018 Varsity Cup|2018]], 2026)
+|'''6''' ([[2008 Varsity Cup|2008]], [[2010 Varsity Cup|2010]], [[2012 Varsity Cup|2012]], [[2019 Varsity Cup|2019]], [[2024 Varsity Cup|2024]])
+|align=center|'''13'''
+|{{N/A}}
+|-
+! {{rh}} class="table-rh" |'''{{Rut|UFS Shimlas}}'''
+|'''2''' ([[2015 Varsity Cup|2015]], [[2024 Varsity Cup|2024]])
+|{{N/A}}
+|'''7''' ([[2011 Varsity Cup|2011]], [[2012 Varsity Cup|2012]], [[2013 Varsity Cup|2013]], [[2016 Varsity Cup|2016]], [[2017 Varsity Cup|2017]], [[2018 Varsity Cup|2018]], 2026)
+|align=center|'''9'''
+|{{N/A}}
+|-
+! {{rh}} class="table-rh" |'''{{Rut|UJ}}'''
+|{{N/A}}
+|{{N/A}}
+|'''7''' ([[2010 Varsity Cup|2010]], [[2011 Varsity Cup|2011]], [[2017 Varsity Cup|2017]], [[2019 Varsity Cup|2019]], [[2022 Varsity Cup|2022]], [[2023 Varsity Cup|2023]], [[2025 Varsity Cup|2025]])
+|align=center|'''7'''
+|{{N/A}}
+|-
+! {{rh}} class="table-rh" |'''{{Rut|NMMU Madibaz}}'''
+|{{N/A}}
+|{{N/A}}
+|'''2''' ([[2013 Varsity Cup|2013]], [[2014 Varsity Cup|2014]])
+|align=center|'''2'''
+| '''1''' ([[2018 Varsity Cup|2018]])
+|-
+! {{rh}} class="table-rh" |'''{{Rut|Wits}}'''
+|{{N/A}}
+|{{N/A}}
+| '''1''' ([[2018 Varsity Cup|2018]])
+|align=center|'''1'''
+| '''2''' ([[2014 Varsity Cup|2014]], [[2025 Varsity Cup|2025]])
+|-
+! {{rh}} class="table-rh" |'''{{Rut|UWC}}'''
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+| '''1''' ([[2024 Varsity Cup|2024]])
+|-
+! {{rh}} class="table-rh" |'''{{Rut|CUT Ixias}}'''
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+| '''1''' (2026)
+|-
+! {{rh}} class="table-rh" |'''{{Rut|TUT Vikings}}'''
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+| '''1''' ([[2012 Varsity Cup|2012]])
+|-
+! {{rh}} class="table-rh" |'''[[Varsity College (South Africa)|Emeris]]'''
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|{{N/A}}
+|}
+
+==Standings==
+
+===2026 Varsity Cup Log===
+The final log for the 2026 Varsity Cup was:
+
+{| class="wikitable" style="text-align:center; font-size:100%; width:100%;"
+|-
+! colspan="100%" cellpadding="0" cellspacing="0" | '''2026 Varsity Cup log'''
+|-
+! style="width:5%;"  | Pos
+! style="width:35%;" | Team
+! style="width:5%;"  | P
+! style="width:5%;"  | W
+! style="width:5%;"  | D
+! style="width:5%;"  | L
+! style="width:5%;"  | PF
+! style="width:5%;"  | PA
+! style="width:5%;"  | PD
+! style="width:5%;"  | TF
+! style="width:5%;"  | TA
+! style="width:5%;"  | TB
+! style="width:5%;"  | LB
+! style="width:5%;"  | BP
+! style="width:5%;"  | Pts
+|-bgcolor=#E8FFD8
+|  | 1
+| | {{Rut|UP Tuks}}
+| 7 || 6 || 0 || 1 ||287  ||154  || 133 || 43 ||21  || 7 || 0 || 7 || 31
+|-bgcolor=#E8FFD8
+|| 2
+| {{Rut|NWU Eagles}}
+| 7 || 5 || 0 || 2 || 308 ||228 || 80 || 46 ||34  ||6  ||2  || 8 || 28
+|-bgcolor=#E8FFD8
+|  | 3
+| {{Rut|Maties}}
+| 7 || 5 || 0 || 2 ||252 ||178  || 74 || 41 ||20  || 6 || 0 || 6 || 26
+|-bgcolor=#E8FFD8
+| | 4
+| {{Rut|UJ}}
+| 7 || 4 || 0 || 3 || 223 ||277   || -54 || 32  ||40  || 5 || 0 || 5 || 21
+|-
+| 5
+| {{Rut|UCT Ikey Tigers}}
+| 7 || 3 || 0 || 4 || 317 || 240 || 77|| 41 ||37  || 5 || 2 || 7 || 19
+|-
+| 6
+| {{Rut|UFS Shimlas}}
+| 7 || 3 || 0 || 4 ||250  || 244 || 6 || 39  ||32  || 3 || 1 || 4 || 16
+|-bgcolor=#FFE8E8
+| 7
+| [[Varsity College (South Africa)|Emeris]]
+| 7 || 2 || 0 || 5 || 153 ||254  || -101 || 30 ||44  || 4 || 1 || 5 || 13
+|-bgcolor=#FFCCCC
+| 8
+| {{Rut|CUT Ixias}}
+| 7 || 0 || 0 || 7 ||148 ||358  || -194 || 25 ||60  || 3 || 1 || 4 || 4
+|-
+| colspan="14" style="border:0px" | <small>*'''Legend''':<br /> Pos = Position, Pl = Played, W = Won, D = Drawn, L = Lost, PF = Points for, PA = Points against, PD = Points difference, TF = Tries for, TA = Tries against, TB = Try bonus points, LB = Losing bonus points, Pts = Log points<br /><br />'''Points breakdown:'''<br />*4 points for a win<br />*2 points for a draw<br />*1 bonus point for a loss by seven points or less<br />*1 bonus point for scoring four or more tries in a match</small><br /><br /><small>'''Qualification:'''</small>
+{{smalldiv|1=The top four teams qualified for the [[#Semifinals|semifinals]].}}
+|}
+
+===Round-by-round===
+
+{| class="wikitable collapsible" style="text-align:center; line-height:100%; width:50%; font-size:90%"
+|-
+! colspan=100% | Team Progression – 2026 Varsity Cup
+|-
+! style="text-align:left; width:28%;" | Team
+! style="width:8%;" | R1
+! style="width:8%;" | R2
+! style="width:8%;" | R3
+! style="width:8%;" | R4
+! style="width:8%;" | R5
+! style="width:8%;" | R6
+! style="width:8%;" | R7
+! style="width:8%;" | Semi
+! style="width:8%;" | Final
+|-
+| align=left | {{Rut|UCT Ikey Tigers}}
+| <!--Round 1--> style="background:#FFCCCC;"| 0 <br /><small>(8th)</small>
+| <!--Round 2--> style="background:#E8FFD8;"| 5 <br /><small>(4th)</small>
+| <!--Round 3--> style="background:#E8FFD8;"| 10 <br /><small>(4th)</small>
+| <!--Round 4--> style="background:#E8FFD8;"| 15 <br /><small>(3rd)</small>
+| <!--Round 5--> style="background:#FFCCCC;"| 15 <br /><small>(5th)</small>
+| <!--Round 6--> style="background:#FFCCCC;"| 17 <br /><small>(5th)</small>
+| <!--Round 7--> style="background:#FFCCCC;"| 19 <br /><small>(5th)</small>   <br />
+| <!--Semi   -->{{NA}}
+| <!--Final  -->{{NA}}
+|-
+| align=left | {{Rut|Maties}}
+| <!--Round 1--> style="background:#FFCCCC;"| 1 <br /><small>(5th)</small>
+| <!--Round 2--> style="background:#E8FFD8;"| 6 <br /><small>(3rd)</small>
+| <!--Round 3--> style="background:#FFCCCC;"| 6 <br /><small>(6th)</small>
+| <!--Round 4--> style="background:#E8FFD8;"| 11 <br /><small>(5th)</small>
+| <!--Round 5--> style="background:#E8FFD8;"| 16 <br /><small>(3rd)</small>
+| <!--Round 6--> style="background:#E8FFD8;"| 21 <br /><small>(3rd)</small>
+| <!--Round 7--> style="background:#E8FFD8;"| 26 <br /><small>(3rd)</small>   <br />
+| <!--Semi   --> style="background:#FFCCCC;"| '''Lost''' <br />
+| <!--Final  -->{{NA}}
+|-
+| align=left | {{Rut|UFS Shimlas}}
+| <!--Round 1--> style="background:#E8FFD8;"| 5 <br /><small>(4th)</small>
+| <!--Round 2--> style="background:#FFCCCC;"| 5 <br /><small>(6th)</small>
+| <!--Round 3--> style="background:#E8FFD8;"| 10 <br /><small>(3rd)</small>
+| <!--Round 4--> style="background:#FFCCCC;"| 11 <br /><small>(4th)</small>
+| <!--Round 5--> style="background:#FFCCCC;"| 11 <br /><small>(6th)</small>
+| <!--Round 6--> style="background:#E8FFD8;"| 16 <br /><small>(6th)</small>
+| <!--Round 7--> style="background:#FFCCCC;"| 16 <br /><small>(6th)</small>   <br />
+| <!--Semi   -->{{NA}}
+| <!--Final  -->{{NA}}
+|-
+| align=left | {{Rut|UP Tuks}}
+| <!--Round 1--> style="background:#E8FFD8;"| 5 <br /><small>(3rd)</small>
+| <!--Round 2--> style="background:#E8FFD8;"| 10 <br /><small>(2nd)</small>
+| <!--Round 3--> style="background:#E8FFD8;"| 15 <br /><small>(1st)</small>
+| <!--Round 4--> style="background:#E8FFD8;"| 20 <br /><small>(1st)</small>
+| <!--Round 5--> style="background:#FFCCCC;"| 21 <br /><small>(2nd)</small>
+| <!--Round 6--> style="background:#E8FFD8;"| 26 <br /><small>(1st)</small>
+| <!--Round 7--> style="background:#E8FFD8;"| 31 <br /><small>(1st)</small>   <br />
+| <!--Semi   --> style="background:#E8FDD8;"| '''Won''' <br />
+| <!--Final  --> style="background:#E8FDD8;"| '''Won''' <br />
+|-
+| align=left | {{Rut|UJ}}
+| <!--Round 1--> style="background:#E8FFD8;"| 5 <br /><small>(1st)</small>
+| <!--Round 2--> style="background:#FFCCCC;"| 5 <br /><small>(5th)</small>
+| <!--Round 3--> style="background:#E8FFD8;"| 10 <br /><small>(5th)</small>
+| <!--Round 4--> style="background:#FFCCCC;"| 11 <br /><small>(6th)</small>
+| <!--Round 5--> style="background:#E8FFD8;"| 16 <br /><small>(4th)</small>
+| <!--Round 6--> style="background:#E8FFD8;"| 21 <br /><small>(4th)</small>
+| <!--Round 7--> style="background:#FFCCCC;"| 21 <br /><small>(4th)</small>   <br />
+| <!--Semi   --> style="background:#FFCCCC;"| '''Lost''' <br />
+| <!--Final  -->{{NA}}
+|-
+| align=left | {{Rut|CUT Ixias}}
+| <!--Round 1--> style="background:#FFCCCC;"| 1 <br /><small>(7th)</small>
+| <!--Round 2--> style="background:#FFCCCC;"| 2 <br /><small>(7th)</small>
+| <!--Round 3--> style="background:#FFCCCC;"| 2 <br /><small>(7th)</small>
+| <!--Round 4--> style="background:#FFCCCC;"| 2 <br /><small>(7th)</small>
+| <!--Round 5--> style="background:#FFCCCC;"| 4 <br /><small>(8th)</small>
+| <!--Round 6--> style="background:#FFCCCC;"| 4 <br /><small>(8th)</small>
+| <!--Round 7--> style="background:#FFCCCC;"| 4 <br /><small>(8th)</small>   <br />
+| <!--Semi   --> {{NA}}
+| <!--Final  --> {{NA}}
+|-
+| align=left | {{Rut|NWU Eagles}}
+| <!--Round 1--> style="background:#E8FFD8;"| 5 <br /><small>(2nd)</small>
+| <!--Round 2--> style="background:#E8FFD8;"| 10 <br /><small>(1st)</small>
+| <!--Round 3--> style="background:#FFCCCC;"| 12 <br /><small>(2nd)</small>
+| <!--Round 4--> style="background:#E8FFD8;"| 17 <br /><small>(2nd)</small>
+| <!--Round 5--> style="background:#E8FFD8;"| 22 <br /><small>(1st)</small>
+| <!--Round 6--> style="background:#FFCCCC;"| 23 <br /><small>(2nd)</small>
+| <!--Round 7--> style="background:#E8FFD8;"| 28 <br /><small>(2nd)</small>   <br />
+| <!--Semi   --> style="background:#E8FFD8;"| '''Won''' <br />
+| <!--Final  --> style="background:#FFCCCC;"| '''Lost''' <br />
+|-
+| align=left | [[Varsity College (South Africa)|Emeris]]
+| <!--Round 1--> style="background:#FFCCCC;"| 1 <br /><small>(6th)</small>
+| <!--Round 2--> style="background:#FFCCCC;"| 1 <br /><small>(8th)</small>
+| <!--Round 3--> style="background:#FFCCCC;"| 1 <br /><small>(8th)</small>
+| <!--Round 4--> style="background:#FFCCCC;"| 1 <br /><small>(8th)</small>
+| <!--Round 5--> style="background:#E8FFD8;"| 6 <br /><small>(7th)</small>
+| <!--Round 6--> style="background:#FFCCCC;"| 8 <br /><small>(7th)</small>
+| <!--Round 7--> style="background:#E8FFD8;"| 13 <br /><small>(7th)</small>   <br />
+| <!--Semi   --> {{NA}}
+| <!--Final  --> {{NA}}
+|-
+| colspan="100%" style="text-align:center;"| <br /><small>The table above shows a team's progression throughout the season.<br />For each round, their cumulative points total is shown with the overall log position in brackets.</small>
+|-
+|'''Key:'''
+| style="background:#E8FFD8;"| win
+| style="background:#97DEFF;"| draw
+| style="background:#FFCCCC;"| loss
+| colspan=100% |
+|}
+
+==Pool stage==
+
+'''Results'''
+
+The following matches were played in the 2026 Varsity Cup:
+
+=== Round 1 ===
+{{rugbybox
+| date = <small>16 February 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|UFS Shimlas}}
+| score = 50–39
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| away = {{Rut|Maties}}
+| try1 = [[Kirwin du Preez|du Preez]] {{try|15}} <br /> [[Wynand Botha|Botha]] {{try|18}} <br /> [[Jacobus Bezuidenhout|Jacobus]] {{try|24, 41}} <br /> [[Maynard Kleynhans|Kleynhans]] {{try|56}} <br /> [[Liam Shamburg|Shamburg]] {{try|63}}
+| con1 = [[Bradley Pierre Giddy|Pierre Giddy]] {{kick|16}} (4)
+| pen1 = [[Bradley Pierre Giddy|Pierre Giddy]] {{pen|76}}, {{pen|78}}
+| drop1 =
+| cards1 = [[Liam Shamburg|Shamburg]] {{yel|83}}
+| try2 =  [[Fortune Mpofu|Mpofu]] {{try|27}} <br /> [[Rynhardt van der Linden|Rynhardt]] {{try|35}} <br /> [[CJ Marx|Marx]] {{try|37}} <br /> [[Christiaan Van Heerden Smith|Christiaan]] {{try|40}} <br /> [[Armand Combrinck|Combrinck]] {{try|44}} <br /> [[CJ Erasmus|Erasmus]] {{try|82}} <br /> [[Zuko Poswa|Poswa]] {{try|84}}
+| con2 = [[Christiaan Van Heerden Smith|Christiaan]] {{kick}}
+| stadium = {{Rus|UWC Sport Stadium}}
+| attendance =
+| referee = [[Jonathan Lottering]]<br>
+'''FNB Player of the Match -''' [[Liam Shamburg]] {{Rut|UFS Shimlas}} <ref name="auto1">{{Cite web |title=Varsity Cup 2026 explodes into life with try-fest opening round
+|url=https://supersport.com/football/news/51850cf0-80db-4e97-85a2-dc7ab91c6b01/fnb-varsity-cup-2026-explodes-into-life-with-try-fest-opening-round |website=Super Sport |access-date=10 March 2026}}</ref>
+}}
+{{rugbybox
+| date = <small>16 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|CUT Ixias}}
+| try1 = [[Kutlo Seyoko|Seyoko]] {{try}} <br /> [[Raydon Swartbooi|Swartbooi]] {{try}} <br /> [[Jade Muller|Muller]] {{try}} <br /> [[Emlyhn Jacobs|Jacobs]] {{try}}
+| try2 = [[Therlow Prins|Prins]] {{try}} (2) <br /> [[Hanro Venter|Venter]] {{try}} <br /> [[Jordan McLoughlin|McLoughlin]] {{try}} <br /> [[Stephan Krugel|Krugel]] {{try}} <br /> [[Luyolo Doyi|Doyi]] {{try}} <br /> [[Guhan Du Bois|Du Bois]] {{try}} <br /> [[Raniel Turner|Turner]] {{try}} <br /> [[Aiden De Villiers|De Villiers]] {{try}}
+| pen1 = [[Kehan Myburgh|Myburgh]] {{pen}}
+| con1 = [[Kehan Myburgh|Myburgh]] {{kick}}
+| con2 = [[Mj Mostert|Mostert]] {{kick}} <br /> [[Ruan Van Willing|Van Willing]] {{kick}}
+| cards1 = [[Oyama Frans|Frans]] {{yel}}
+| cards2 = [[Jordan McLoughlin|McLoughlin]] {{yel}}
+| score = 42–59
+| away = {{Rut|NWU Eagles}}
+| stadium = {{Rus|CUT Stadium}}
+| attendance =
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| referee =[[Juan de Bod]]<br>
+'''FNB Player of the Match -''' [[Kehan Myburgh]] {{Rut|CUT}} <ref name="auto1"/>
+}}
+{{rugbybox
+| date = <small>16 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UJ}}
+| try1 = [[Josh Du Toit|Du Toit]] {{try}} (2) <br /> [[Thabang Mphafi|Mphafi]] {{try}} <br /> [[Nicallen Gabrielsen|Gabreilsen]] {{try}} <br /> [[Ryan Marimo|Marimo]] {{try}} <br /> [[Reuven Ferreira|Ferreira]] {{try}} <br /> [[Ughan Africa|Africa]] {{try}} <br /> [[Kamo Molefe|Molefe]] {{try}} <br /> [[Tholithemba Sibisi|Sibisi]] {{try}}
+| pen1 = [[Nicallen Gabrielsen|Gabrielsen]] {{pen}} <br /> Jt Kapank {{pen}}
+| con1 = [[Nicallen Gabrielsen|Gabrielsen]] {{kick}} (3)
+| score = 61–41
+| away = [[Varsity College (South Africa)|Emeris]]
+| try2 = [[Jacques Marais|Marais]] {{try}} <br /> [[Juan Orde Steyl|Orde Steyl]] {{try}} <br /> [[Chijindu Okota|Okota]] {{try}} <br /> [[Edward Sigauke|Sigauke]] {{try}}
+| con2 = [[Frederick Marx|Marx]] {{kick}} (2)
+| cards1 = [[Ughan Africa|Africa]] {{yel}}
+| cards2 = [[Andrew Davis (rugby union)|Davis]] {{yel}}
+| stadium = {{Rus|UJ Stadium}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| attendance =
+| referee = [[Sean Muller]]<br>
+'''FNB Player of the Match -''' [[Zian Cilliers]] {{Rut|UJ}} <ref name="auto1"/>
+}}
+{{rugbybox
+| date = <small>16 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| score = 38–22
+| away = {{Rut|UCT Ikey Tigers}}
+| stadium = {{Rus|LC de Villiers Stadium}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| try1 = [[Dillon Smith|Smith]] {{try|4}} <br /> [[Andile Myeni|Myeni]] {{try|12}}, {{try|21}} <br /> [[Abel Pretorius|Pretorius]] {{try|33}} <br /> [[Kobus Janse Van Rensburg|Kobus]] {{try|67}} <br /> [[Hopewell Ntshangase|Ntshangase]] {{try|77}}
+| con1 = [[Divan du Toit|Divan]] {{kick|5}}, {{kick|34}}
+| try2 = [[Lezane Davids|Davids]] {{try|0}} <br /> [[Jack Benade|Benade]] {{try|7}} <br /> Aidan Norris {{try|70}}
+| pen2 = [[Alex Vermeulen (rugby union)|Vermeulen]] {{pen|19}}
+| attendance =
+| referee = [[Dylen November]]<br>
+'''FNB Player of the Match -''' [[Divan Du Toit]] {{Rut|UP Tuks}} <ref name="auto1"/>
+}}
+
+=== Round 2 ===
+{{rugbybox
+| date = <small>23 February 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|NWU Eagles}}
+| score = 63–15
+|try1 = [[Therlow Prins|Prins]] {{try|14}}<br />[[Tian Van Zyl|Van Zyl]] {{try|22}}<br />[[Luan Van Der Walt|Luan]] {{try|27}}<br />[[Jordan McLoughlin|McLoughlin]] {{try|30}}<br />[[Jason Oosthuizen (rugby union)|Oosthuizen]] {{try|39}}<br />[[Therlow Prins|Prins]] {{try}} <br /> [[Ricardo Fourie|Fourie]] {{try|47}} <br />[[Tian Van Zyl|Van Zyl]] {{try|55}}<br />[[Therlow Prins|Prins]] {{try|68}}<br />[[Therlow Prins|Prins]] {{try|75}}
+| con1 = [[MJ Moster|Moster]] {{kick|22|28|40|48}}<br />[[Ruan Van Willing|Van Willing]] {{kick|56|76}}
+| cards1 = [[Zack Serfontein|Serfontein]] {{yel|63}}
+| cards2 = [[Sphephelo Mbonambi|Mbonambi]] {{yel|27}}<br />[[Lifa Ncwana|Ncwana]] {{yel|27}}
+| away = [[Varsity College (South Africa)|Emeris]]
+|try2 = [[Chikindu Okonta|Okonta]] {{try|10}} <br /> [[Edward Siguake|Siguake]] {{try|63}} <br /> [[Christoff Etzebeth|Etzebeth]] {{try|64}}<br /><br /> [[Christoff Etzebeth|Etzebeth]] {{try|76}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| referee = [[Zoe Naude]]
+| stadium = {{Rus|Fanie du Toit Stadium}}<br>'''FNB Player of the Match - ''' [[Therlow Prins]] {{Rut|NWU Eagles}} <ref name="auto2">{{Cite web |title=Dominance on full display as Varsity Cup heavyweights shine in Round 2|url=https://supersport.com/rugby/news/9fe83ac9-fd01-4dd9-84ec-b43cedee36e6/dominance-on-full-display-as-varsity-cup-heavyweights-shine-in-round-2 |website=Super Sport |access-date=10 March 2026}}</ref>
+}}
+{{rugbybox
+| date = <small>23 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UCT Ikey Tigers}}
+| try1 = [[Aidan Norris|Norris]] {{try}} (2)<br />[[Jack Benade|Benade]] {{try}} (2)<br />[[Josh Miller (rugby union)|Miller]] {{try}} (2)<br />[[Matthew Beckett|Beckett]] {{try}}[[Connor Jack Gordon|Jack Gordon]] {{try}}<br />[[Alex Vermeulen (rugby union)|Vermeulen]] {{try}}<br />[[Setshaba Mokoena|Mokoena]] {{try}}<br />[[Sino Brawen|Brawen]] {{try}}
+| con1 = [[Alex Vermeulen (rugby union)|Vermeulen]] {{kick}} (7)
+| away = {{Rut|CUT Ixias}}
+| try2 = [[Raydon Swartbooi|Swartbooi]] {{try}}<br />[[Kehan Myburgh|Myburgh]] {{try}}<br />[[Winton Abrahams|Abrahams]] {{try}}<br />[[Adielson Gouveia|Gouveia]] {{try}}<br />[[Devinto Vergotine|Vergotine]] {{try}}<br />[[Katlego Shebu|Shebu]] {{try}}
+| con2 = [[Kehan Myburgh|Myburgh]] {{kick}} (2)
+| cards2 = [[CJ Taljaard|Taljaard]] {{yel}}
+| score = 83–34
+| stadium = {{Rus|UCT Rugby Fields}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| referee = [[Eon van Zyl]]<br>'''FNB Player of the Match - ''' [[Jack Benade]] {{Rut|UCT Ikey Tigers}} <ref name="auto2"/>
+}}
+{{rugbybox
+| date = <small>23 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UFS Shimlas}}
+| try1 = [[Ongeziwe Mobo|Mobo]] {{try}}<br />[[HJ De Beer|De Beer]] {{try}}<br /> [[Erich Visser|Visser]] {{try}}
+| con1 = [[Bradley Pierre Giddy|Giddy]] {{kick}}<br />[[Shaun Ray|Ray]] {{kick}}
+| pen1 = [[Shaun Ray|Ray]] {{pen}}
+| away = {{Rut|UP Tuks}}
+| try2 = [[Chad-Lee Valentine|Valentine]] {{try|23}}<br />[[Dillon Smith|Smith]] {{try|48}}<br />[[Barnard Nortje|Nortje]] {{try|64}}<br />[[Akhona Kunene|Kunene]] {{try|76}}
+| con2 = [[Divan Du Toit|Du Toit]] {{kick|23}}<br />[[Divan Du Toit|Du Toit]] {{kick|48}}
+| pen2 = [[Divan Du Toit|Du Toit]] {{kick}} (4)
+| score = 22–38
+| stadium = {{Rus|Shimla Park}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| referee = [[Juan de Bod]]<br>'''FNB Player of the Match - ''' [[Divan du Toit]] {{Rut|UP Tuks}} <ref name="auto3">{{Cite web |title=Du Toit honoured to walk in the footsteps of Springbok greats for Tuks|url=https://supersport.com/rugby/news/9fe83ac9-fd01-4dd9-84ec-b43cedee36e6/dominance-on-full-display-as-varsity-cup-heavyweights-shine-in-round-2 |website=Super Sport |access-date=10 March 2026}}</ref>
+}}
+{{rugbybox
+| date = <small>23 February 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|Maties}}
+| try1 = [[Rynhardt Van Der Linden|Rynhardt]] {{try|18}}<br />[[CJ Marx|Marx]] {{try|45}}<br />[[CJ Erasmus|Erasmus]] {{try|62}}<br />[[Mckyle Volmoer|Volmoer]] {{try|65}}<br />[[Ryan Manuel|Manuel]] {{try|72}}<br />[[Ezekiel Ngobeni|Ngobeni]] {{try|76}}
+| con1 = [[Christiaan Van Heerden Smith|Christiaan]] {{kick|46}}<br />[[Christiaan Van Heerden Smith|Christiaan]] {{kick|63}}<br />[[Christiaan Van Heerden Smith|Christiaan]] {{kick|77}}
+| pen1 = [[Christiaan Van Heerden Smith|Christiaan]] {{pen|31}}
+| try2 = [[Kamo Molefe|Molefa]] {{try|20}}<br />[[Thabang Mphafi|Mphafi]] {{try|32}}
+| con2 = [[Nicallen Gabrielsen|Gabrielsen]] {{kick|21}}<br />[[Nicallen Gabrielsen|Gabrielsen]] {{kick|33}}
+| pen2 = [[Nicallen Gabrielsen|Gabrielsen]] {{pen|54}}
+| cards1 = [[Kevin Strydom|Strydom]] {{yel|60}}
+| cards2 = [[Marnus Swarts|Swarts]] {{yel|75}}
+| away = {{Rut|UJ}}
+| score = 39–19
+| stadium = {{Rus|Danie Craven Stadium}}
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| referee = [[Lulutho Matomela]]<br>'''FNB Player of the Match - ''' [[CJ Marx]] {{Rut|Maties}} <ref name="auto3"/>
+}}
+
+=== Round 3 ===
+{{rugbybox
+| date = <small>2 March 2026</small>
+| time = <small>16:45</small>
+| score = 35-29
+| try1 = [[Zian Cilliers|Cilliers]] {{try|10}}<br>[[Ughan Africa|Africa]] {{try|14}}, {{try|28}}<br>[[Zian Cilliers|Cilliers]] {{try|20}}<br>[[Kamo Molefe|Molefe]] {{try|78}}
+| con1 = [[Jt Kapank|Kapank]] {{kick|11}}, {{kick|14}}, {{kick|21}}, {{kick|29}}
+| try2 = [[Jordan McLoughlin|McLoughlin]] {{try|7}}<br> [[Luan Van Der Walt|van der Walt]] {{try|38}}<br> [[Ricardo Fourie|Fourie]] {{try|43}}, {{try|64}}, {{try|65}}
+| con2 = [[MJ Mostert|Mostert]] {{kick|39}}
+| cards1 = [[JT Strydom|Strydom]] {{yel|23}}<br>[[Reuven Ferreira|Ferreira]] {{yel|55}}<br>[[Francois Prinsloo (rugby union)|Prinsloo]] {{yel|79}}
+| cards2 = [[Zack Serfontein|Serfontein]] {{yel|46}}<br>[[Toy Engelbercht|Engelbercht]] {{yel|59}}<br> [[Guhan du Bois|du Bois]] {{yel|67}}
+| home = {{Rut|UJ}}
+| away = {{Rut|NWU Eagles}}
+| referee = [[Jonathan Lottering]]
+|report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| stadium = {{Rus|UJ Stadium}}<br>'''FNB Player of the Match - ''' [[Zian Cilliers]] {{Rut|UJ}} <ref name="auto4">{{Cite web |title=Orange Army stun the Eagles, Tuks go top of the log in FNB Varsity Cup round three|url=https://supersport.com/rugby/news/b26f000d-8e41-4847-a2f0-8dbd13209f01/orange-army-stun-the-eagles-tuks-go-top-of-the-log-in-fnb-varsity-cup-round-three |website=Super Sport |access-date=10 March 2026}}</ref>
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| score = 33-17
+| away = {{Rut|Maties}}
+| try1 = [[Jean Fourie|Fourie]] {{try}} (2)<br>[[Jayd Austin|Austin]] {{try}}<br> [[Ben Jansen Van Vuuren|Van Vuuren]] {{try}}<br>[[Munashe Dukuswa|Dukuswa]] {{try}}
+| try2 = [[Ryan Manuel|Manuel]] {{try}}<br>[[CJ Erasmus|Erasmus]] {{try}}
+| con1 = [[Divan Du Toit|Du Toit]] {{kick}} (3)
+| con2 = [[Christiaan Van Heerden Smith|Christiaan]] {{kick}} (2)
+| pen2 = [[Christiaan Van Heerden Smith|Christiaan]] {{pen}} (1)
+| cards2 = [[Ammaar Burton|Burton]] {{yel}}<br>[[Sebastian Hahn|Hahn]] {{yel}}
+| cards1 = [[Andile Myeni|Myeni]] {{yel}}
+| referee = [[Eon van Zyl]]
+| stadium = {{Rus|LC de Villiers Stadium}}<br>'''FNB Player of the Match - ''' [[Jayd Austin]] {{Rut|UP Tuks}} <ref name="auto4"/>
+|report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|CUT Ixias}}
+| try1 = [[Winton Abrahams|Abrahams]] {{try|57}}, {{try|75}}<br>[[Devinto Vergotine|Vergotine]] {{try|67}}
+| cards1 = [[Matthys Corneluis Malan|Corneluis Malan]] {{yel|25}}<br>[[Durandt Van Aswegen|Van Aswegen]] {{yel|35}}<br>[[Vuyo Holiday|Holiday]] {{yel|45}}
+| away = {{Rut|UFS Shimlas}}
+| try2 = [[Erich Visser|Visser]] {{try|2}}<br>[[Jacobus Bezuidenhout|Bezuidenhout]] {{try|11}}, {{try|15}}, {{try|21}}, {{try|43}}<br>[[Ferdinand Vergottini|Vergottini]] {{try|26}}, {{try|35}}, {{try|51}}<br>[[Henri Van Heerden|Van Heerden]] {{try|27}}, {{try|35}}<br>[[Tiaan Kriek|Kriek]] {{try|64}}<br>[[Marnus Winter|Winter]] {{try|79}}<br>[[Marno Stopforth|Stopforth]] {{try|80}}
+| con2 = [[Shaun Ray|Ray]] {{kick|16}}<br>[[Tiaan Kriek|Kriek]] {{kick|52}}, {{kick|65}}
+| cards2 = [[Tiaan Kriek|Kriek]] {{yel|67}}
+| score = 19-71
+| referee = [[Caleb Hibbert]]
+| stadium = {{Rus|CUT Stadium}}<br>'''FNB Player of the Match - ''' [[Jaco Bezuidenhout]] {{Rut|UFS Shimlas}} <ref name="auto4"/>
+|report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| time = <small>19:00</small>
+| home = [[Varsity College (South Africa)|Emeris]]
+| try1 = [[Edward Sigauke|Sigauke]] {{try}}<br>[[Andrew Davis (rugby union)|Davis]] {{try}}
+| away = {{Rut|UCT Ikey Tigers}}
+| try2 = [[Lezane Davis|L. Davis]] {{try}}<br>[[Kian Davis|K. Davis]] {{try}}<br>[[Jack Benade|Benade]] {{try}}<br>[[Adam De Waal|De Waal]] {{try}}
+| cards1 = Number 25 {{yel|22}}
+| cards2 = [[Setshaba Mokoena|Mokoena]] {{yel}}
+| con2 = [[Alex Vermeulen (rugby union)|Vermeulen]] {{kick}} (4)
+| score = 10-32
+| referee = [[Daniel Canhenga]]<br>'''FNB Player of the Match - ''' [[Alex Vermuelen]] {{Rut|UCT Ikey Tigers}} <ref name="auto4"/>
+| stadium = [[Varsity College (South Africa)|Emeris]], [[Durban North]]
+|report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+}}
+
+=== Round 4 ===
+{{rugbybox
+| date = <small>9 March 2026</small>
+| time = <small>16:45</small>
+| score = 87-28
+| home = {{Rut|UCT Ikey Tigers}}
+| away = {{Rut|UJ}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=963 Report]
+| try1 = [[Jack Benade|Benade]] {{try|3}}, {{try|21}}, {{try|52}}<br>[[Lezane Davis|Davis]] {{try|10}}, {{try|26}}<br>[[Setshaba Mokoena|Mokoena]] {{try|13}}, {{try|40}}<br>[[Monray Daars|Daars]] {{try|17}}<br>[[Aiden De Costa|De Costa]] {{try|28}}<br>[[Aidan Norris|Norris]] {{try|36}}<br>[[Xola Nyali|Nyali]] {{try|75}}
+| con1 = [[Alex Vermeulen|Vermeulen]] {{kick|3}}, {{kick|11}}, {{kick|13}}, {{kick|17}}, {{kick|21}}, {{kick|27}}, {{kick|29}}, {{kick|37}}, {{kick|41}}, {{kick|53}}, {{kick|77}}
+| cards1 = [[Tian Vorster|Vorster]] {{yel|61}}<br>[[Cameron Whitson|Whitson]] {{yel|73}}
+| cards2 = [[Lesedi Masimola|Masimola]] {{yel|76}}
+| pen1 = 
+| try2 = [[Reuven Ferreira|Ferreira]] {{try|11}}<br>[[JT Strydom|Strydom]] {{try|65}}<br>[[Toy Engelbercht|Engelbercht]] {{try|69}}<br>[[Thabo Mashigo|Mashigo]] {{try|71}}
+| con2 = [[Nicallen Gabrielsen|Gabrielsen]] {{kick|11}}
+| referee = [[Lulutho Matomela]]
+| stadium = {{Rus|UCT Rugby Fields}}
+| attendance = 4,000+<br>
+'''FNB Player of the Match -''' [[Monray Daars]] {{Rut|UCT Ikey Tigers}} <ref name="auto5">{{Cite web |title=Ikeys Tigers win big and Tuks remain unbeaten
+|url=https://supersport.com/rugby/news/3f2295ab-b48a-40a4-aace-6f2ed951b8c3/ikeys-tigers-win-big-and-tuks-remain-unbeaten |website=Super Sport |access-date=10 March 2026}}</ref>
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|Maties}}
+| score = 55-20
+| away = [[Varsity College (South Africa)|Emeris]]
+| try1 = [[Huhgo Van Zitters|Van Zitters]] {{try|19}}<br>[[Samuel Badenhorst|Badenhorst]] {{try|29}}, {{try|50}}<br>[[Sebastian Hahn|Hahn]] {{try|33}}<br>[[Zuko Poswa|Poswa]] {{try|34}}<br>[[Ezekiel Ngobeni|Ngobeni]] {{try|40}}<br>[[CJ Erasmus|Erasmus]] {{try|42}}<br>[[Simon Liversage|Liversage]] {{Try|66}}, {{try|74}}
+| con1 = [[Christiaan Van Heerden Smith|Van Heerden Smith]] {{kick|19}}, {{kick|29}}, {{kick|42}}, {{kick|51}}
+| try2 = [[Chijindu Okonta|Okonta]] {{try|48}}<br>[[Edward Sigauke|Sigauke]] {{try|52}}, {{try|79}}
+| pen2 = [[Frederick Marx|Marx]] {{pen|5}}
+| cards2 = [[Thando Luthuli|Luthuli]] {{yel|39}}
+| referee = [[Zoe Naude]]
+| stadium = {{Rus|Danie Craven Stadium}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=964 Report]
+| attendance = 16,000+<br>
+'''FNB Player of the Match -''' [[Samuel Badenhorst]] {{Rut|Maties}} <ref name="auto5"/>
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| cards1 = [[Andile Myeni|Myeni]] {{yel}}
+| cards2 = [[Winton Abrahams|Abrahams]] {{yel}}
+| try1 = [[Abel Pretorius|Pretorius]] {{try}} (3)<br>[[Andile Myeni|Myeni]] {{try}} (3)<br>[[Jean Fourie|Fourie]] {{try}} (2)<br>[[Ben Jansen Van Vuuren|Van Vuuren]] {{try}}<br>[[Akhona Kunene|Kunene]] {{try}}<br>[[Kobus Janse Van Rensburg|Van Rensburg]] {{try}}<br>[[Dillon Smith|Smith]] {{try}}
+| con1 = [[Divan Du Toit|Du Toit]] {{kick}} (4)<br>[[Jaedon De Leeuw|De Leeuw]] (1)
+| try2 = [[Jordan Davids|Davids]] {{try}} (2)<br>[[Petrus Nel|Nel]] {{try}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=962 Report]
+| away = {{Rut|CUT Ixias}}
+| score = 78-17
+| stadium = {{Rus|LC de Villiers Stadium}}
+| referee = [[Jonathan Lottering]]
+| attendance = 14,150<br>
+'''FNB Player of the Match -''' [[Ben Jansen Van Vuuren]] {{Rut|UP Tuks}} <ref name="auto5"/>
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UFS Shimlas}}
+| away = {{Rut|NWU Eagles}}
+| score = 31-43
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=961 Report]
+| try1 = [[Erich Visser|Visser]] {{try}} (2)<br>[[HJ De Beer|De Beer]] {{try}}<br>[[Kirwin Du Preez|Du Preez]] {{try}}
+| con1 = [[Tiaan Kriek|Kriek]] {{kick}} (2)
+| try2 = [[Ricardo Fourie|Fourie]] {{try}} (2)<br>[[Jordan McLoughlin|McLoughlin]] {{try}}<br>[[Jason Oosthuizen|Oosthuizen]]<br>[[Zack Serfontein|Serfontein]] {{try}}<br>[[Therlow Prins|Prins]] {{try}}<br>[[Matthew Fortuin|Fortuin]] {{try}}
+| con2 = [[Ruan Van Willing|Can Willing]] {{kick}} (2)
+| cards2 = [[Jaco Du Toit|Du Toit]] {{yel}}<br>Anonymous {{yel}} (2)
+| referee = [[Eon van Zyl]]
+| stadium = {{Rus|Fanie du Toit Stadium}}
+| attendance = 4,500<br>
+'''FNB Player of the Match -''' [[Ricardo Fourie]] {{Rut|NWU Eagles}} <ref name="auto5"/>
+}}
+
+=== Round 5 ===
+{{rugbybox
+| date = <small>16 March 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|UCT Ikey Tigers}}
+| score = 07-34
+| away = {{Rut|Maties}}
+| cards1 = {{yel}}
+| report = [https://rugby365.com/tournaments/varsity-cup/maties-blow-uct-away-nwu-eagles-upset-tuks/ Report]
+| try1 = [[Jack Benade|Benade]] {{try|47}}
+| try2 = [[Luan Botha|Botha]] {{try|6}}<br>[[Janlu Basson|Basson]] {{try|43}}, {{try|45}}<br>[[Ezekiel Ngobeni|Ngobeni]] {{try|41}}<br>[[Zuko Poswa|Poswa]] {{try|42}}<br>[[Mckyle Volmoer|Volmoer]] {{try|80}}
+| stadium = {{Rus|UCT Rugby Fields}}
+| referee = [[Juan de Bod]]<ref name="auto">{{Cite web |title=Match official appointments to 16 March 2026|url=https://www.sarugby.co.za/news-features/articles/2026/03/11/match-official-appointments-to-16-march-2026/ |website=SA Rugby|access-date=11 March 2026}}</ref> <br>'''FNB Player of the Match - '''[[Ezekiel Ngobeni]] ({{Rut|Maties}})
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UJ}}
+| try1 = [[Francois Prinsloo|Prinsloo]] {{try}}(2)<br>[[Toy Engelbercht|Engelbercht]] {{try}}<br>[[Mnelisi Gamede|Gamede]] {{try}}
+| con1 = [[Jt Kapank|Kapank]] {{kick}}(3)
+| pen1 = [[Jt Kapank|Kapank]] {{pen}}
+| con2 = [[Wynand Botha|Botha]] {{kick}}
+| score = 29-17
+| report = [https://rugby365.com/tournaments/varsity-cup/maties-blow-uct-away-nwu-eagles-upset-tuks/ Report]
+| try2 = [[Erich Visser|Visser]] {{try}}(2)<br>[[Faasen Laubscher|Laubscher]] {{try}}
+| cards1 = [[Thabang Mphafi|Mphafi]] {{yel}}<br>Anonymous {{yel}}
+| cards2 = [[Juan Venter|Venter]] {{yel}}<br>Anonymous {{yel}}<br>Anonymous {{yel}}
+| away = {{Rut|UFS Shimlas}}
+| stadium = {{Rus|UJ Stadium}}
+| referee = [[Caleb Hibbert]]<ref name="auto"/><br>'''FNB Player of the Match - '''[[Thabang Mphafi]] ({{Rut|UJ}})
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| time = <small>19:00</small>
+| score = 26-24
+| home = [[Varsity College (South Africa)|Emeris]]
+| away = {{Rut|CUT Ixias}}
+| try1 = [[Chijindu Okonta|Okonta]] {{try}}(2)<br>[[Jacques Marais|Marais]] {{try}}<br>[[Thando Luthuli|Luthuli]] {{try}}
+| report = [https://rugby365.com/tournaments/varsity-cup/maties-blow-uct-away-nwu-eagles-upset-tuks/ Report]
+| try2 = [[Jade Muller|Muller]] {{try}}(2)<br>[[Winton Abrahams|Abrahams]] {{try}}<br>[[Matthys Corneluis Malan|Corneluis Malan]] {{try}}
+| con1 = [[Frederick Marx|Marx]] {{kick}}(2)
+| con2 = [[Kehan Myburgh|Myburgh]] {{kick}}
+| cards2 = [[Jade Muller|Muller]] {{yel}}
+| cards1 = Anonymous {{yel}}<br>Anonymous {{yel}}
+| stadium = [[Varsity College (South Africa)|Emeris]], [[Durban North]]
+| referee = [[Dylen November]]<ref name="auto"/><br>'''FNB Player of the Match - '''[[Chijindu Okonta]] ([[Varsity College (South Africa)|Emeris]])
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|NWU Eagles}}
+| try1 = [[Zack Serfontein|Serfontein]] {{try|7}}<br>[[Leejay Petersen|Petersen]] {{try|18}}<br>[[Jordan McLoughlin|McLoughlin]] {{try|26}}<br>[[Luan Van Der Walt|Van Der Walt]] {{try|45}}
+| report = [https://rugby365.com/tournaments/varsity-cup/maties-blow-uct-away-nwu-eagles-upset-tuks/ Report]
+| con1 = [[Ruan Van Willing|Van Willing]] {{kick|7}}, {{kick|19}}, {{kick|27}}, {{kick|46}}
+| try2 = [[Akha Mjawule|Mjawule]] {{try|38}}<br>[[Andile Myeni|Myeni]] {{try|41}}<br>[[Gustav Van Der Merwe|Van Der Merwe]] {{try|62}}, {{try|70}}
+| con2 = [[Divan Du Toit|Du Toit]] {{kick|63}}
+| score = 30-22
+| away = {{Rut|UP Tuks}}
+| cards2 = [[Oelof De Meyer|De Meyer]] {{yel|15}}
+| stadium = {{Rus|Fanie du Toit Stadium}}
+| referee = [[Hernus Coetzee]]<ref name="auto"/><br>'''FNB Player of the Match - '''[[Zack Serfontein]] ({{Rut|NWU Eagles}})
+}}
+
+=== Round 6 ===
+{{rugbybox
+| date = <small>23 March 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|CUT Ixias}}
+| score = 13–29
+| try1 = [[Jean Louis Theron|Louis Theron]] {{try|70}}
+| try2 = [[Francois Prinsloo|Prinsloo]] {{try|10}}<br>[[JT Kapank|Kapank]] {{try|58}}<br>[[Toy Engelbercht|Engelbercht]] {{try|67}}<br>[[Coun-lee Koekman|Koekman]] {{try|74}}<br>[[Exauce Kevani|Kevani]] {{try|76}}
+| con2 = [[JT Kapank|Kapank]] {{kick|75}}
+| pen1 = [[Kehan Myburgh|Myburgh]] {{pen|30}}, {{pen|41}}
+| cards1 = [[Petrus Nel|Nel]] {{yel|33}}
+| cards2 = [[Tholithemba Sibisi|Sibisi]] {{yel|1}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=971 Report]
+| away = {{Rut|UJ}}
+| referee = [[Daniel Canhenga]]
+| stadium = {{Rus|CUT Stadium}} <br>'''FNB Player of the Match - '''[[Jeandre Uithaler]] ({{Rut|UJ}})
+}}
+{{rugbybox
+| date = <small>23 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| away = [[Varsity College (South Africa)|Emeris]]
+| score = 27–24
+| try1 = [[Jean Fourie|Fourie]] {{try}}(3)<br>[[David Engongo|Engongo]] {{try}}<br>[[Dillon Smith|Smith]] {{try}}
+| try2 = [[Sphephelo Mbonambi|Mbonambi]] {{try}}<br>[[Edward Sigauke|Sigauke]] {{try}}<br>[[Jayden Fortuin|Fortuin]] {{try}}<br>[[Jacques Marais|Marais]] {{try}}
+| con1 = [[Divan Du Toit|Du Toit]] {{kick}}
+| con2 = [[Frederick Marx|Marx]] {{kick}}(2)
+| cards1 = [[Buhle Planga|Planga]] {{yel}}
+| cards2 = [[Chris Horak|Horak]] {{yel}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=972 Report]
+| referee = [[Eon van Zyl]]
+| stadium = {{Rus|LC de Villiers Stadium}} <br>'''FNB Player of the Match - '''Jean Fourie ({{Rut|UP Tuks}})
+}}
+{{rugbybox
+| date = <small>23 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|Maties}}
+| away = {{Rut|NWU Eagles}}
+| score = 30–26
+| try1 = [[Keanuh Michaels|Michaels]] {{try}}<br>[[CJ Marx|Marx]] {{try}}<br>[[Zuko Poswa|Poswa]] {{try}}<br>[[Louw Du Toit|Du Toit]] {{try}}<br>[[Louis Fourie (rugby union)|Fourie]] {{try}}
+| try2 = [[Logan Janeke|Janeke]] {{try}}<br>[[Leejay Petersen|Petersen]] {{try}}<br>[[Hanro Venter|Venter]] {{try}}
+| con1 = [[Christiaan Van Heerden Smith|Van Heerden Smith]] {{kick}}
+| con2 = [[Ruan Van Willing|Van Willing]] {{kick}}(2)
+| pen1 = [[Christiaan Van Heerden Smith|Van Heerden Smith]] {{pen}}
+| pen2 = [[Ruan Van Willing|Van Willing]] {{pen}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=970 Report]
+| stadium = {{Rus|Danie Craven Stadium}}
+| attendance = 15,000+
+| referee = [[Hernus Coetzee]] <br>'''FNB Player of the Match - '''Ruan van Willing ({{Rut|NWU Eagles}})
+}}
+{{rugbybox
+| date = <small>23 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UFS Shimlas}}
+| away = {{Rut|UCT Ikey Tigers}}
+| score = 40–33
+| try1 = [[Vice Hofmeyer|Hofmeyer]] {{try|13}}<br>[[Jacobus Bezuidenhout|Bezuidenhout]] {{try|35}}, {{try|78}}<br>[[Kirwin Du Preez|Du Preez]] {{try|47}}<br>[[Erich Visser|Visser]] {{try|53}}<br>[[Ferdinand Vergottini|Vergottini]] {{try|68}}
+| try2 = [[Isaiah Louw|Louw]] {{try|18}}<br>[[Sino Brawen|Brawen]] {{try|59}}<br>[[Jack Benade|Benade]] {{try|61}}<br>[[Johan Lombard|Lombard]] {{try|64}}
+| con1 = [[Bradley Pierre Giddy|Pierre Giddy]] {{kick|14}}, {{kick|48}}, {{kick|53}}, {{kick|68}}
+| con2 = [[Alex Vermeulen (rugby union)|Vermeulen]] {{kick|19}}, {{kick|60}}, {{kick|61}}
+| pen2 = [[Alex Vermeulen (rugby union)|Vermeulen]] {{pen|40}}
+| cards2 = [[Aiden De Costa|De Costa]] {{yel|33}}<br>
+[[Adam De Waal|De Waal]] {{sent off|0|76}}<br>[[Johan Lombard|Lombard]] {{yel|77}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=969 Report]
+| referee = [[Jonathan Lottering]]
+| stadium = {{Rus|Fanie du Toit Stadium}} <br>'''FNB Player of the Match - '''Henri van Heerden ({{Rut|UFS Shimlas}})
+}}
+
+=== Round 7 ===
+{{rugbybox
+| date = <small>30 March 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|NWU Eagles}}
+| away = {{Rut|UCT Ikey Tigers}}
+| score = 56-53
+| try1 = [[Luan Van Der Walt|Van Der Walt]] {{try|5}}<br>[[Logan Janeke|Janeke]] {{try|25}}, {{try|35}}<br>[[Jordan McLoughlin|McLoughlin]] {{try|41}}<br>[[Alethwa Buthelezi|Buthelezi]] {{try|42}}<br>[[Zack Serfontein|Serfontein]] {{try|46}}<br>[[MJ Mostert|Mostert]] {{try|58}}, {{try|76}}<br>[[Gary Otto|Otto]] {{try|66}}
+| try2 = [[Alex Vermeulen|Vermeulen]] {{try|0}}<br>[[Monray Daars|Daars]] {{try|9}}<br>[[Eric Basson|Basson]] {{try|14}}<br>[[Kian Davis|Davis]] {{try|22}}<br>[[Connor Jack Gordon|Gordon]] {{try|33}}<br>[[Amahle Mazibuko|Mazibuko]] {{try|50}}<br>[[Setshaba Mokoena|Mokoena]] {{try|62}}
+| con1 = [[MJ Mostert|Mostert]] {{kick|36}}, {{kick|67}}<br>[[Ruan Van Willing|Van Willing]] {{kick|77}}
+| pen1 = [[Ruan Van Willing|Van Willing]] {{pen|40}}
+| con2 = [[Alex Vermeulen|Vermeulen]] {{kick|1}}, {{kick|10}}, {{kick|15}}, {{kick|23}}, {{kick|34}}, {{kick|51}}, {{kick|63}}
+| cards1 = [[Stephan Krugel|Krugel]] {{yel|5}}<br>[[Guhan Du Bois|Du Bois]] {{yel|7}}<br>[[Logan Janeke|Janeke]] {{yel|12}}
+| cards2 = [[Connor Jack Gordon|Gordon]] {{yel|42}}<br>[[Eric Basson|Basson]] {{sent off|0|52}}
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=974 Report]
+| stadium = {{Rus|Fanie du Toit Stadium}} <br>'''FNB Player of the Match - '''[[MJ Mostert]] ({{Rut|NWU Eagles}})
+| referee = [[Juan de Bod]]
+}}
+{{rugbybox
+| date = <small>30 March 2026</small>
+| time = <small>19:00</small>
+| score = 22-51
+| home = {{Rut|UJ}}
+| away = {{Rut|UP Tuks}}
+| cards1 = [[Juan Fourie|Fourie]] {{yel|68}}
+| try1 = [[Tholithemba Sibisi|Sibisi]] {{try|7}}<br>[[Exauce Kevani|Kevani]] {{try|18}}<br>[[Jeandre Uithaler|Uithaler]] {{try|60}}
+| try2 = [[Christiaan Vlok|Vlok]] {{try|12}}<br>[[Jacques Oberholzer|Oberholzer]] {{try|15}}<br>[[Dennis Obi|Obi]] {{try|26}}<br>[[Akhona Kunene|Kunene]] {{try|35}}<br>[[Akha Mjawule|Mjawule]] {{try|57}}<br>[[Dillon Smith|Smith]] {{try|73}}<br>[[Munashe Dukuswa|Dukuswa]] {{try|78}}
+| con1 = [[JT Kapank|Kapank]] {{kick|19}}
+| con2 = [[Divan Du Toit|Du Toi]] {{kick|13}}, {{kick|16}}, {{kick|27}}, {{kick|36}}, {{kick|79}}
+| pen1 = [[JT Kapank|Kapank]] {{pen|10}}
+|report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=976 Report]
+| stadium = {{Rus|UJ Stadium}} <br>'''FNB Player of the Match - '''[[Divan du Toit]] ({{Rut|UP Tuks}})
+| referee = [[Caleb Hibbert]]
+}}
+{{rugbybox
+| date = <small>30 March 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|CUT Ixias}}
+| away = {{Rut|Maties}}
+| try1 = [[Malekela Chilli Malothane|Malothane]] {{try}}<br>[[Hope Seyaga|Seyaga]] {{try}}<br>[[Devinto Vergotine|Vergotine]] {{try}}
+| try2 = [[CJ Erasmus|Erasmus]] {{try}} (3)<br>[[Christiaan Van Heerden Smith|Van Heerden Smith]] {{try}}<br>[[Louis Fourie (rugby union)|Fourie]] {{try}}<br>[[Ammaar Burton|Burton]] {{try}}
+| con1 = [[Matthys Corneluis Malan|Malan]] {{kick}}
+| con2 = [[Christiaan Van Heerden Smith|Van Heerden Smith]] {{kick}} (2)<br>[[Ezekiel Ngobeni|Ngobeni]] {{kick}}
+| pen1 = [[Matthys Corneluis Malan|Malan]] {{pen}} (2)
+| cards1 = {{yel}} (2)
+| cards2 = {{yel}} (2)
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=975 Report]
+| score = 22-38
+| stadium = {{Rus|CUT Stadium}} <br>'''FNB Player of the Match - '''[[Tsebano Stemer]] ({{Rut|CUT Ixias}})
+| referee = [[Eon van Zyl]]
+}}
+{{rugbybox
+| date = <small>30 March 2026</small>
+| time = <small>19:00</small>
+| home = [[Varsity College (South Africa)|Emeris]]
+| away = {{Rut|UFS Shimlas}}
+| stadium = [[Varsity College (South Africa)|Emeris]], [[Durban North]] <br>'''FNB Player of the Match - '''[[Jacques Marais]] [[Varsity College (South Africa)|Emeris]]
+| try1 = [[Meno Barnard|Barnard]] {{try}} (2)<br>[[Edward Sigauke|Sigauke]] {{try}} (2)<br>[[Christian Els|Els]] {{try}}<br>[[Jacques Marais|Marais]] {{try}}<br>[[Denilo Jordaan|Jordaan]] {{try}}
+| try2 = [[Jacobus Bezuidenhout|Bezuidenhout]] {{try}}<br>[[Gunter Van Rensbug|Van Rensbug]] {{try}}<br>[[Ferdinand Vergottini|Vergottini]] {{try}}
+| con1 = [[Frederick Marx|Marx]] {{kick}} (2)
+| con2 = [[Wynand Botha|Botha]] {{kick}}
+| cards2 = {{yel}} (2)
+| report = [https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=973 Report]
+| referee = [[Lulutho Matomela]]
+| score = 41-19
+}}
+
+==Play-offs==
+{{Round4
+|style=white-space:nowrap|widescore=yes|bold_winner=high|2rdplace=yes
+
+<!-- semi-finals -->
+|6 April 2026 |{{Rut|NWU Eagles}} |50 |{{Rut|Maties}} |10
+|6 April 2026| {{Rut|UP Tuks}}|53|{{Rut|UJ}} |34
+<!-- final -->
+|13 April 2026|{{Rut|UP Tuks}} | 31| {{Rut|NWU Eagles}} |03
+
+}}
+
+===Semi-finals===
+{{rugbybox
+| date = <small>6 April 2026</small>
+| time = <small>16:45</small>
+| home = {{Rut|NWU Eagles}}
+| score = 50-10
+| away = {{Rut|Maties}}
+| report =[https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=977 Report]
+| try1 = [[Sean Roulston|Roulston]] {{try|24}}<br>[[Jordan McLoughlin|McLoughlin]] {{try|43}}<br>[[Stephan Krugel|Krugel]] {{try|48}}<br>[[Logan Janeke|Janeke]] {{try|58|76}}<br>[[Jamiane Dampies|Dampies]] {{try|63}}<br>[[Gary Otto|Otto]] {{try|72}}
+| con1 = [[MJ Mostert|Mostert]] {{kick|25|44|59|64|73|77}}
+| pen1 = [[MJ Mostert|Mostert]] {{pen|15}}
+| drop1 =
+| cards1 =
+| try2 = [[Janlu Basson|Basson]] {{try|8}}
+| con2 = [[MC Van Heerden Smith|van Heerden Smith]] {{kick|8}} 
+| pen2 = [[MC Van Heerden Smith|van Heerden Smith]] {{pen|25}}
+| drop2 =
+| cards2 = [[Ezekiel Ngobeni|Ngobeni]] {{yel|37}}
+| stadium = {{Rus|Fanie du Toit Stadium}}
+| attendance = 5,000+
+| referee = [[Hernus Coetzee]] <br>
+'''FNB Player of the Match -''' [[Ricardo Fourie]] {{Rut|NWU Eagles}} 
+}}
+
+{{rugbybox
+| date = <small>6 April 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| score = 53-34
+| away = {{Rut|UJ}}
+| report =[https://www.varsitycup.co.za/match-centre?tournament_name=varsity-cup-2026&fixture_id=978 Report]
+| try1 = [[Munashe Dukuswa|Dukuswa]] {{try|19|62|80}}<br>[[Kobus Janse Van Rensburg|Janse Van Rensburg]] {{try|43}}<br>[[Jean Fourie|Fourie]] {{try|55}}<br>[[Akha Mjawule|Mjawule]] {{try|68}}<br>[[Jacques Oberholzer|Oberholzer]] {{try|75}}
+| con1 = [[Divan Du Toit|Du Toit]] {{kick|44|76|80}}
+| pen1 = [[Divan Du Toit|Du Toit]] {{pen|40|60}}
+| drop1 =
+| cards1 = 
+| try2 = [[Tholithemba Sibisi|Sibisi]] {{try|3|78}}<br>[[Kamo Molefe|Molefe]] {{try|41}}<br>[[JT Kapank|Kapank]] {{try|65}}
+| con2 = [[JT Kapank|Kapank]] {{kick|42|66}}
+| pen2 = [[JT Kapank|Kapank]] {{pen|36}}
+| drop2 =
+| cards2 = [[Jeandre Uithaler|Uithaler]] {{yel|8}}<br>[[Coun-Lee Koekman|Koekman]] {{yel|29}}<br>[[Zenkosi Mthiyana|Mthiyana]] {{yel|54}}<br>[[Reuven Ferreira]] {{yel|72}}
+| stadium = {{Rus|LC de Villiers Stadium}}
+| attendance =10,000+
+| referee = [[Jonathan Lottering]]<br>
+'''FNB Player of the Match -''' [[Akha Mjawule]] {{Rut|UP Tuks}} 
+}}
+
+===Final===
+{{rugbybox
+| id = "Tuks vs NWU Pukke 2026 Final"
+| date = <small>13 April 2026</small>
+| time = <small>19:00</small>
+| home = {{Rut|UP Tuks}}
+| score = 31-03
+| away = {{Rut|NWU Eagles}}
+| report =[https://www.news24.com/sport/rugby/varsitycup/varsity-cup-final-tuks-v-nwu-20260413-0967 Report]
+| try1 = [[Try (rugby)#Penalty try|Penalty try]] {{try|32}}<br>[[Andile Myeni|Myeni]] {{try|44}}<br>[[Jean Fourie|Fourie]] {{try|50}}
+| con1 = 
+| pen1 = [[Divan du Toit|du Toit]] '26, '53, '75, '78
+| drop1 =
+| cards1 = [[Munashe Dukuswa|Dukuswa]] {{yel|18}}<br> [[Christiaan Vlok|Vlok]] {{yel|40}}
+| try2 = 
+| con2 = 
+| pen2 = [[MJ Mostert|Mostert]] '18
+| drop2 =
+| cards2 = [[Guhan du Bois|du Bois]] {{yel|33}}
+| stadium = {{Rus|LC de Villiers Stadium}}
+| attendance =14,150+
+| referee = [[Hernus Coetzee]]<br>'''FNB Player that rocks - '''[[Andile Myeni]], {{Rut|UP Tuks}}
+}}
+
+{| width=92%
+|-
+|{{Football kit
+  | pattern_la = _redyellow
+  | pattern_b  = _redhorizontal
+  | pattern_ra = _redyellow
+  | pattern_so = _red_midband_color
+  | leftarm    = FFFFFF
+  | body       = FFFFFF
+  | rightarm   = FFFFFF
+  | shorts     = FFFFFF
+  | socks      = 000000
+  | title      = Tuks
+}}
+|{{Football kit
+  | pattern_la = _blackborder
+  | pattern_b  = _skyhoops
+  | pattern_ra = _blackborder
+  | pattern_so = _whitestripe
+  | leftarm    = 800080
+  | body       = 800080
+  | rightarm   = 800080
+  | shorts     = 000000
+  | socks      = 000000
+  | title      = NWU Eagles
+}}
+|}
+
+{| style="width:92%"
+|-
+|style="vertical-align:top;width:50%"|
+{| style="font-size: 100%" cellspacing="0" cellpadding="0" style="margin:auto"
+|-
+!width="25"| !!width="25"|
+|-
+|FB ||'''15'''||[[Hopewell Ntshangase]]
+|-
+|RW ||'''14'''||[[Andile Myeni]]
+|-
+|OC ||'''13'''||[[Christiaan Vlok]]
+|-
+|IC ||'''12'''||[[Kobus Janse Van Rensburg]]
+|-
+|LW ||'''11'''||[[Muashe Dukudwa]]
+|-
+|FH ||'''10'''||[[Divan du Toit]]
+|-
+|SH ||'''9''' ||[[Akha Mjawule]]
+|-
+|N8 ||'''8''' ||[[Dillon Smith]] ([[Captain (sports)|c]])
+|-
+|OF ||'''7''' ||[[Oelof de Meyer]]
+|-
+|BF ||'''6''' ||[[Abel Pretorius]]
+|-
+|RL ||'''5''' ||[[Duncan Blignaut]]
+|-
+|LL ||'''4''' ||[[David Engongo]]
+|-
+|TP ||'''3''' ||[[Jayd Austin]]
+|-
+|HK ||'''2''' ||[[Jean Fourie]]
+|-
+|LP ||'''1''' ||[[Buhle Mphaka]]
+|-
+|colspan="3"|'''Replacements:'''
+|-
+| ||'''16'''||[[Gustav van der Merwe]]
+|-
+| ||'''17'''||[[Randy Muzungu]]
+|-
+| ||'''18'''||[[Barnard Nortje]]
+|-
+| ||'''19'''||[[Jacques Oberholzer]]
+|-
+| ||'''20'''||[[Guvandre Moses]]
+|-
+| ||'''21'''||[[Ignatius Jatjies]]
+|-
+| ||'''22'''||[[Dennis Obi]]
+|-
+| ||'''23'''||[[Van Reenen Kruger]]
+|-
+|colspan="3"|'''Coach:'''
+|-
+|colspan="3"| [[Dewey Swartbooi]]
+|}
+
+|style="vertical-align:top;width:50%"|
+{| cellspacing="0" cellpadding="0" style="margin:auto"
+
+|-
+|FB ||'''15'''|| [[Luan van der Walt]]
+|-
+|RW ||'''14'''|| [[Luyolo Doyi]]
+|-
+|OC ||'''13'''|| [[Matthew Fortuin]]
+|-
+|IC ||'''12'''|| [[Leejay Peterson]]
+|-
+|LW ||'''11'''|| [[Logan Janeke]]
+|-
+|FH ||'''10'''|| [[MJ Mostert]]
+|-
+|SH ||'''9''' || [[Zack Serfontein]]
+|-
+|N8 ||'''8''' || [[Sean Roulston]]
+|-
+|OF ||'''7''' || [[Guhan du Bios]]
+|-
+|BF ||'''6''' || [[Ricardo Fourie]]
+|-
+|RL ||'''5''' || [[Rianiel Turner]]
+|-
+|LL ||'''4''' || [[Stephan Krugel]] ([[Captain (sports)|c]])
+|-
+|TP ||'''3''' || [[Jason Oosthuizen (rugby union)|Jason Oosthuizen]]
+|-
+|HK ||'''2''' || [[Jordan McLoughlin]]
+|-
+|LP ||'''1''' || [[Aletha Buthelezi]]
+|-
+|colspan="3"|'''Replacements:'''
+|-
+| ||'''16'''|| [[Hanro Venter]]
+|-
+| ||'''17'''|| [[Bradley Stanfliet]]
+|-
+| ||'''18'''|| [[Jaco du Toit]]
+|-
+| ||'''19'''|| [[Zihan Bensch]]
+|-
+| ||'''20'''|| [[Schalk du Plessis]]
+|-
+| ||'''21'''|| [[Gary Otto]]
+|-
+| ||'''22'''|| [[Angelo Daniels]]
+|-
+| ||'''23'''|| [[Jamiane Dampies]]
+|-
+|colspan="3"|'''Coach:'''
+|-
+|colspan="3"| [[Burger van Westhuizen]]
+|}
+|}
+{| style="width:100%"
+|
+'''Player of the Match:'''
+<br /> [[Andile Myeni]], {{Rut|UP Tuks}} <ref name = "Varsity Cup Final 2026">{{cite news|url=https://www.sarugby.co.za/news-features/articles/2026/04/08/match-official-appointments-to-13-april-2026/#:~:text=Match%20official%20appointments%20for%20the,Varsity%20Cup%20and%20Shield%20Finals. |title=Match official appointments to 13 April 2026 |website=www.sarugby.co.za |publisher=[[SA Rugby]] |date=8 April 2026 |access-date=8 April 2026 }}</ref>
+
+'''Assistant referees:'''
+<br />[[Paul Mente]] ([[Rugby Football Union|South Africa]]),<ref name="Varsity Cup Final 2026"/> [[Jonathan Lottering]] ([[Rugby Football Union|South Africa]]) <ref name="Varsity Cup Final 2026"/><br />'''Television match official:'''
+<br />[[Jaco Pretorius]] ([[South African Rugby Union|South Africa]]),<ref name="Varsity Cup Final 2026"/>[[Stephan Geldenhuys]] ([[South African Rugby Union|South Africa]])<ref name="Varsity Cup Final 2026"/>
+|}
+<section end="TuksvsPukke" />
+
+===Promotion and relegation===
+At the end of the Varsity Cup season, a promotion–relegation system determined the movement between the Varsity Cup and the Varsity Shield. The team that finished last in the [[Varsity Cup]] standings is automatically relegated to the [[Varsity Shield]] for the following season.
+
+The winner of the [[Varsity Shield]] is automatically promoted to the [[Varsity Cup]]. In addition, the second-last placed [[Varsity Cup]] which was  [[Varsity College (South Africa)|Emeris]]  played a promotion–relegation playoff match against the [[Varsity Shield]] runner-up which was {{Rut|WSU All Blacks}}, with the winner earning a place in next season's Varsity Cup. [[Varsity College (South Africa)|Emeris]] came out on top and retained their place in the Varsity Cup for 2027.
+
+{{rugbybox
+| date = <small>6 May 2026</small>
+| time = <small>11:00 am</small>
+| home = [[Varsity College (South Africa)|Emeris]] 
+| score = 47-12
+| away = {{Rut|WSU All Blacks}}
+| report =[https://scores24.live/en/rugby/m-06-05-2026-fnb-emeris-fnb-wsu-all-blacks Report]
+| try1 = 
+| con1 = 
+| pen1 = 
+| drop1 =
+| cards1 =
+| try2 = 
+| con2 = 
+| pen2 = 
+| drop2 =
+| cards2 = 
+| stadium = [[Varsity College (South Africa)|Varsity College]], [[University of KwaZulu Natal]]
+| attendance =
+| referee =
+}}
+
+==Statistics==
+<small>* Correct as at the end of regular season - 31 March 2026 (Round 7)</small> <ref name="SA Rugby Hub">{{Cite web |title=Varsity Cup Round 1 Review – Explosive Starts and Eye-catching Stats 2026|url=https://www.sarugbyhub.com/post/varsity-cup-round1-2026 |website=SA Rugby Hub |access-date=18 February 2026}}</ref><ref>{{Cite web |title=Varsity Cup Rugby 2026 Statistics 2026|url=https://www.sarugbyhub.com/varsity-cup-statistics |website=SA Rugby Hub |access-date=10 March 2026}}</ref>
+
+===Points leaders===
+{| class="wikitable sortable" style="text-align:center; width:100%;"
+! style="background:#ec008c; color:white;" | Rank
+! style="background:#ec008c; color:white;" | Player
+! style="background:#ec008c; color:white;" | University
+! style="background:#ec008c; color:white;" | Points
+|-
+| style="background:#d8f3dc;"| 1
+| style="background:#d8f3dc;"| Alex Vermeulen
+| style="background:#d8f3dc;"| {{Rut|UCT Ikey Tigers}}
+| style="background:#d8f3dc;"| 82
+|-
+| style="background:#d8f3dc;"| 2
+| style="background:#d8f3dc;"| Jack Benade
+| style="background:#d8f3dc;"| {{Rut|UCT Ikey Tigers}}
+| style="background:#d8f3dc;"| 51
+|-
+| style="background:#d8f3dc;"| 3
+| style="background:#d8f3dc;"| Divan Du Toit
+| style="background:#d8f3dc;"| {{Rut|UP Tuks}}
+| style="background:#d8f3dc;"| 48
+|-
+| 4
+| Christiaan Van Heerden Smith
+| {{Rut|Maties}}
+| 45
+|-
+| 5
+| Edward Sigauke
+| [[Varsity College (South Africa)|Emeris]]   
+| 44
+|-
+|  6
+|  Jacobus Bezuidenhout
+| {{Rut|UFS Shimlas}}
+| 40
+|-
+| 7
+| MJ Mostert
+| {{Rut|NWU Eagles}}
+| 36
+|-
+|  T8
+|  Erich Visser
+| {{Rut|UFS Shimlas}}
+| 35
+|-
+|  T8
+|  Jean Fourie
+| {{Rut|UP Tuks}}
+| 35
+|-
+|  T8
+|  CJ Erasmus
+| {{Rut|Maties}}
+| 35
+|}
+
+===Tries leaders===
+{| class="wikitable sortable" style="text-align:center; width:100%;"
+! style="background:#ec008c; color:white;" | Rank
+! style="background:#ec008c; color:white;" | Player
+! style="background:#ec008c; color:white;" | University
+! style="background:#ec008c; color:white;" | Tries
+|-
+| style="background:#d8f3dc;"| 1
+| style="background:#d8f3dc;"| Jack Benade
+| style="background:#d8f3dc;"| {{Rut|UCT Ikey Tigers}}
+| style="background:#d8f3dc;"| 9
+|-
+| style="background:#d8f3dc;"| T2
+| style="background:#d8f3dc;"| Jacobus Bezuidenhout
+| style="background:#d8f3dc;"| {{Rut|UFS Shimlas}}
+| style="background:#d8f3dc;"| 8
+|-
+| style="background:#d8f3dc;"| T2
+| style="background:#d8f3dc;"| [[Edward Sigauke]]
+| style="background:#d8f3dc;"| [[Varsity College (South Africa)|Emeris]]
+| style="background:#d8f3dc;"| 8
+|-
+| T4
+| CJ Erasmus
+| {{Rut|Maties}}
+| 7
+|-
+|  T4
+|  Erich Visser
+|  {{Rut|UFS Shimlas}}
+|  7
+|-
+|  T4
+|  Jean Fourie
+|  {{Rut|UP Tuks}}
+|  7
+|-
+|  T7
+|  Ricardo Fourie
+|  {{Rut|NWU Eagles}}
+|  6
+|-
+|  T7
+|  Therlow Prins
+| {{Rut|NWU Eagles}}
+|  6
+|-
+| T7
+| Andile Myeni
+| {{Rut|UP Tuks}}
+| 6
+|-
+| T7
+| Jordan Mcloughlin
+| {{Rut|NWU Eagles}}
+| 6
+|}
+
+===Conversion leaders===
+{| class="wikitable sortable" style="text-align:center; width:100%;"
+! style="background:#ec008c; color:white;" | Rank
+! style="background:#ec008c; color:white;" | Player
+! style="background:#ec008c; color:white;" | University
+! style="background:#ec008c; color:white;" | Cons
+|-
+| style="background:#d8f3dc;" | 1
+| style="background:#d8f3dc;"| Alex Vermeulen
+| style="background:#d8f3dc;"|{{Rut|UCT Ikey Tigers}}
+| style="background:#d8f3dc;" | 32
+|-
+| style="background:#d8f3dc;" | 2
+| style="background:#d8f3dc;"|Divan Du Toit
+| style="background:#d8f3dc;"|{{Rut|UP Tuks}}
+| style="background:#d8f3dc;" | 18
+|-
+| style="background:#d8f3dc;" | T3
+| style="background:#d8f3dc;"|MJ Mostert
+| style="background:#d8f3dc;"|{{Rut|NWU Eagles}}
+| style="background:#d8f3dc;" | 13
+|-
+| style="background:#d8f3dc;" | T3
+| style="background:#d8f3dc;"|Christiaan Van Heerden Smith
+| style="background:#d8f3dc;"|{{Rut|Maties}}
+| style="background:#d8f3dc;" | 13
+|-
+|  5
+| Ruan Van Willing
+| {{Rut|NWU Eagles}}
+|  12
+|-
+| T6
+| Bradley Pierre Giddy
+| {{Rut|UFS Shimlas}}
+| 9
+|-
+| T6
+| JT Kapank
+| {{Rut|UJ}}
+| 9
+|-
+| 8
+| Frederick Marx
+| [[Varsity College (South Africa)|Emeris]]
+| 8
+|-
+| T9
+| Nicallen Gabrielsen
+| {{Rut|UJ}}
+| 6
+|-
+| T9
+| Kehan Myburgh
+| {{Rut|CUT Ixias}}
+| 6
+|}
+
+===Penalty leaders===
+{| class="wikitable sortable" style="text-align:center; width:100%;"
+! style="background:#ec008c; color:white;" | Rank
+! style="background:#ec008c; color:white;" | Player
+! style="background:#ec008c; color:white;" | University
+! style="background:#ec008c; color:white;" | Pens
+|-
+| style="background:#d8f3dc;" | 1
+| style="background:#d8f3dc;"|Kehan Myburgh
+| style="background:#d8f3dc;"|{{Rut|CUT Ixias}}
+| style="background:#d8f3dc;" | 5
+|-
+| style="background:#d8f3dc;" | 2
+| style="background:#d8f3dc;"|Divan Du Toit
+| style="background:#d8f3dc;"|{{Rut|UP Tuks}}
+| style="background:#d8f3dc;" | 4
+|-
+| style="background:#d8f3dc;" | 3
+| style="background:#d8f3dc;" | JT Kapank
+| style="background:#d8f3dc;" | {{Rut|UJ}}
+| style="background:#d8f3dc;" | 3
+|-
+| T4
+| Bradley Pierre Giddy
+|{{Rut|UFS Shimlas}}
+|   2
+|-
+|  T4
+|  Nicallen Gabrielsen
+| {{Rut|UJ}}
+|  2
+|-
+|  T4
+| Alex Vermeulen
+| {{Rut|UCT Ikey Tigers}}
+|  2
+|-
+| T4
+| Ruan Van Willing
+| {{Rut|NWU Eagles}}
+| 2
+|-
+| T4
+|  Christiaan Van Heerden Smith
+|  {{Rut|Maties}}
+|  2
+|-
+| T9
+| Shaun Ray
+| {{Rut|UFS Shimlas}}
+| 1
+|-
+| T9
+| Frederick Marx
+| [[Varsity College (South Africa)|Emeris]]   
+| 1 
+|}
+
+==Honours==
+
+The honour roll for the 2026 Varsity Cup was as follows:<ref>{{Cite news|title=Late drama in FNB Varsity Cup round 7 as Tuks, NWU, Maties and UJ secure semi-final spots 2026|work=varsitycup.co.za|url=https://www.varsitycup.co.za/news/late-drama-in-fnb-varsity-cup-round-7-as-tuks-nwu-maties-and-uj-secure-semi-final-spots}}</ref>
+
+{| class="wikitable" style="text-align:left; line-height:110%; font-size:90%; width:80%; margin:1em auto 1em auto;"
+|-
+! colspan=2 | '''2026 Varsity Cup Honours'''
+|-
+| Champions:       || {{Rut|UP Tuks}} (6th title)
+|-
+| Player That Rocks:  || [[Thabang Mphafi]], {{Rut|UJ}} 
+|-
+| Forward That Rocks: || [[Ricardo Fourie]], {{Rut|NWU Pukke}}
+|-
+| Back That Rocks:    || [[Matthew Fortuin]], {{Rut|NWU Pukke}}
+|-
+| Rookie of the year:|| [[Chijindu Okonta]], [[Varsity College (South Africa)|Emeris]]
+|-
+| Top Try Scorer:|| [[Jack Benade]] (9 tries), {{Rut|UCT Ikey Tigers}}
+|-
+| Top Points Scorer:  || [[Alex Vermeulen (rugby union)|Alex Vermeulen]] (82 points), {{Rut|UCT Ikey Tigers}}
+|}
+
+==Young Guns==
+=== 2026 Young Guns Log ===
+The final log for the 2026 Young Guns was:
+
+{| class="wikitable" style="text-align:center; font-size:100%; width:100%;"
+|-
+! colspan="100%" cellpadding="0" cellspacing="0" | '''Group A Teams'''
+|-
+! style="width:5%;"  | Pos
+! style="width:35%;" | Team
+! style="width:5%;"  | P
+! style="width:5%;"  | W
+! style="width:5%;"  | D
+! style="width:5%;"  | L
+! style="width:5%;"  | TS
+! style="width:5%;"  | PD
+! style="width:5%;"  | BP
+! style="width:5%;"  | PTS
+|-bgcolor=#E8FFD8
+|  | 1
+| | {{Rut|UFS Shimlas Young Guns}}
+| 6 || 6 || 0 || 0 ||32  ||91  || 6 || 30 
+|-bgcolor=#E8FFD8
+|| 2
+| {{Rut|UJ Young Guns}}
+| 6 || 4 || 0 || 2 || 29 ||39 || 5 || 21 
+|-
+|  | 3
+| [[Varsity College (South Africa)|Emeris Young Guns]]
+| 6 || 2 || 0 || 4 ||30 ||-34  || 4 || 12 
+|-
+| | 4
+| {{Rut|CUT Young Guns}}
+| 6 || 0 || 0 || 6 || 26 ||-96   || 6 || 6 
+|}
+
+{| class="wikitable" style="text-align:center; font-size:100%; width:100%;"
+|-
+! colspan="100%" cellpadding="0" cellspacing="0" | '''Group B Teams'''
+|-
+! style="width:5%;"  | Pos
+! style="width:35%;" | Team
+! style="width:5%;"  | P
+! style="width:5%;"  | W
+! style="width:5%;"  | D
+! style="width:5%;"  | L
+! style="width:5%;"  | TS
+! style="width:5%;"  | PD
+! style="width:5%;"  | BP
+! style="width:5%;"  | PTS
+|-bgcolor=#E8FFD8
+|  | 1
+| | {{Rut|UCT Trojans}}
+| 6 || 4 || 0 || 2 ||38  ||149  || 8 || 24 
+|-bgcolor=#E8FFD8
+|| 2
+| {{Rut|UP Tuks Young Guns}}
+| 6 || 4 || 0 || 2 || 29 ||-8 || 6 || 22 
+|-
+|  | 3
+| {{Rut|NWU Pukke Young Guns}}
+| 6 || 4 || 0 || 2 ||28 ||-2  || 5 || 21 
+|-
+| | 4
+| {{Rut|Maties Juniors}}
+| 6 || 0 || 0 || 6 || 18 ||-139   || 5 || 5 
+|-
+| colspan="14" style="border:0px" | <small>*'''Legend''':<br /> Pos = Position, Pl = Played, W = Won, D = Drawn, L = Lost, PF = Points for, PA = Points against, PD = Points difference, TF = Tries for, TA = Tries against, TB = Try bonus points, LB = Losing bonus points, Pts = Log points<br /><br />'''Points breakdown:'''<br />*4 points for a win<br />*2 points for a draw<br />*1 bonus point for a loss by seven points or less<br />*1 bonus point for scoring four or more tries in a match</small><br /><br /><small>'''Qualification:'''</small>
+{{smalldiv|1=The top two teams from each group qualified for the [[#Semifinals|semifinals]].}}
+|}
+
+'''Results'''
+
+The following matches were played in the 2026 Young Guns Varsity Cup tournament:
+
+=== Round 1 ===
+{{rugbybox
+| date = <small>23 February 2026</small>
+| home = {{Rut|UCT Trojans}}
+| score = 24-28
+| report = [https://www.varsitycup.co.za/varsity-cup-fixtures-logs Report]
+| away = {{Rut|UP Tuks Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>23 February 2026</small>
+| home ={{Rut|NWU Pukke Young Guns}}
+| score = 33-26
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|Maties Juniors}}
+}}
+
+{{rugbybox
+| date = <small>23 February 2026</small>
+| home ={{Rut|UJ Young Guns}}
+| score = 42-17
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = [[Varsity College (South Africa)|Emeris Young Guns]]
+}}
+
+{{rugbybox
+| date = <small>23 February 2026</small>
+| home ={{Rut|UFS Shimlas Young Guns}}
+| score = 36-20
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|CUT Young Guns}}
+}}
+
+=== Round 2 ===
+{{rugbybox
+| date = <small>2 March 2026</small>
+| home ={{Rut|UP Tuks Young Guns}}
+| score = 43-25
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|Maties Juniors}}
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| home ={{Rut|NWU Pukke Young Guns}}
+| score = 31-40
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UCT Trojans}}
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| home ={{Rut|UFS Shimlas Young Guns}}
+| score = 37-15
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UJ Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>2 March 2026</small>
+| home =[[Varsity College (South Africa)|Emeris Young Guns]]
+| score = 50-26
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|CUT Young Guns}}
+}}
+
+=== Round 3 ===
+{{rugbybox
+| date = <small>9 March 2026</small>
+| home ={{Rut|UCT Trojans}}
+| score = 62-00
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|Maties Juniors}}
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| home =[[Varsity College (South Africa)|Emeris Young Guns]]
+| score = 27-39
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UFS Shimlas Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| home ={{Rut|UJ Young Guns}}
+| score = 55-31
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|CUT Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>9 March 2026</small>
+| home ={{Rut|UP Tuks Young Guns}}
+| score = 19-50
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|NWU Pukke Young Guns}}
+}}
+
+=== Round 4 ===
+{{rugbybox
+| date = <small>16 March 2026</small>
+| home ={{Rut|UP Tuks Young Guns}}
+| score = 29-24
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UCT Trojans}}
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| home ={{Rut|Maties Juniors}}
+| score = 17-34
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|NWU Pukke Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| home =[[Varsity College (South Africa)|Emeris Young Guns]]
+| score = 26-36
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UJ Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>16 March 2026</small>
+| home ={{Rut|CUT Young Guns}}
+| score = 00-28 
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UFS Shimlas Young Guns}}
+}}
+
+=== Round 5 ===
+{{rugbybox
+| date = <small>23 March 2026</small>
+| home ={{Rut|UCT Trojans}}
+| score = 54-00
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|NWU Pukke Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>23 March 2026</small>
+| home ={{Rut|Maties Juniors}}
+| score = 38-40
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UP Tuks Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>23 March 2026</small>
+| home ={{Rut|CUT Young Guns}}
+| score = 54-55
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = [[Varsity College (South Africa)|Emeris Young Guns]]
+}}
+
+{{rugbybox
+| date = <small>23 March 2026</small>
+| home ={{Rut|UJ Young Guns}}
+| score = 30-31
+| report = [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UFS Shimlas Young Guns}}
+}}
+
+=== Round 6 ===
+{{rugbybox
+| date = <small>30 March 2026</small>
+| home ={{Rut|NWU Pukke Young Guns}}
+| score = 45-39
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UP Tuks Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>30 March 2026</small>
+| home ={{Rut|Maties Juniors}}
+| score = 03-36
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UCT Trojans}}
+}}
+
+{{rugbybox
+| date = <small>30 March 2026</small>
+| home ={{Rut|CUT Young Guns}}
+| score = 38-41
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UJ Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>30 March 2026</small>
+| home ={{Rut|UFS Shimlas Young Guns}}
+| score = 45-33
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = [[Varsity College (South Africa)|Emeris Young Guns]]
+}}
+
+=== Play-offs ===
+The playoffs for the 2026 Young Guns Varsity Tournament was as follows:
+{{Round4
+|style=white-space:nowrap|widescore=yes|bold_winner=high|2rdplace=yes
+
+<!-- semi-finals -->
+|6 April 2026 |{{Rut|UCT Trojans}} |50 |{{Rut|UJ Young Guns}} |31
+|6 April 2026| {{Rut|UFS Shimlas Young Guns}}|46|{{Rut|UP Tuks Young Guns}} |40
+<!-- final -->
+|13 April 2026|{{Rut|UFS Shimlas Young Guns}} | 29| {{Rut|UCT Trojans}} |42
+
+}}
+
+=== Semi finals ===
+{{rugbybox
+| date = <small>6 April 2026</small>
+| home ={{Rut|UCT Trojans}}
+| score = 50-31
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UJ Young Guns}}
+}}
+
+{{rugbybox
+| date = <small>6 April 2026</small>
+| home ={{Rut|UFS Shimlas Young Guns}}
+| score = 46-40
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UP Tuks Young Guns}}
+}}
+
+=== Finals ===
+{{rugbybox
+| date = <small>13 April 2026</small>
+| home ={{Rut|UFS Shimlas Young Guns}}
+| score = 29-42
+| report =  [https://www.varsitycup.co.za/young-guns-fixtures-logs Report]
+| away = {{Rut|UCT Trojans}}
+}}
+
+==References==
+{{reflist}}
+
+{{Varsity Rugby}}
+{{Navbox
+| name = Varsity Cup seasons
+| title = Varsity Cup seasons
+| listclass = hlist
+| state = autocollapse
+| group1 = Seasons
+| list1 =
+* [[2008 Varsity Cup|2008]]
+* [[2009 Varsity Cup|2009]]
+* [[2010 Varsity Cup|2010]]
+* [[2011 Varsity Cup|2011]]
+* [[2012 Varsity Cup|2012]]
+* [[2013 Varsity Cup|2013]]
+* [[2014 Varsity Cup|2014]]
+* [[2015 Varsity Cup|2015]]
+* [[2016 Varsity Cup|2016]]
+* [[2017 Varsity Cup|2017]]
+* [[2018 Varsity Cup|2018]]
+* [[2019 Varsity Cup|2019]]
+* [[2020 Varsity Cup|2020]]
+* [[2021 Varsity Cup|2021]]
+* [[2022 Varsity Cup|2022]]
+* [[2023 Varsity Cup|2023]]
+* [[2024 Varsity Cup|2024]]
+* [[2025 Varsity Cup|2025]]
+* 2026
+}}
+
+{{DEFAULTSORT:Varsity Cup 2026}}
+[[Category:Varsity Cup seasons|2026]]
+[[Category:2026 in South African rugby union]]
+[[Category:2026 rugby union tournaments for clubs]]
+[[Category:February 2026 sports events in South Africa|Varsity Cup]]
+[[Category:March 2026 sports events in South Africa|Varsity Cup]]
+[[Category:April 2026 sports events in South Africa|Varsity Cup]]

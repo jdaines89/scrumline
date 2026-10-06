@@ -12,7 +12,7 @@ import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
 import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
-import { defaultSeason } from "@/lib/seasons";
+import { defaultSeason, pickerGroups } from "@/lib/seasons";
 
 interface League {
   seasons: Season[];
@@ -234,7 +234,11 @@ function Switcher() {
             </span>
           </span>
           <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Change tournament">
-            {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
+            {pickerGroups(seasons, season.id).map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.seasons.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </optgroup>
+            ))}
           </select>
         </label>
       ) : (

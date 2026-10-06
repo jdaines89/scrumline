@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultSeason, worthSwitching } from "../src/lib/seasons";
+import { defaultSeason, pickerGroups, worthSwitching } from "../src/lib/seasons";
 import type { Season } from "../src/lib/types";
 
 // Newest first, as the app loads them.
@@ -39,5 +39,26 @@ describe("worthSwitching", () => {
   it("stays quiet when the other one is more than eight days off", () => {
     expect(worthSwitching(null, tests, Date.parse("2026-10-20T12:00:00Z"))).toBe(false);
     expect(worthSwitching(null, null, now)).toBe(false);
+  });
+});
+
+describe("pickerGroups", () => {
+  const vc: Season = { id: "varsity-cup-2027", name: "Varsity Cup 2027", is_replay: false, competition_id: "varsity-cup", starts_on: "2027-02-01", ends_on: null };
+  const old: Season = { id: "nations-2025", name: "Nations Championship 2025", is_replay: false, competition_id: "5852", starts_on: "2025-11-01", ends_on: "2025-11-29" };
+  const all = [vc, ...seasons, old];
+  const names = (g: { label: string; seasons: Season[] }[]) => g.map((x) => `${x.label}: ${x.seasons.map((s) => s.id).join(", ")}`);
+  it("groups what's on, coming up soonest first, and practice", () => {
+    expect(names(pickerGroups(all, "urc-2026-27", at("2026-10-10T12:00:00Z")))).toEqual([
+      "On now: urc-2026-27", "Coming up: nations-2026, varsity-cup-2027", "Finished: nations-2025", "Practice: 2026"]);
+  });
+  it("keeps tournaments that finished in the last year, newest first", () => {
+    expect(names(pickerGroups(all, "urc-2026-27", at("2026-11-20T12:00:00Z")))).toEqual([
+      "On now: nations-2026, urc-2026-27", "Coming up: varsity-cup-2027", "Finished: nations-2025", "Practice: 2026"]);
+    expect(names(pickerGroups(all, "urc-2026-27", at("2026-12-10T12:00:00Z")))).toEqual([
+      "On now: urc-2026-27", "Coming up: varsity-cup-2027", "Finished: nations-2026", "Practice: 2026"]);
+  });
+  it("drops one that finished over a year ago, unless you're on it", () => {
+    expect(pickerGroups(all, "urc-2026-27", at("2026-12-10T12:00:00Z")).flatMap((g) => g.seasons).map((s) => s.id)).not.toContain("nations-2025");
+    expect(pickerGroups(all, "nations-2025", at("2026-12-10T12:00:00Z")).flatMap((g) => g.seasons).map((s) => s.id)).toContain("nations-2025");
   });
 });
