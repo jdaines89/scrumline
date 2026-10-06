@@ -1,7 +1,7 @@
 "use client";
 
 import { readCache, writeCache } from "@/lib/cache";
-import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SponsorTabs } from "@/components/sponsor-tabs";
@@ -90,6 +90,9 @@ function Loaded({ children }: { children: ReactNode }) {
   const [schoolOnly, setSchoolOnly] = useState(false);
   const [base, setBase] = useState<Base | null>(null);
   const [seasonId, setSeasonId] = useState<string | null>(null);
+  // The tournament on screen right now, so a slow answer for the one you just left can't overwrite it.
+  const shownSeason = useRef<string | null>(null);
+  shownSeason.current = seasonId;
   const [data, setData] = useState<SeasonData | null>(null);
   const [poolId, setPoolId] = useState<number | null>(null);
   // Only ask "Who's playing?" once the real member row is in, never off last visit's copy.
@@ -161,6 +164,7 @@ function Loaded({ children }: { children: ReactNode }) {
     const ps = (pools.data ?? []) as Pool[];
     const fresh: SeasonData = { matches: (matches.data ?? []) as Match[], entry: (entries.data?.[0] as Entry | undefined) ?? null, pools: ps };
     writeCache(`season:${seasonId}`, fresh);
+    if (shownSeason.current !== seasonId) return;
     setData(fresh);
     const saved = Number(remember(`pool:${seasonId}`));
     setPoolId(ps.some((p) => p.id === saved) ? saved : ps[0]?.id ?? null);
