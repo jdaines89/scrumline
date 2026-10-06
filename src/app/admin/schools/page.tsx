@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Crest } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { SchoolSearch } from "@/components/school-search";
 import { LANGUAGES, ROLES } from "@/lib/school";
@@ -77,8 +78,44 @@ export default function AdminSchools() {
         ))}
       </div>
 
+      <CrestFinds />
+
       <LookAfter onDone={(text) => { setMsg({ ok: true, text }); load(); }} />
     </>
+  );
+}
+
+interface Find { emis: string; school: string; town: string | null; province: string | null; image_path: string; source_url: string; claimed: boolean }
+
+/** Crests we found that are waiting for each school's yes. A wrong match can be set aside before any school sees it. */
+function CrestFinds() {
+  const [finds, setFinds] = useState<Find[] | null>(null);
+  const load = useCallback(async () => {
+    const { data } = await supabase.rpc("admin_crest_finds");
+    setFinds((data ?? []) as Find[]);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  async function setAside(emis: string) {
+    const { error } = await supabase.rpc("decide_crest_find", { p_emis: emis, p_use: false });
+    if (!error) setFinds((f) => f?.filter((x) => x.emis !== emis) ?? null);
+  }
+  if (finds?.length === 0) return null;
+  return (
+    <div className="card narrow">
+      <h2>Crests waiting for a school&apos;s yes</h2>
+      <p className="sub">Found on each school&apos;s Wikipedia page. Players never see them. Someone verified from the school is asked &quot;Is this your crest?&quot; and only their yes puts it up. Set aside any that are wrong.</p>
+      {finds === null && <div className="skeleton" style={{ height: 80 }} />}
+      {finds?.map((f) => (
+        <div key={f.emis} className="crest-row">
+          <Crest emis={f.emis} path={f.image_path} size={44} name={f.school} />
+          <div className="crest-row-text">
+            <strong>{f.school}</strong>
+            <span className="small muted">{[f.town, f.province].filter(Boolean).join(", ")} · <a href={f.source_url} target="_blank" rel="noreferrer">source</a>{f.claimed ? " · school can answer now" : ""}</span>
+          </div>
+          <button type="button" className="ghost" onClick={() => setAside(f.emis)}>Set aside</button>
+        </div>
+      ))}
+    </div>
   );
 }
 
