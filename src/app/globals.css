@@ -1287,6 +1287,35 @@ a.smeter-row:hover .smeter-name { color: var(--accent); }
 .smeter .proj-bar { display: block; margin: 8px 0 6px; }
 .smeter-foot { margin: 4px 0 0; }
 
+/* Polls in chat: the question, then each answer as a row that fills with its share of the votes. */
+.bubble.withpoll { width: min(300px, 74vw); max-width: 100%; }
+.poll-q { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+.poll-hint { margin: 2px 0 10px; color: var(--muted); }
+.poll-opts { display: grid; gap: 6px; }
+button.poll-opt, button.poll-opt:hover, button.poll-opt:focus { position: relative; overflow: hidden; display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); color: var(--text);
+  font-weight: 500; font-size: 14px; text-align: left; line-height: 1.3; }
+button.poll-opt:hover { border-color: var(--accent-dim); }
+button.poll-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button.poll-opt.on { border-color: var(--accent); }
+.poll-fill { position: absolute; inset: 0 auto 0 0; background: rgba(52, 199, 137, .14); transition: width .3s ease; pointer-events: none; }
+.poll-opt.lead .poll-fill { background: rgba(52, 199, 137, .22); }
+.poll-mark { position: relative; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted); display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; color: #07140e; }
+.poll-opt.on .poll-mark { background: var(--accent); border-color: var(--accent); }
+.poll-text { position: relative; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.poll-n { position: relative; flex: none; font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
+.poll-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; color: var(--muted); }
+.poll-who { list-style: none; margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); display: grid; gap: 4px; color: var(--muted); }
+.poll-who strong { color: var(--text); font-weight: 600; margin-right: 4px; }
+.poll-new .poll-label { font-size: 12px; color: var(--muted); margin: 14px 0 5px; }
+.poll-new-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.poll-new-row input { flex: 1; min-width: 0; }
+button.poll-new-x { flex: none; width: 44px; padding: 0; font-size: 20px; }
+.poll-add { margin: 2px 0 6px; }
+.poll-note { margin: 10px 0 12px; }
+button.poll-send { width: 100%; }
+.bubble.withpoll { white-space: normal; }
 /* A small picture you can tap to see full size: no button look of its own. */
 button.img-tap, button.img-tap:hover, button.img-tap:focus { all: unset; display: inline-flex; flex: none; cursor: zoom-in; border-radius: 10px; }
 button.img-tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
