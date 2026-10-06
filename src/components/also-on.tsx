@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { kickoff, roundName } from "@/lib/format";
 import { worthSwitching, type NextUp } from "@/lib/seasons";
 import { supabase } from "@/lib/supabase";
+import { startsIn } from "@/components/season-ahead";
 
 /**
  * When the tournament you're looking at is resting and another one is on
@@ -37,7 +38,7 @@ export function AlsoOn() {
       <p>
         {started
           ? <><strong>{target.name}</strong> is on while the {here} rests. {roundName(other!.round)} starts {kickoff(other!.kickoff_at)}.</>
-          : <><strong>{target.name}</strong> is on now, with {roundName(other!.round).toLowerCase()} starting {kickoff(other!.kickoff_at)}. The {here} starts {mine ? kickoff(mine) : "later"}.</>}
+          : <><strong>{target.name}</strong> is on now, with {roundName(other!.round).toLowerCase()} starting {kickoff(other!.kickoff_at)}. The {here} starts {mine ? kickoff(mine) : startsIn(season.starts_on) ? `in ${startsIn(season.starts_on)}` : "later"}.</>}
       </p>
       <button type="button" onClick={() => setSeason(target.id)}>Play it</button>
     </div>

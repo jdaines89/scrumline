@@ -25,7 +25,7 @@ export function RoundPicker({ rounds, round, onPick, locked, matches }: {
           {rounds.map((r) => <option key={r} value={r}>{roundName(r)}{locked?.has(r) ? " ✓" : ""} · {dates(r)}</option>)}
         </select>
         <strong>{roundName(round)}{locked?.has(round) ? " ✓" : ""}</strong>
-        <span>{dates(round)} · {rounds.length} rounds ▾</span>
+        <span>{dates(round)} · {rounds.length} round{rounds.length === 1 ? "" : "s"} ▾</span>
       </label>
       <button type="button" className="ghost arrow" aria-label="Next round" disabled={i >= rounds.length - 1} onClick={() => onPick(rounds[i + 1])}>›</button>
     </div>
