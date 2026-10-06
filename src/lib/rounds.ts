@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { Match, Season } from "@/lib/types";
+import type { Match, Pool, Season } from "@/lib/types";
+
+/** The first round a league counts; 0 when it counts every round. */
+export const countsFrom = (pool: Pool | null | undefined) => pool?.counts_from_round ?? 0;
 
 /** Which rounds this entry has locked, and the round to open on. */
 export function useRoundLocks(entryId: number | undefined, season: Season, matches: Match[]) {

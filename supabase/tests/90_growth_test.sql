@@ -37,6 +37,28 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select count(*) from public.organiser_round(:lg, :'firstko'::timestamptz - interval '1 day')) = 0,
                      'a member who didn''t start the league sees nothing');
 
+-- A league that counts from a later round leaves earlier rounds out of its table only
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select coalesce(sum(t.total_pts), 0) as early from public.entry_round_totals t
+  join public.entries e on e.id = t.entry_id
+  where e.user_id = '00000000-0000-0000-0000-00000000000a' and e.season = :'lgseason' and t.round < :lastround \gset
+select total_points as before_pts from public.pool_leaderboard where pool_id = :lg and user_id = '00000000-0000-0000-0000-00000000000a' \gset
+select public.set_league_start(:lg, :lastround);
+select pg_temp.check((select total_points from public.pool_leaderboard where pool_id = :lg and user_id = '00000000-0000-0000-0000-00000000000a')
+                     = :before_pts - :early, 'a league counting from a later round leaves the earlier rounds out');
+select pg_temp.check((select bool_and(counts_from_round is null) from public.pools where id <> :lg),
+                     'other leagues still count every round');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+do $$ begin
+  perform public.set_league_start((select id from public.pools where counts_from_round is not null limit 1), null);
+  raise exception 'FAILED: a member who didn''t start the league changed where it counts from';
+exception when insufficient_privilege then raise notice 'ok: only whoever started the league picks where it counts from';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.set_league_start(:lg, null);
+select pg_temp.check((select total_points from public.pool_leaderboard where pool_id = :lg and user_id = '00000000-0000-0000-0000-00000000000a')
+                     = :before_pts, 'back to every round, the table is as before');
+
 -- Monday's line
 reset role;
 select pg_temp.check(notify.growth_line() like 'Last week % called (sprint target 100 a week by 29 Nov). %players in all.',

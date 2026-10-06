@@ -1220,3 +1220,9 @@ button.sch-skip { display: block; width: 100%; margin-top: 8px; padding: 10px; b
 .inv-waiting { display: grid; gap: 10px; margin: 0 0 14px; }
 .inv-card { display: grid; gap: 4px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--panel-2); padding: 12px 14px; }
 .inv-card .row { margin-top: 8px; gap: 8px; }
+/* Where a league's points start counting, under its name. */
+.counts-from { margin: -4px 0 12px; }
+.counts-from label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.counts-from select { font-size: 16px; }
+.lg-form .lg-from { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.lg-form .lg-from select { flex: 1; min-width: 180px; font-size: 16px; }

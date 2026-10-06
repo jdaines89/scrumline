@@ -6,6 +6,8 @@ import { RoundPicker } from "@/components/round-picker";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { LeaderRow } from "@/lib/types";
+import { roundName } from "@/lib/format";
+import { countsFrom } from "@/lib/rounds";
 
 interface Scored {
   entry_id: number; round: number; match_id: string; is_banker: boolean; total_pts: number; result_pts: number; margin_pts: number; near_pts: number; exact_pts: number;
@@ -22,7 +24,8 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
   // Rounds with at least one result in, newest last.
-  const played = useMemo(() => [...new Set(matches.filter((m) => m.home_score !== null).map((m) => m.round))].sort((a, b) => a - b), [matches]);
+  const from = countsFrom(pool);
+  const played = useMemo(() => [...new Set(matches.filter((m) => m.home_score !== null && m.round >= from).map((m) => m.round))].sort((a, b) => a - b), [matches, from]);
   const [round, setRound] = useState<number | null>(null);
   const shown = round ?? played[played.length - 1] ?? null;
 
@@ -33,7 +36,7 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
       .then(({ data }) => { const r = (data ?? []) as Scored[]; writeCache(`roundtable3:${pool!.id}`, r); setScored(r); });
   }, [ids, season.id, pool]);
 
-  if (shown === null) return <p className="muted">No results in yet. Round tables appear once the first match is played.</p>;
+  if (shown === null) return <p className="muted">{from ? `This league counts from ${roundName(from)}. Round tables appear once its first match is played.` : "No results in yet. Round tables appear once the first match is played."}</p>;
   const inRound = scored.filter((s) => s.round === shown);
   const table = entries.map((r) => {
     const mine = inRound.filter((s) => s.entry_id === r.entry_id);
