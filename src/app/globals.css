@@ -910,8 +910,12 @@ button.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset
 .lgc-dot { flex: none; background: var(--accent); color: #fff; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 1px 7px; }
 .lgc-dot.at { background: var(--gold); color: #1a1407; }
 .lgc-chev { color: var(--muted); font-size: 22px; line-height: 1; }
-button.lgc-invite { flex: none; padding: 6px 12px; font-size: 13px; }
-@media (max-width: 560px) { button.lgc-invite { margin-left: 56px; } }
+/* Inviting is how leagues grow, so it reads as a button, not a footnote. */
+button.lgc-invite, button.lgc-invite:hover { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: none;
+  padding: 9px 16px; font-size: 14px; font-weight: 600; border-radius: 10px; border: 1px solid var(--accent);
+  background: rgba(52, 199, 137, .12); color: var(--accent); }
+button.lgc-invite:hover { background: rgba(52, 199, 137, .2); }
+@media (max-width: 560px) { button.lgc-invite { margin-left: 56px; width: calc(100% - 56px); } }
 .lgc-waiting { flex-basis: 100%; font-size: 13px; padding-left: 56px; }
 .lgc-organiser { flex-basis: 100%; padding: 2px 0 6px 56px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 .lgc-organiser .linkish { font-size: 13px; color: var(--accent); }
