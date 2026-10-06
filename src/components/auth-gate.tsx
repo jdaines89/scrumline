@@ -20,6 +20,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const path = usePathname();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [mustSetPassword, setMustSetPassword] = useState(arrivedVia === "invite" || arrivedVia === "recovery");
+  // Every player has a password. Joining by email code doesn't set one, so ask once they're in.
+  const uid = session?.user.id;
+  const [hasPassword, setHasPassword] = useState<boolean | undefined>(undefined);
   const onJoin = (path ?? "").startsWith("/join");
 
   useEffect(() => {
@@ -32,6 +35,18 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!uid) { setHasPassword(undefined); return; }
+    if (passwordKnown(uid)) { setHasPassword(true); return; }
+    setHasPassword(undefined);
+    supabase.rpc("i_have_password").then(({ data, error }) => {
+      // If the check can't run, never lock anyone out of the app over it.
+      const yes = error ? true : data !== false;
+      if (yes && !error) rememberPassword(uid);
+      setHasPassword(yes);
+    });
+  }, [uid]);
+
   if (!configured) {
     return <div className="card"><h2>Not connected yet</h2>
       <p className="sub">Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_KEY to point the app at the league.</p></div>;
@@ -39,8 +54,20 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (isPublicPath(path)) return <>{children}</>;
   if (session === undefined) return <p className="muted">Loading&hellip;</p>;
   if (!session) return onJoin ? <Join /> : <SignIn />;
-  if (mustSetPassword) return <SetPassword email={session.user.email ?? ""} reset={arrivedVia === "recovery"} business={isBusinessSession(session) || isSchoolSession(session)} onDone={() => setMustSetPassword(false)} />;
+  if (mustSetPassword || hasPassword === false) {
+    return <SetPassword email={session.user.email ?? ""} reset={arrivedVia === "recovery"} business={isBusinessSession(session) || isSchoolSession(session)}
+      onDone={() => { rememberPassword(session.user.id); setHasPassword(true); setMustSetPassword(false); }} />;
+  }
+  if (hasPassword === undefined) return <p className="muted">Loading&hellip;</p>;
   return <>{children}</>;
+}
+
+const PW_KEY = "scrumline:has-password:";
+function passwordKnown(uid: string): boolean {
+  try { return localStorage.getItem(PW_KEY + uid) === "1"; } catch { return false; }
+}
+function rememberPassword(uid: string): void {
+  try { localStorage.setItem(PW_KEY + uid, "1"); } catch { /* storage blocked: we just ask the server next time */ }
 }
 
 function SignIn() {
