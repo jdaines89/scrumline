@@ -1,5 +1,6 @@
 "use client";
 
+import { LeaguePicture, LeaguePicturePicker } from "@/components/league-picture";
 import { CountsFrom } from "@/components/counts-from";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -44,6 +45,9 @@ function Leaderboard() {
   const [picked, setPicked] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
   const [view, setView] = useState<"overall" | "round" | "schools">("overall");
+  // Whoever started the league can open its picture setting under the name.
+  const [editPic, setEditPic] = useState(false);
+  const [picMsg, setPicMsg] = useState<string | null>(null);
   // ?tab=schools opens the schools table straight away (a school's page links here).
   useEffect(() => { if (new URLSearchParams(window.location.search).get("tab") === "schools") setView("schools"); }, []);
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
@@ -113,9 +117,25 @@ function Leaderboard() {
   return (
     <div className="card">
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
-      <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
+      {view === "schools" ? <h2>Schools</h2> : (
+        <div className="league-title">
+          <LeaguePicture pool={pool!} size={44} />
+          <h2><PoolName pool={pool!} /></h2>
+        </div>
+      )}
       {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
       {view !== "schools" && <CountsFrom />}
+      {view !== "schools" && !pool!.school_emis && pool!.created_by === me.user_id && (
+        <div className="league-pic-edit">
+          <p className="small muted">
+            <button type="button" className="linkish small" onClick={() => { setPicMsg(null); setEditPic(!editPic); }}>
+              {editPic ? "Close" : pool!.picture_path ? "Change the league picture" : "Add a league picture"}
+            </button>
+            {picMsg && <> · {picMsg}</>}
+          </p>
+          {editPic && <LeaguePicturePicker onMessage={(ok, text) => { setPicMsg(text); if (ok) setEditPic(false); }} />}
+        </div>
+      )}
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}

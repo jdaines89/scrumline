@@ -1,5 +1,6 @@
 "use client";
 
+import { LeaguePicture } from "@/components/league-picture";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { Avatar } from "@/components/avatar";
@@ -446,7 +447,7 @@ function Chat() {
         {/* Which pool, and always which tournament it belongs to: two pools can share a name. */}
         <div className="chat-where">
           <label className={`chat-pool${pools.length > 1 ? "" : " one"}`}>
-            <h2><PoolName pool={pool!} /></h2>
+            <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
             {pools.length > 1 && <>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch league">

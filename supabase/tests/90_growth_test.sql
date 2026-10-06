@@ -11,6 +11,7 @@ select p.id as lg, p.season as lgseason from public.pools p
     and exists (select 1 from public.entries e where e.user_id = '00000000-0000-0000-0000-00000000000a' and e.season = p.season)
     and exists (select 1 from public.matches m where m.season = p.season group by m.round having bool_and(m.home_score is not null))
   order by p.id limit 1 \gset
+select set_config('test.lg', :'lg', false);
 select max(m.kickoff_at) as lastko, m.round as lastround from public.matches m where m.season = :'lgseason'
   group by m.round having bool_and(m.home_score is not null) order by m.round desc limit 1 \gset
 select min(m.kickoff_at) as firstko from public.matches m where m.season = :'lgseason' and m.round = :lastround \gset
@@ -58,6 +59,37 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select public.set_league_start(:lg, null);
 select pg_temp.check((select total_points from public.pool_leaderboard where pool_id = :lg and user_id = '00000000-0000-0000-0000-00000000000a')
                      = :before_pts, 'back to every round, the table is as before');
+
+-- League pictures: the starter sets one; only that league's players see it
+reset role;
+select (select user_id from public.pool_members where pool_id = :lg and user_id <> '00000000-0000-0000-0000-00000000000a' limit 1) as mate,
+       (select m.user_id from public.members m where not exists (select 1 from public.pool_members pm where pm.pool_id = :lg and pm.user_id = m.user_id) limit 1) as outsider \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into storage.objects (bucket_id, name) values ('league-pictures', :'lg' || '/pic.jpg');
+select public.set_league_picture(:lg, :'lg' || '/pic.jpg');
+select pg_temp.check((select picture_path from public.pools where id = :lg) = :'lg' || '/pic.jpg', 'the league''s starter sets its picture');
+do $$ begin
+  update public.pools set picture_path = (select (min(id) + 0)::text from public.pools where id <> current_setting('test.lg')::bigint) || '/x.jpg'
+   where id = current_setting('test.lg')::bigint;
+  raise exception 'FAILED: a league picture pointed at another league''s folder';
+exception when check_violation or insufficient_privilege then raise notice 'ok: a league picture can only point at its own folder';
+end $$;
+select pg_temp.as_user(:'mate');
+select pg_temp.check((select count(*) from storage.objects where bucket_id = 'league-pictures') = 1, 'the league''s players see its picture');
+do $$ begin
+  perform public.set_league_picture(current_setting('test.lg')::bigint, null);
+  raise exception 'FAILED: a player who didn''t start the league changed its picture';
+exception when insufficient_privilege then raise notice 'ok: only the league''s starter changes its picture';
+end $$;
+do $$ begin
+  insert into storage.objects (bucket_id, name) values ('league-pictures', current_setting('test.lg') || '/mine.jpg');
+  raise exception 'FAILED: a player who didn''t start the league uploaded its picture';
+exception when insufficient_privilege then raise notice 'ok: only the league''s starter uploads its picture';
+end $$;
+select pg_temp.as_user(:'outsider');
+select pg_temp.check((select count(*) from storage.objects where bucket_id = 'league-pictures') = 0, 'players outside the league don''t see its picture');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.set_league_picture(:lg, null);
 
 -- Monday's line
 reset role;
