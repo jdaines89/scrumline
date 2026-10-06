@@ -1,5 +1,6 @@
 "use client";
 
+import { RoundOptions } from "@/components/counts-from";
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
@@ -42,10 +43,12 @@ function standing(rows: Score[], me: string): Standing | null {
 }
 
 export default function PoolsPage() {
-  const { season, pools, pool, setPool, reloadPools, members, me } = useLeague();
+  const { season, pools, pool, setPool, reloadPools, members, me, rounds } = useLeague();
   const crests = useCrests();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  // Where a new league's points start: "" for every round.
+  const [from, setFrom] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const [myCode, setMyCode] = useState<string | null>(null);
@@ -143,6 +146,7 @@ export default function PoolsPage() {
     else if (!st.scored) bits.push(`${st.of} player${st.of === 1 ? "" : "s"}, nobody has scored yet`);
     else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
     else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
+    if (p.counts_from_round) bits.push(`From ${roundName(p.counts_from_round)}`);
     const pz = prizes.get(p.id);
     if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won ${roundText(pz.round)}'s prize`);
     else if (pz) bits.push(`${roundName(pz.round)} prize`);
@@ -193,10 +197,10 @@ export default function PoolsPage() {
   // The form stays put with a working button until the league exists, then the "ready" card replaces it at once.
   async function create(e: FormEvent) {
     e.preventDefault(); setMsg(null); setBusy(true);
-    const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id }).select().single();
+    const { data, error } = await supabase.from("pools").insert({ season: season.id, name: name.trim(), created_by: me.user_id, counts_from_round: from ? Number(from) : null }).select().single();
     setBusy(false);
     if (error) { setMsg(error.message); return; }
-    setOpen(null); setName("");
+    setOpen(null); setName(""); setFrom("");
     setMade({ id: data.id, name: data.name, code: data.join_code }); setLinkCopied(false);
     await reloadPools(); setPool(data.id);
   }
@@ -288,6 +292,12 @@ export default function PoolsPage() {
               <input required autoFocus maxLength={40} placeholder="League name" value={name} onChange={(e) => setName(e.target.value)} />
               <button type="submit" disabled={busy}>{busy ? "Starting…" : "Start"}</button>
             </div>
+            {rounds.length > 1 && (
+              <label className="lg-from">
+                <span className="small muted">Points count from</span>
+                <select value={from} onChange={(e) => setFrom(e.target.value)}><RoundOptions rounds={rounds} /></select>
+              </label>
+            )}
           </form>
         )}
         {open === "join" && (

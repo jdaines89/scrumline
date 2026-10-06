@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { signed, roundShort } from "@/lib/format";
+import { countsFrom } from "@/lib/rounds";
 import { supabase } from "@/lib/supabase";
 
 interface Scored {
@@ -17,8 +18,11 @@ interface Scored {
  * readable, which is all this needs.
  */
 export function HeadToHead({ mine, theirs, name }: { mine: number | null; theirs: number; name: string }) {
-  const { matches, teams } = useLeague();
-  const [rows, setRows] = useState<Scored[] | null>(null);
+  const { matches, teams, pool } = useLeague();
+  const [loaded, setRows] = useState<Scored[] | null>(null);
+  // Only the rounds this league counts.
+  const from = countsFrom(pool);
+  const rows = loaded && loaded.filter((r) => r.round >= from);
   const [open, setOpen] = useState<number | null>(null);
   const solo = mine === null || mine === theirs;
 

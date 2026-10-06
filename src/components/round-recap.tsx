@@ -11,6 +11,7 @@ import { logoUrl, sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
 import { roundName } from "@/lib/format";
+import { countsFrom } from "@/lib/rounds";
 
 interface Scored {
   entry_id: number; round: number; match_id: string; total_pts: number; is_banker: boolean;
@@ -35,7 +36,10 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
   inChat?: boolean; onOpen?: (url: string) => void;
 }) {
   const { matches, teams, pool, season } = useLeague();
-  const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
+  const [all, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`recap:${pool!.id}`) ?? []);
+  // Rounds before a league starts counting aren't part of its story.
+  const from = countsFrom(pool);
+  const scored = useMemo(() => all.filter((s) => s.round >= from), [all, from]);
   const [note, setNote] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const tournament = useSeasonSponsors(season.id);

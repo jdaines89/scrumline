@@ -6,6 +6,7 @@ import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { LeaderRow } from "@/lib/types";
 import { roundShort, roundText } from "@/lib/format";
+import { countsFrom } from "@/lib/rounds";
 
 interface Scored { entry_id: number; round: number; total_pts: number }
 interface Line { user_id: string; name: string; mine: boolean; pts: number[] }
@@ -30,7 +31,9 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
   }, [rows.length, matches.length]);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
-  const rounds = useMemo(() => [...new Set(matches.filter((m) => m.home_score !== null).map((m) => m.round))].sort((a, b) => a - b), [matches]);
+  // A league that counts from a later round starts its race there.
+  const from = countsFrom(pool);
+  const rounds = useMemo(() => [...new Set(matches.filter((m) => m.home_score !== null && m.round >= from).map((m) => m.round))].sort((a, b) => a - b), [matches, from]);
 
   useEffect(() => {
     if (!ids) return;

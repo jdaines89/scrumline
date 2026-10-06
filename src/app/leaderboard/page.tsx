@@ -1,5 +1,6 @@
 "use client";
 
+import { CountsFrom } from "@/components/counts-from";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ClassTable } from "@/components/class-table";
@@ -114,6 +115,7 @@ function Leaderboard() {
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       <h2>{view === "schools" ? "Schools" : <PoolName pool={pool!} />}</h2>
       {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
+      {view !== "schools" && <CountsFrom />}
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
