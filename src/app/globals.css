@@ -1273,3 +1273,15 @@ button.icalls-open { width: 100%; }
 .icall-boxes .pbox { width: 46px !important; height: 42px; font-size: 18px; }
 .icall-when { text-align: center; font-size: 12px; padding-bottom: 6px; }
 .icall-warn { padding: 0 0 6px; text-align: center; }
+
+/* Playing for your school: real money first, players until there is any. */
+.smeter h2 { margin-bottom: 4px; }
+a.smeter-row { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--line); color: var(--text); text-decoration: none; }
+a.smeter-row:first-of-type { border-top: none; }
+a.smeter-row:hover { text-decoration: none; }
+a.smeter-row:hover .smeter-name { color: var(--accent); }
+.smeter-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.smeter-name { font-size: 16px; line-height: 1.3; overflow-wrap: break-word; }
+.smeter-line { font-size: 14px; }
+.smeter .proj-bar { display: block; margin: 8px 0 6px; }
+.smeter-foot { margin: 4px 0 0; }
