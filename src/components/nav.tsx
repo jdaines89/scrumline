@@ -14,13 +14,13 @@ import { usePreview } from "@/lib/preview";
 const TABS = [
   ["/", "Home"],
   ["/predict/", "Predict"],
-  ["/pools/", "Leagues"],
+  ["/leagues/", "Leagues"],
   ["/chat/", "Chat"],
   ["/fixtures/", "Matches"],
 ];
 
 /** Screens that sit under a tab without being its own address: a league's table under Leagues, the log under Matches. */
-const UNDER: Record<string, string[]> = { "/pools/": ["/leaderboard"], "/fixtures/": ["/standings"] };
+const UNDER: Record<string, string[]> = { "/leagues/": ["/leaderboard"], "/fixtures/": ["/standings"] };
 
 interface Unread { count: number; tagged: boolean }
 

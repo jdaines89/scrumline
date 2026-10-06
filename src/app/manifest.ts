@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: `${base}/`,
     name: "Scrumline",
     short_name: "Scrumline",
-    description: "Rugby prediction pools with your mates and your school.",
+    description: "Rugby prediction leagues with your mates and your school.",
     start_url: `${base}/`,
     scope: `${base}/`,
     display: "standalone",

@@ -80,7 +80,7 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
         <div className="pref">
           <div className="pref-text">
             <strong>Tagged in chat</strong>
-            <span className="small muted">When someone tags you in a pool&apos;s chat</span>
+            <span className="small muted">When someone tags you in a league&apos;s chat</span>
           </div>
           <div className="seg sm">
             <button type="button" className={!tags || !pushOn ? "on" : ""} onClick={() => save("push_mentions", false, setTags)}>Off</button>

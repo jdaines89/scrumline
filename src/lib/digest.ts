@@ -18,7 +18,7 @@ export type Kind = "lone" | "against" | "split" | "with";
 export interface SwingGame {
   match_id: string;
   kind: Kind;
-  label: string;                       // "Lone call", "Against the pool", or "" for an ordinary split
+  label: string;                       // "Lone call", "Against the league", or "" for an ordinary split
   mine: Side;
   counts: Record<Side, number>;        // the whole pool's calls, you included
   text: string;                        // one line on who's where
@@ -45,7 +45,7 @@ const ord = (n: number) => {
   return `${n}${t >= 11 && t <= 13 ? "th" : u === 1 ? "st" : u === 2 ? "nd" : u === 3 ? "rd" : "th"}`;
 };
 const RANK: Record<Kind, number> = { lone: 4, against: 3, split: 2, with: 1 };
-const LABEL: Record<Kind, string> = { lone: "Lone call", against: "Against the pool", split: "", with: "" };
+const LABEL: Record<Kind, string> = { lone: "Lone call", against: "Against the league", split: "", with: "" };
 
 export function buildDigest(opts: {
   myEntry: number;
@@ -120,11 +120,11 @@ export function buildDigest(opts: {
   }
 
   const headline = !games.length
-    ? "You're with the whole pool on every game so far. Margins will decide it."
+    ? "You're with the whole league on every game so far. Margins will decide it."
     : !played
       ? `Everyone starts on 0. ${bold ? `Your ${plural(bold, "bold call")} ${bold === 1 ? "is" : "are"} where you break away.` : "These splits are where it opens up."}`
       : bold ? `${plural(bold, "bold call")} this round. Get ${bold === 1 ? "it" : "them"} right and you pull away.`
-        : "You're mostly with the pool, so a few splits decide it.";
+        : "You're mostly with the league, so a few splits decide it.";
 
   return { headline, standing, bold, swings: games.slice(0, top), moreSwings: Math.max(0, games.length - top), agreed, stake };
 }

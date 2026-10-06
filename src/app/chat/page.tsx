@@ -449,7 +449,7 @@ function Chat() {
             <h2><PoolName pool={pool!} /></h2>
             {pools.length > 1 && <>
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch pool">
+              <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch league">
                 {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
               </select>
             </>}

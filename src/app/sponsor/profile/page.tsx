@@ -101,7 +101,7 @@ export default function SponsorProfile() {
       <div className="card narrow">
         <p className="sp-kicker">Your business</p>
         <h2>Your profile</h2>
-        <p className="sub">Players see this when they tap your name on their pool or on the Giving page. Keep it short and friendly.</p>
+        <p className="sub">Players see this when they tap your name on their league or on the Giving page. Keep it short and friendly.</p>
         <form onSubmit={save}>
           <div className="profile-logo">
             {picked ? <img className="sp-tile logo big" src={picked.url} alt="" /> : <SponsorTile name={name} logo={logo} big />}

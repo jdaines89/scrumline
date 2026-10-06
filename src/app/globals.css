@@ -268,12 +268,15 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 /* Tournament and pool switcher */
 .switcher { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 /* The tournament you're looking at: a quiet heading you can tap, never a cramped form field. */
-.season-pick { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: 100%; cursor: pointer; }
+.season-pick { position: relative; display: flex; flex-direction: column; gap: 6px; flex: 1 1 100%; min-width: 0; max-width: 100%; }
+label.season-pick { cursor: pointer; }
 .season-pick-kicker { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.season-pick-name { font-size: 19px; font-weight: 650; letter-spacing: -0.015em; line-height: 1.25; overflow-wrap: anywhere; }
-.season-pick-chev { display: inline-block; margin-left: 8px; color: var(--accent); font-size: 18px; transform: translateY(-3px); }
+.season-pick-name { font-size: 19px; font-weight: 650; letter-spacing: -0.015em; line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
+/* With more than one tournament the name sits in a calm bordered box with a clear "Change" so it reads as a button. */
+.season-pick-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); transition: border-color .15s, background .15s; }
+.season-pick-change { display: inline-flex; align-items: center; gap: 4px; flex: none; font-size: 13px; font-weight: 600; color: var(--accent); }
+label.season-pick:hover .season-pick-box, .season-pick:focus-within .season-pick-box { border-color: var(--accent); background: var(--panel-2); }
 .season-pick select { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; font-size: 16px; }
-.season-pick:focus-within .season-pick-name { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
 .switcher label:not(.season-pick) { display: flex; flex-direction: column; gap: 3px; flex: 1 1 140px; min-width: 0; }
 .switcher label:not(.season-pick) > span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .switcher label:not(.season-pick) select { width: 100%; font-weight: 600; }
@@ -317,11 +320,11 @@ details.mates { border-top: 1px solid var(--line); padding: 8px 12px; font-size:
 details.mates summary { cursor: pointer; color: var(--accent); }
 details.mates ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
 /* Mates' calls sit in the middle, under your own boxes, so you compare straight down. */
-details.mates li { display: grid; grid-template-columns: 1fr 130px 1fr; gap: 12px; align-items: center; }
-details.mates li > span:first-child { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+details.mates li { display: grid; grid-template-columns: minmax(0, 1fr) 72px 44px; gap: 12px; align-items: center; }
+details.mates li > span:first-child { text-align: left; overflow-wrap: anywhere; }
 details.mates li strong { text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
 details.mates li .pchip { margin-left: 6px; }
-details.mates li .pts { text-align: left; color: var(--accent); font-weight: 700; }
+details.mates li .pts { text-align: right; color: var(--accent); font-weight: 700; }
 .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -4px 0 8px; position: relative; }
 .chat-where { display: grid; gap: 1px; min-width: 0; }
 .chat-pool, .chat-season { position: relative; display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--muted); cursor: pointer; }
@@ -699,7 +702,9 @@ a.rowline:hover { text-decoration: none; background: var(--panel-2); }
 /* Business sign-up */
 .signin-biz { margin: 14px 0 0; }
 .tab-out { font: inherit; color: var(--muted); padding: 0 10px; }
-.sp-season { display: flex; align-items: center; gap: 10px; margin: -4px 0 12px; }
+/* Label above a full-width picker, so long tournament names fit on a phone. */
+.sp-season { display: flex; flex-direction: column; gap: 4px; margin: -4px 0 12px; min-width: 0; }
+.sp-season select { width: 100%; min-width: 0; max-width: 100%; text-overflow: ellipsis; }
 .biz-points { display: grid; gap: 14px; }
 .biz-points > div { display: grid; gap: 2px; }
 .center { text-align: center; }

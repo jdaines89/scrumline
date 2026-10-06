@@ -32,7 +32,7 @@ export default function PrizesPage() {
     <>
       <div className="card">
         <h2>Prizes</h2>
-        <p className="sub">Put up a prize from your business in a pool you play in: for the round&apos;s top caller, or for whoever brings in the most new players this month. Every player in the pool sees it, with your logo.</p>
+        <p className="sub">Put up a prize from your business in a league you play in: for the round&apos;s top caller, or for whoever brings in the most new players this month. Every player in the league sees it, with your logo.</p>
         <div className="switcher prize-pick">
           {seasons.length > 1 && <label>
             <span>Tournament</span>
@@ -41,15 +41,15 @@ export default function PrizesPage() {
             </select>
           </label>}
           <label>
-            <span>Pool</span>
+            <span>League</span>
             {pools.length ? (
               <select value={pool?.id ?? ""} onChange={(e) => setPool(Number(e.target.value))}>
                 {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
               </select>
-            ) : <Link href="/pools/" className="nopool">Join a pool first</Link>}
+            ) : <Link href="/leagues/" className="nopool">Join a league first</Link>}
           </label>
         </div>
-        {pool?.school_emis && <p className="small muted" style={{ margin: "10px 0 0" }}>School pools take recruiter prizes only. Round prizes are for mates&apos; pools of up to 50.</p>}
+        {pool?.school_emis && <p className="small muted" style={{ margin: "10px 0 0" }}>School leagues take recruiter prizes only. Round prizes are for leagues of mates of up to 50.</p>}
       </div>
       <PrizeSetup />
       <RecruiterPrizeSetup />

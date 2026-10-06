@@ -193,7 +193,7 @@ function Predict() {
         : `My calls are in for ${roundText(round)}. Who's going against me?`;
       steps.push({
         title: bm ? `Tell ${talk.name} your Banker` : `Tell ${talk.name} you're in`,
-        detail: bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the pool chat",
+        detail: bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the league chat",
         href: `/chat/?pool=${talk.id}&say=${encodeURIComponent(line)}`,
       });
     }
@@ -268,9 +268,9 @@ function Predict() {
     <>
       {pools.length === 0 && (
         <form className="notice joinnudge" onSubmit={joinPool}>
-          <span>You&apos;re not in a pool for {season.name} yet, so nobody sees your score on a leaderboard. Got a code from a mate?</span>
+          <span>You&apos;re not in a league for {season.name} yet, so nobody sees your score on a leaderboard. Got a code from a mate?</span>
           <span className="row">
-            <input required maxLength={6} placeholder="Pool code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+            <input required maxLength={6} placeholder="League code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
             <button type="submit">Join</button>
           </span>
         </form>

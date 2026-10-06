@@ -51,8 +51,8 @@ export default function SponsorPage() {
 
   const label = (s: Slot) => s.kind === "school" ? "The whole school" : s.school_year ? `Class of ${s.school_year}` : s.pool_name;
   const what = (s: Slot) => s.kind === "school"
-    ? "the school's pool, its table, every recap its players share and their kickoff reminders"
-    : "their pool, chat header, round prizes and kickoff reminders";
+    ? "the school's league, its table, every recap its players share and their kickoff reminders"
+    : "their league, chat header, round prizes and kickoff reminders";
   const roundSlot = pick?.slot.next_round ? pick.slot : slots?.find((s) => s.next_round && s.round_available);
   const sp = pick ? split(pick.price) : null;
   const cur = pick?.slot.currency ?? "ZAR";
@@ -65,7 +65,7 @@ export default function SponsorPage() {
       <div className="card narrow">
         <p className="sp-kicker">For businesses</p>
         <h2>Back a school on Scrumline</h2>
-        <p className="sub">Put your business in front of a school&apos;s former pupils for a whole {season.name} season. You see where every rand goes before you pay, and <Link href="/giving/">what every sponsor has given</Link>. Tell players about yourself on <Link href="/sponsor/profile/">your profile</Link>. To reach every player in the tournament instead, <Link href="/sponsor/tournament/">sponsor the tournament or a round</Link>. To give a prize in a pool you play in, offer a round prize on the Pools page.</p>
+        <p className="sub">Put your business in front of a school&apos;s former pupils for a whole {season.name} season. You see where every rand goes before you pay, and <Link href="/giving/">what every sponsor has given</Link>. Tell players about yourself on <Link href="/sponsor/profile/">your profile</Link>. To reach every player in the tournament instead, <Link href="/sponsor/tournament/">sponsor the tournament or a round</Link>. To give a prize in a league you play in, offer a round prize under <Link href="/sponsor/prizes/">Prizes</Link>.</p>
         {seasons.length > 1 && (
           <label className="sp-season">
             <span className="small muted">Tournament</span>
