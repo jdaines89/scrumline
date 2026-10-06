@@ -79,6 +79,14 @@ function Chat() {
   // Polls need their tables; until the database has them the poll button stays hidden.
   const [pollsOn, setPollsOn] = useState(false);
   const [asking, setAsking] = useState(false);
+  // Photo and poll sit behind one button, so the message box keeps its width.
+  const [attach, setAttach] = useState(false);
+  useEffect(() => {
+    if (!attach) return;
+    const away = (e: PointerEvent) => { if (!(e.target as Element).closest?.(".attachmenu, .photobtn")) setAttach(false); };
+    document.addEventListener("pointerdown", away);
+    return () => document.removeEventListener("pointerdown", away);
+  }, [attach]);
   const loadPolls = useCallback(async () => {
     const ids = shownIds.current;
     const [p, v] = await Promise.all([
@@ -100,7 +108,7 @@ function Chat() {
   async function vote(messageId: number, choice: number) {
     setPicked(null);
     setVotes((vs) => [...vs.filter((x) => !(x.message_id === messageId && x.user_id === me.user_id)), { message_id: messageId, user_id: me.user_id, choice }]);
-    const { error } = await supabase.from("chat_poll_votes").upsert({ message_id: messageId, choice }, { onConflict: "message_id,user_id" });
+    const { error } = await supabase.rpc("vote_in_poll", { p_message: messageId, p_choice: choice });
     if (error) { setErr(error.message); loadPolls(); }
   }
 
@@ -636,20 +644,37 @@ function Chat() {
           </div>
         )}
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={pickPhoto} />
-        <button type="button" className="ghost photobtn" aria-label="Add a photo" disabled={sending}
-          onClick={() => fileInput.current?.click()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <rect x="3" y="5" width="18" height="14" rx="2.5" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" />
-          </svg>
-        </button>
-        {pollsOn && (
-          <button type="button" className="ghost photobtn" aria-label="Start a poll" disabled={sending} onClick={() => setAsking(true)}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
-              <path d="M5 20V12M12 20V5M19 20v-9" />
-            </svg>
-          </button>
+        {attach && (
+          <div className="attachmenu" role="menu">
+            <button type="button" role="menuitem" onClick={() => { setAttach(false); fileInput.current?.click(); }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="5" width="18" height="14" rx="2.5" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" />
+              </svg>
+              Photo
+            </button>
+            {pollsOn && (
+              <button type="button" role="menuitem" onClick={() => { setAttach(false); setAsking(true); }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+                  <path d="M5 20V12M12 20V5M19 20v-9" />
+                </svg>
+                Poll
+              </button>
+            )}
+          </div>
         )}
-        <textarea ref={box} rows={1} maxLength={900} placeholder={photo ? "Add a caption" : pollsOn ? "Message" : "Message · @ to tag"} value={text}
+        <button type="button" className={`ghost photobtn${attach ? " open" : ""}`} aria-label={pollsOn ? "Add a photo or poll" : "Add a photo"} aria-expanded={attach} disabled={sending}
+          onClick={() => (pollsOn ? setAttach(!attach) : fileInput.current?.click())}>
+          {pollsOn ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <rect x="3" y="5" width="18" height="14" rx="2.5" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" />
+            </svg>
+          )}
+        </button>
+        <textarea ref={box} rows={1} maxLength={900} placeholder={photo ? "Add a caption" : "Message · @ to tag"} value={text}
           onChange={(e) => onType(e.target.value)} onKeyDown={onKey} />
         <button type="submit" disabled={sending || (!text.trim() && !photo)}>{sending ? "Sending…" : "Send"}</button>
       </form>

@@ -57,4 +57,15 @@ select pg_temp.as_user(null);
 select pg_temp.check(pg_temp.fails($$select public.post_poll(1, 'Anon?', array['a', 'b'])$$), 'signed out, nobody posts a poll');
 reset role;
 
+-- The way the app votes: through vote_in_poll, first time and changing it.
+select pg_temp.as_user((select b from t));
+select pg_temp.check(pg_temp.fails($$insert into public.chat_poll_votes (message_id, choice) values ((select id from t_poll), 2)
+  on conflict (message_id, user_id) do update set message_id = excluded.message_id, choice = excluded.choice$$), 'a player can''t move their vote to another poll');
+select public.vote_in_poll((select id from t_poll), 2::smallint);
+reset role;
+select pg_temp.check((select choice from public.chat_poll_votes where message_id = (select id from t_poll) and user_id = (select b from t)) = 2, 'vote_in_poll changes a vote');
+select pg_temp.as_user((select outsider from t));
+select pg_temp.check(pg_temp.fails($$select public.vote_in_poll((select id from t_poll), 0::smallint)$$), 'vote_in_poll won''t let an outsider vote');
+reset role;
+
 do $$ begin raise notice 'CHAT POLL CHECKS PASSED'; end $$;

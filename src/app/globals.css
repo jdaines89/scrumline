@@ -1330,3 +1330,15 @@ button.img-tap:focus-visible { outline: 2px solid var(--accent); outline-offset:
 .league-title h2 { flex: 1; min-width: 0; }
 .sch-chat { width: 100%; margin-top: 10px; }
 .sch-chat .chat-btn { width: 100%; justify-content: center; padding: 11px 14px; font-size: 15px; }
+
+/* Photo and poll behind one + button, so the message box keeps its width. */
+.attachmenu { position: absolute; left: 10px; bottom: calc(100% + 6px); z-index: 5; display: grid; gap: 2px; min-width: 170px; padding: 6px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.composer .attachmenu button, .composer .attachmenu button:hover { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border-radius: 10px;
+  border: 0; background: transparent; color: var(--text); font-weight: 600; font-size: 15px; text-align: left; }
+.composer .attachmenu button:hover, .composer .attachmenu button:focus-visible { background: var(--panel); }
+.composer .attachmenu svg { color: var(--accent); flex: none; }
+.composer .photobtn.open { color: var(--accent); border-color: var(--accent); }
+.composer .photobtn svg { transition: transform .15s ease; }
+.composer .photobtn.open svg { transform: rotate(45deg); }
+.poll-who-n { color: var(--text); font-variant-numeric: tabular-nums; margin-right: 4px; }
