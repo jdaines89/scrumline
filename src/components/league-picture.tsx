@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
+import { TapToEnlarge } from "@/components/image-view";
 import { PicturePicker } from "@/components/picture-picker";
+import { readCache, writeCache } from "@/lib/cache";
+import { forgetLink, keptLink, signedLink } from "@/lib/signed-link";
 import { supabase } from "@/lib/supabase";
 import type { Pool } from "@/lib/types";
 
@@ -10,8 +13,6 @@ import type { Pool } from "@/lib/types";
 // read, so each is shown through a signed link. A new picture gets a new file
 // name, so one link per path can be kept for as long as it lasts.
 const BUCKET = "league-pictures";
-const LINK_SECONDS = 7 * 24 * 3600;
-const links = new Map<string, Promise<string | null>>();
 // A league's picture sits on its first table; its other tournaments look it up there.
 const leaguePaths = new Map<number, Promise<string | null>>();
 
@@ -19,7 +20,11 @@ function leaguePath(league: number): Promise<string | null> {
   let p = leaguePaths.get(league);
   if (!p) {
     p = Promise.resolve(supabase.from("pools").select("picture_path").eq("id", league).maybeSingle())
-      .then(({ data }) => (data as { picture_path: string | null } | null)?.picture_path ?? null, () => null);
+      .then(({ data }) => {
+        const path = (data as { picture_path: string | null } | null)?.picture_path ?? null;
+        writeCache(`lpath:${league}`, path);
+        return path;
+      }, () => readCache<string | null>(`lpath:${league}`) ?? null);
     leaguePaths.set(league, p);
   }
   return p;
@@ -28,24 +33,16 @@ function leaguePath(league: number): Promise<string | null> {
 /** The league's first table, which holds its chat and picture. */
 export const leagueOf = (pool: Pool) => pool.league_id ?? pool.id;
 
-function linkFor(path: string): Promise<string | null> {
-  let p = links.get(path);
-  if (!p) {
-    p = supabase.storage.from(BUCKET).createSignedUrl(path, LINK_SECONDS)
-      .then(({ data }) => data?.signedUrl ?? null, () => null);
-    links.set(path, p);
-  }
-  return p;
-}
-
 /**
  * A mates' league's picture, like a WhatsApp group's. Nothing at all when the
  * league has none; when it has one, its space is kept while it loads so the
  * page doesn't jump.
  */
-export function LeaguePicture({ pool, size = 40 }: { pool: Pool; size?: number }) {
+export function LeaguePicture({ pool, size = 40, expandable = false }: { pool: Pool; size?: number; expandable?: boolean }) {
   const league = leagueOf(pool);
-  const [found, setFound] = useState<string | null>(null);
+  const borrowed = !pool.school_emis && league !== pool.id;
+  // Start from what this phone last saw, so the picture is there on the first frame.
+  const [found, setFound] = useState<string | null>(() => borrowed ? readCache<string | null>(`lpath:${league}`) ?? null : null);
   const [changed, setChanged] = useState(0);
   useEffect(() => {
     const again = () => setChanged((n) => n + 1);
@@ -54,25 +51,29 @@ export function LeaguePicture({ pool, size = 40 }: { pool: Pool; size?: number }
   }, []);
   useEffect(() => {
     let live = true;
-    setFound(null);
-    if (!pool.school_emis && league !== pool.id) leaguePath(league).then((p) => { if (live) setFound(p); });
+    if (borrowed) leaguePath(league).then((p) => { if (live) setFound(p); });
     return () => { live = false; };
-  }, [league, pool.id, pool.school_emis, changed]);
+  }, [borrowed, league, changed]);
   const path = pool.school_emis ? null : league === pool.id ? pool.picture_path ?? null : found;
-  const [src, setSrc] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(() => path ? keptLink(BUCKET, path) : null);
+  // Only a picture arriving for the first time fades in; one already on the phone just shows.
+  const [instant] = useState(() => !!src);
   useEffect(() => {
     let live = true;
-    setSrc(null);
-    if (path) linkFor(path).then((u) => { if (live) setSrc(u); });
+    if (!path) { setSrc(null); return; }
+    const kept = keptLink(BUCKET, path);
+    if (kept) { setSrc(kept); return; }
+    signedLink(BUCKET, path).then((u) => { if (live) setSrc(u); });
     return () => { live = false; };
   }, [path]);
   if (!path) return null;
   const style = { width: size, height: size };
-  return (
+  const pic = (
     <span className="league-pic" style={style} aria-hidden="true">
-      {src && <img src={src} alt="" className="fade-in" onError={() => setSrc(null)} />}
+      {src && <img src={src} alt="" className={instant ? undefined : "fade-in"} decoding="async" onError={() => { forgetLink(BUCKET, path); setSrc(null); }} />}
     </span>
   );
+  return expandable ? <TapToEnlarge src={src} alt="League picture">{pic}</TapToEnlarge> : pic;
 }
 
 /** For whoever started a mates' league: add, change or remove its picture. */

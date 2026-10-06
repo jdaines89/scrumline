@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { ChatButton } from "@/components/chat-button";
 import { Crest, CrestUpload } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
@@ -81,6 +82,9 @@ export default function SchoolPage() {
 
 function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; onChange: () => void }) {
   const s = p.school;
+  // Your league for this school, if you're in it: the whole school's, else your class's.
+  const { pools } = useLeague();
+  const mine = pools.filter((x) => x.school_emis === s.emis).sort((a, b) => (a.school_year === null ? -1 : 0) - (b.school_year === null ? -1 : 0))[0];
   const facts = [
     schoolKind(s),
     s.learners ? `${about(s.learners)} learners` : null,
@@ -92,7 +96,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
   return (
     <>
       <div className="card narrow sch-hero">
-        <div className="sch-crest-slot"><Crest emis={s.emis} path={p.crest_path} size={p.crest_path ? 84 : 52} name={s.name} /></div>
+        <div className="sch-crest-slot"><Crest emis={s.emis} path={p.crest_path} size={p.crest_path ? 84 : 52} name={s.name} expandable /></div>
         <h1 className="sch-name">{s.name}</h1>
         {place && <p className="sch-place">{place}</p>}
         <p className="small muted sch-facts">{facts}</p>
@@ -102,6 +106,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
           <div><b>{money(p.given?.committed_minor ?? 0)}</b><span className="small muted">given to the school</span></div>
         </div>
         <ShareSchool name={s.name} seasonName={seasonName} />
+        {mine && <div className="sch-chat"><ChatButton pool={mine} label="School chat" /></div>}
         {p.can_set_crest && <CrestUpload emis={s.emis} hasCrest={!!p.crest_path} onDone={onChange} note="Only admins and the school's own contact can change it." />}
       </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { ChatButton } from "@/components/chat-button";
 import { LeaguePicture, LeaguePicturePicker } from "@/components/league-picture";
 import { CountsFrom } from "@/components/counts-from";
 import Link from "next/link";
@@ -119,8 +120,9 @@ function Leaderboard() {
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       {view === "schools" ? <h2>Schools</h2> : (
         <div className="league-title">
-          <LeaguePicture pool={pool!} size={44} />
+          <LeaguePicture pool={pool!} size={44} expandable />
           <h2><PoolName pool={pool!} /></h2>
+          <ChatButton pool={pool!} />
         </div>
       )}
       {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}

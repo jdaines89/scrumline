@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
+import { TapToEnlarge } from "@/components/image-view";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 
@@ -8,14 +9,15 @@ import { supabase } from "@/lib/supabase";
  * A school's crest when it has added its real one. Until then a plain school
  * icon, the same for every school: we never invent a crest for a school.
  */
-export function Crest({ emis, path, size = 40, name }: { emis: string; path?: string | null; size?: number; name?: string }) {
+export function Crest({ emis, path, size = 40, name, expandable = false }: { emis: string; path?: string | null; size?: number; name?: string; expandable?: boolean }) {
   const [broken, setBroken] = useState(false);
   const [loaded, setLoaded] = useState(false);
   if (path && !broken) {
     const url = supabase.storage.from("school-crests").getPublicUrl(path).data.publicUrl;
     // Fades in once it has arrived; the box is its full size from the start so nothing moves.
-    return <img className={`school-mark${loaded ? "" : " loading"}`} src={url} alt={name ? `${name} crest` : ""} width={size} height={size}
+    const img = <img className={`school-mark${loaded ? "" : " loading"}`} src={url} alt={name ? `${name} crest` : ""} width={size} height={size}
       onLoad={() => setLoaded(true)} ref={(el) => { if (el?.complete && el.naturalWidth) setLoaded(true); }} onError={() => setBroken(true)} />;
+    return expandable ? <TapToEnlarge src={url} alt={name ? `${name} crest` : "School crest"}>{img}</TapToEnlarge> : img;
   }
   return (
     <span className="school-mark plain" data-emis={emis} aria-hidden style={{ width: size, height: size }}>
