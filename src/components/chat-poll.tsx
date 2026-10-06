@@ -36,7 +36,7 @@ export function PollCard({ question, options, votes, me, people, onVote }: {
               <span className="poll-fill" style={{ width: `${share}%` }} aria-hidden="true" />
               <span className="poll-mark" aria-hidden="true">{on ? "✓" : ""}</span>
               <span className="poll-text">{o}</span>
-              <span className="poll-n">{n}</span>
+              <span className="poll-n" aria-label={`${n} ${n === 1 ? "vote" : "votes"}, ${share}%`}>{share}%</span>
             </button>
           );
         })}
@@ -49,7 +49,7 @@ export function PollCard({ question, options, votes, me, people, onVote }: {
         <ul className="poll-who small">
           {options.map((o, i) => {
             const ids = votes.filter((v) => v.choice === i).map((v) => v.user_id).sort((a, b) => (a === me ? -1 : b === me ? 1 : 0));
-            return ids.length ? <li key={i}><strong>{o}</strong> {ids.map(name).join(", ")}</li> : null;
+            return ids.length ? <li key={i}><strong>{o}</strong> <span className="poll-who-n">{ids.length}</span> {ids.map(name).join(", ")}</li> : null;
           })}
         </ul>
       )}
