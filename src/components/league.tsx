@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
 import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
+import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
 import { defaultSeason } from "@/lib/seasons";
 
@@ -93,6 +94,8 @@ function Loaded({ children }: { children: ReactNode }) {
   const [poolId, setPoolId] = useState<number | null>(null);
   // Only ask "Who's playing?" once the real member row is in, never off last visit's copy.
   const [fresh, setFresh] = useState(false);
+  // Whether you've saved a school; the school question comes once, after your name, only if not.
+  const [hasSchool, setHasSchool] = useState(true);
 
   // Draw from last visit's copy straight away; the fetches below replace it.
   useEffect(() => {
@@ -118,11 +121,12 @@ function Loaded({ children }: { children: ReactNode }) {
       const uid = sess.session?.user.id;
       if (isBusinessSession(sess.session)) { setBusiness(true); return; }
       if (isSchoolSession(sess.session)) { setSchoolOnly(true); return; }
-      const [seasons, comps, teams, members] = await Promise.all([
+      const [seasons, comps, teams, members, schools] = await Promise.all([
         supabase.from("seasons").select("*").order("starts_on", { ascending: false, nullsFirst: false }),
         supabase.from("competitions").select("*"),
         supabase.from("teams").select("id, display_name, short_name, stadium, colour, colour_ink, badge_url"),
         supabase.from("members").select("*").order("display_name"),
+        supabase.from("member_schools").select("stage").eq("user_id", uid ?? ""),
       ]);
       const everyone = (members.data ?? []) as Member[];
       const me = everyone.find((m) => m.user_id === uid);
@@ -133,6 +137,7 @@ function Loaded({ children }: { children: ReactNode }) {
         competitions: (comps.data ?? []) as Competition[], teams: (teams.data ?? []) as Team[] };
       writeCache("base", fresh);
       setBase(hydrate(fresh));
+      setHasSchool(!!schools.error || (schools.data ?? []).length > 0);
       setFresh(true);
       // A tapped notification links to one pool (?pool=4): open its tournament and pool.
       const linked = Number(new URLSearchParams(window.location.search).get("pool"));
@@ -193,6 +198,9 @@ function Loaded({ children }: { children: ReactNode }) {
       <Switcher />
       {children}
       {fresh && needsNames(base.me) && <WhoIsPlaying me={base.me} members={base.members} onDone={named} />}
+      {fresh && !needsNames(base.me) && !hasSchool && !base.me.school_asked_at && (
+        <SchoolStep me={base.me} onJoined={loadSeason} onDone={named} />
+      )}
     </Ctx.Provider>
   );
 }
