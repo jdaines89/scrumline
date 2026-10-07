@@ -44,6 +44,10 @@ header.top .shell { padding-top: 16px; padding-bottom: 0; }
   font-size: 11px; font-weight: 600; color: var(--gold);
   text-transform: uppercase; letter-spacing: 0.16em;
 }
+/* The tagline must fit whole beside the mark and your picture, down to 320px phones. */
+header.top .shell:has(.melink) .brand { padding-right: 52px; }
+@media (max-width: 400px) { .subword { font-size: 10.5px; letter-spacing: 0.06em; } }
+@media (max-width: 340px) { .subword { font-size: 9.5px; letter-spacing: 0.04em; } }
 
 nav.tabs { display: flex; gap: 4px; margin-top: 16px; flex-wrap: wrap; }
 html[data-signed-in] nav.tabs:empty { min-height: 38px; }
