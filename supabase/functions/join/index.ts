@@ -6,7 +6,7 @@
 // With a league code (pool), the newcomer is put straight into that league if the inviter plays in it.
 // Nobody leaves the app to sign in: instead of Supabase's invite email (a link,
 // then a password), Supabase makes a one-time code without emailing it, and
-// public.send_login_code emails just the 6-digit code. The app verifies it in
+// public.send_login_code emails just the code. The app verifies it in
 // place. mode "signin" sends a code to someone who already has an account.
 // Deployed with verify_jwt off: people using it have no account yet.
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
@@ -64,8 +64,11 @@ Deno.serve(async (req) => {
     const { error: poolErr } = await db.rpc("invite_join_pool", { p_invitee: link.user.id, p_inviter: check.inviter, p_pool: league });
     if (poolErr) console.error("league not joined", poolErr.message);
   }
-  const { data: sent } = await db.rpc("send_login_code", { p_email: email, p_code: otp, p_purpose: "join" });
-  if (sent !== "sent") return reply({ error: "We couldn't email your code. Try again in a minute." }, 500);
+  const { data: sent, error: sendErr } = await db.rpc("send_login_code", { p_email: email, p_code: otp, p_purpose: "join" });
+  if (sent !== "sent") {
+    console.error("code not emailed", sent, sendErr?.message);
+    return reply({ error: "We couldn't email your code. Try again in a minute." }, 500);
+  }
   return reply({ status: "code", type: "invite" });
 });
 
@@ -75,7 +78,8 @@ async function sendCode(db: SupabaseClient, email: string, purpose: "join" | "si
   if (error || !link?.properties?.email_otp) ({ data: link, error } = await db.auth.admin.generateLink({ type: "invite", email }));
   const otp = link?.properties?.email_otp;
   if (error || !otp) { console.error("code failed", error?.message); return "failed"; }
-  const { data } = await db.rpc("send_login_code", { p_email: email, p_code: otp, p_purpose: purpose });
+  const { data, error: sendErr } = await db.rpc("send_login_code", { p_email: email, p_code: otp, p_purpose: purpose });
+  if (sendErr) console.error("code not emailed", sendErr.message);
   return String(data ?? "failed");
 }
 
