@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
 import { InviteSheet, WaitingInvites } from "@/components/league-invites";
+import { runsLeague } from "@/components/league-admin";
 import { latestWin } from "@/components/prize-line";
 import type { PoolPrize } from "@/lib/prizes";
 import { monthName, type RecruiterPrize } from "@/lib/recruiter-prizes";
@@ -362,6 +363,7 @@ export default function PoolsPage() {
       <InviteCard />
       {inviting && (
         <InviteSheet poolId={inviting.id} poolName={inviting.name} joinCode={inviting.join_code} onClose={() => setInviting(null)}
+          runs={runsLeague(inviting, me)} onCodeChanged={(c) => { setInviting({ ...inviting, join_code: c }); reloadPools(); }}
           onSendLink={() => { const p = inviting; setInviting(null); share(p.id, p.join_code, p.name); }} />
       )}
     </>

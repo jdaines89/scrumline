@@ -1483,3 +1483,12 @@ button.bok-hide { display: block; margin: 12px auto 0; color: var(--muted); font
 button.stickerbtn, button.stickerbtn:hover { padding: 0; border: 0; background: none; border-radius: 14px; line-height: 0; transition: transform .12s ease; }
 button.stickerbtn:active { transform: scale(.94); }
 button.stickerbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Removing a player from a league, and changing its code: quiet links that open a plain confirm. */
+.board .brm-open { display: block; margin-top: 10px; font-size: 14px; color: var(--muted); text-decoration: underline; }
+.board .brm-open:hover { color: var(--danger); }
+.brm, .inv-code-ask { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); cursor: default; }
+.brm p, .inv-code-ask p { margin: 0 0 10px; }
+.brm .notice, .inv-code-ask .notice { margin: 0 0 10px; }
+.brm-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.inv-code-change { margin-top: 8px; }

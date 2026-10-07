@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fullName } from "@/lib/names";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
+import { ChangeCode } from "@/components/league-admin";
 
 type Candidate = Pick<Member, "user_id" | "display_name" | "first_name" | "last_name" | "known_as"> & { invited: boolean; declined: boolean };
 interface Waiting { pool_id: number; pool_name: string; season_name: string | null; inviter_name: string; players: number }
@@ -12,9 +13,12 @@ interface Waiting { pool_id: number; pool_name: string; season_name: string | nu
  * Invite to one league: everyone you already play with in another league, one
  * tap each. Someone not on Scrumline yet still needs the link.
  */
-export function InviteSheet({ poolId, poolName, joinCode, onClose, onSendLink }: {
+export function InviteSheet({ poolId, poolName, joinCode: firstCode, runs, onCodeChanged, onClose, onSendLink }: {
   poolId: number; poolName: string; joinCode?: string | null; onClose: () => void; onSendLink: () => void;
+  /** Whoever runs the league can give it a new code. */
+  runs?: boolean; onCodeChanged?: (code: string) => void;
 }) {
+  const [joinCode, setJoinCode] = useState(firstCode);
   const [people, setPeople] = useState<Candidate[] | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -71,6 +75,7 @@ export function InviteSheet({ poolId, poolName, joinCode, onClose, onSendLink }:
             <button type="button" className="ghost" onClick={copyCode} aria-label={`Copy league code ${joinCode}`}>{copied ? "Copied" : "Copy"}</button>
           </div>
         )}
+        {joinCode && runs && <ChangeCode poolId={poolId} onChanged={(c) => { setJoinCode(c); setCopied(false); onCodeChanged?.(c); }} />}
         <button type="button" className="wip-save" onClick={onClose}>Done</button>
       </div>
     </div>
