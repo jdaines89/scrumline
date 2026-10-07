@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { readCache, writeCache } from "@/lib/cache";
 import { placeLine, type FullTime } from "@/lib/moments";
 import { supabase } from "@/lib/supabase";
+import { ShareMomentLine, useShareMoment } from "@/components/share-moment";
 
 /**
  * The games you called that finished in the last day and a half: the score,
@@ -13,6 +14,7 @@ import { supabase } from "@/lib/supabase";
  */
 export function FullTimeCard() {
   const [ft, setFt] = useState<FullTime | null>(() => readCache<FullTime | null>("fulltime") ?? null);
+  const moment = useShareMoment();
   useEffect(() => {
     supabase.rpc("my_full_time").then(({ data, error }) => {
       if (error) return;
@@ -44,6 +46,7 @@ export function FullTimeCard() {
       </ul>
       {ft.matches.length > games.length && <p className="small muted ft-more">And {ft.matches.length - games.length} more. <Link href="/predict/">See them all</Link></p>}
       {ft.league && <p className="ft-place">{placeLine(ft.league)}</p>}
+      {moment && <ShareMomentLine moment={moment} />}
     </div>
   );
 }

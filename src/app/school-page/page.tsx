@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { ChatButton } from "@/components/chat-button";
+import { ClassTable } from "@/components/class-table";
 import { Crest, CrestUpload } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
@@ -77,10 +78,10 @@ export default function SchoolPage() {
       <Link className="btn" href="/leaderboard/">Go to the leaderboard</Link>
     </div>
   );
-  return <SchoolView p={page} seasonName={season.name} onChange={load} />;
+  return <SchoolView p={page} season={season.id} seasonName={season.name} onChange={load} />;
 }
 
-function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; onChange: () => void }) {
+function SchoolView({ p, season, seasonName, onChange }: { p: Page; season: string; seasonName: string; onChange: () => void }) {
   const s = p.school;
   // Your league for this school, if you're in it: the whole school's, else your class's.
   const { pools } = useLeague();
@@ -92,6 +93,9 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
   ].filter(Boolean).join(" · ");
   const place = [s.town, provinceName(s.province)].filter(Boolean).join(", ");
   const playing = p.players.filter((x) => x.playing);
+  // Class years for the school's high-school side when it has one with years, else its primary side.
+  const withYear = (st: "primary" | "high") => p.players.some((x) => x.stage === st && x.last_year);
+  const classStage = withYear("high") ? "high" : withYear("primary") ? "primary" : null;
 
   return (
     <>
@@ -111,6 +115,7 @@ function SchoolView({ p, seasonName, onChange }: { p: Page; seasonName: string; 
       </div>
 
       <Standings standing={p.standing} seasonName={seasonName} />
+      {classStage && <ClassTable emis={s.emis} stage={classStage} season={season} school={s.name} />}
       <Players players={p.players} />
       <GivenCard p={p} />
     </>

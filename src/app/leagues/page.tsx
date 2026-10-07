@@ -21,9 +21,13 @@ import { PoolName, poolTitle } from "@/components/pool-name";
 import { readCache, writeCache } from "@/lib/cache";
 import type { Pool } from "@/lib/types";
 import { roundName, roundText } from "@/lib/format";
+import { ord } from "@/lib/growth";
 
 interface Score { pool_id: number; user_id: string; total_points: number }
 interface Unread { pool_id: number; unread: number; tagged: number }
+/** Your class at one of your schools: its place among the ranked classes (null until 3 of it are playing). */
+interface ClassPlace { emis: string; stage: string; school_year: number; place: number | null; ranked: number; players: number }
+const CLASS_RANKED_AT = 3;
 type Prize = Pick<PoolPrize, "round" | "prize" | "status" | "winners" | "due_at">;
 
 /** Where you stand in one league: rank, how many, and the gap to the top. */
@@ -70,6 +74,16 @@ export default function PoolsPage() {
   const [prizes, setPrizes] = useState<Map<number, Prize>>(() => new Map(readCache<[number, Prize][]>(`leagues-prizes:${ids}`) ?? []));
   const [recruiter, setRecruiter] = useState<Map<number, RecruiterPrize>>(() => new Map(readCache<[number, RecruiterPrize][]>(`leagues-recruiter:${ids}`) ?? []));
   const [toConfirm, setToConfirm] = useState<Map<string, number>>(() => new Map(readCache<[string, number][]>(`leagues-confirm:${ids}`) ?? []));
+  const [classPlaces, setClassPlaces] = useState<ClassPlace[]>(() => readCache<ClassPlace[]>(`leagues-classes:${season.id}`) ?? []);
+  const classPlace = (p: Pool) => p.school_year ? classPlaces.find((c) => c.emis === p.school_emis && c.stage === p.school_stage) : undefined;
+
+  // Where your class stands at each of your schools, for its row.
+  useEffect(() => {
+    setClassPlaces(readCache<ClassPlace[]>(`leagues-classes:${season.id}`) ?? []);
+    if (!pools.some((p) => p.school_year)) return;
+    supabase.rpc("my_class_places", { p_season: season.id })
+      .then(({ data, error }) => { if (error) return; const r = (data ?? []) as ClassPlace[]; writeCache(`leagues-classes:${season.id}`, r); setClassPlaces(r); });
+  }, [season.id, ids]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Every league's table in one go, for your rank on each card.
   useEffect(() => {
@@ -158,6 +172,8 @@ export default function PoolsPage() {
     else if (!st.scored) bits.push(`${st.of} player${st.of === 1 ? "" : "s"}, nobody has scored yet`);
     else if (st.gap === 0) bits.push(st.joint ? "Joint top" : "Top of the table");
     else bits.push(`${st.gap} pt${st.gap === 1 ? "" : "s"} behind ${st.leader ? names.get(st.leader) ?? "the leader" : "the top"}`);
+    const cp = classPlace(p);
+    if (cp?.place && cp.ranked >= 2) bits.push(`Your class is ${ord(cp.place)} of ${cp.ranked} at the school`);
     if (p.counts_from_round) bits.push(`From ${roundName(p.counts_from_round)}`);
     const pz = prizes.get(p.id);
     if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won ${roundText(pz.round)}'s prize`);
@@ -171,6 +187,9 @@ export default function PoolsPage() {
     const u = unread.find((x) => x.pool_id === leagueOf(p));
     const waiting = p.school_emis && !p.school_year ? toConfirm.get(`${p.school_emis}:${p.school_stage}`) ?? 0 : 0;
     const rp = recruiterShownOn.has(p.id) ? recruiter.get(p.id) : undefined;
+    // A class not ranked yet: how many more of the year it needs, and the way to bring them in.
+    const cp = classPlace(p);
+    const need = cp && cp.place === null ? Math.max(1, CLASS_RANKED_AT - cp.players) : 0;
     return (
       <div key={p.id} className={`lgc${p.id === pool?.id ? " on" : ""}`}>
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>
@@ -198,6 +217,16 @@ export default function PoolsPage() {
             <span className="lgc-recruit-label">{monthName(rp.month)} recruiter prize</span>
             <strong>{rp.prize}</strong> · bring in the most new players to win ›
           </button>
+        )}
+        {need > 0 && (
+          <div className="lgc-classneed">
+            <span className="small muted">
+              Your class needs {need} more {need === 1 ? "player" : "players"} from {p.school_year} to be ranked against the other years.
+            </span>
+            <button type="button" className="lgc-invite" onClick={() => share(p.id, p.join_code, poolTitle(p), true)}>
+              {copied === p.id ? "Invite ready to send" : "Invite your class"}
+            </button>
+          </div>
         )}
         {waiting > 0 && (
           <Link href="/me/" className="lgc-waiting">{waiting} schoolmate{waiting === 1 ? "" : "s"} waiting for you to confirm them ›</Link>
