@@ -14,6 +14,7 @@ import { AlertsCard } from "@/components/alerts-card";
 import { SeasonAhead } from "@/components/season-ahead";
 import { AlsoOn } from "@/components/also-on";
 import { BringAMate } from "@/components/bring-a-mate";
+import { BokTests } from "@/components/bok-tests";
 import { FullTimeCard } from "@/components/full-time";
 import { SchoolMeter } from "@/components/school-meter";
 import { callingStreak, type Streak } from "@/lib/streak";
@@ -80,6 +81,7 @@ export default function Home() {
       {!season.is_replay && <FullTimeCard />}
       <SeasonAhead />
       <AlsoOn />
+      {!season.is_replay && <BokTests />}
       {!season.is_replay && <SchoolMeter />}
       {!season.is_replay && <BringAMate season={season.id} seasonName={season.name} />}
       <AlertsCard />
