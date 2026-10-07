@@ -73,6 +73,7 @@ export function ClassTable(src: Source) {
           <ShareMomentButton moment={{
             kind: "class_lead", kicker: "Top class", headline: `Class of ${first.school_year}`,
             detail: `Leading ${src.school}, 1st of ${ranked.length} class years.`, said: "",
+            stamp: "Top class", over: src.school, stat: `1st of ${ranked.length}`, statLabel: `class years at ${src.school}`,
           }} />
         </div>
       )}
