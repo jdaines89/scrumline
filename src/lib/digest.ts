@@ -80,7 +80,7 @@ export function buildDigest(opts: {
     const yours = withMe.length === 0 ? `Just you on ${name(my)}`
       : withMe.length === 1 ? `You and ${withMe[0].name} on ${name(my)}`
       : withMe.length === 2 ? `You, ${withMe[0].name} and ${withMe[1].name} on ${name(my)}`
-      : `You and ${withMe.length} mates on ${name(my)}`;
+      : `You and ${withMe.length} others on ${name(my)}`;
     const others = (["home", "draw", "away"] as Side[]).filter((x) => x !== my)
       .map((x) => against.filter((c) => side(c) === x)).filter((xs) => xs.length)
       .map((xs) => `${group(xs)} on ${name(side(xs[0]))}`);

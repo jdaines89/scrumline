@@ -592,7 +592,7 @@ function Chat() {
         const others = p.offered_by === me.user_id ? p.winners!.filter((u) => u !== me.user_id) : [p.offered_by];
         return (
           <button key={p.round} type="button" className="pthread" onClick={() => setPrizeChat(p)}>
-            <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a mate").join(" & ")}</span>
+            <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a player").join(" & ")}</span>
             <span className="pthread-r">{roundName(p.round)} ›</span>
           </button>
         );

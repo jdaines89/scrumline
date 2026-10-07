@@ -64,7 +64,7 @@ describe("buildDigest", () => {
     expect(x.swings.map((s) => [s.match_id, s.kind])).toEqual([["a", "against"], ["c", "split"]]);
     expect(x.swings[0].text).toBe("You, Kim and Max on Lions · 7 on Sharks");
     expect(x.swings[0].bankers).toEqual(["Your Banker", "Reeves' Banker"]);
-    expect(x.swings[1].text).toBe("You and 5 mates on Griquas · 4 on Pumas");
+    expect(x.swings[1].text).toBe("You and 5 others on Griquas · 4 on Pumas");
     expect(x.agreed).toBe(1);
   });
 

@@ -47,7 +47,7 @@ export function BringAMate({ season, seasonName }: { season: string; seasonName:
       <p className="sub">{mateAsk(a.members)}</p>
       <div className="row">
         <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer"
-          onClick={() => { logEvent("invite_shared", { from: "after_round", via: "whatsapp" }, a.pool_id!); hide(); }}>Send to a mate</a>
+          onClick={() => { logEvent("invite_shared", { from: "after_round", via: "whatsapp" }, a.pool_id!); hide(); }}>Send on WhatsApp</a>
         <button type="button" className="ghost" onClick={hide}>Not now</button>
       </div>
     </div>

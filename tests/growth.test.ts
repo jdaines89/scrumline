@@ -13,7 +13,7 @@ describe("growth helpers", () => {
   });
   it("asks for more mates in small leagues", () => {
     expect(mateAsk(2)).toMatch(/few more/);
-    expect(mateAsk(5)).toMatch(/One more mate/);
+    expect(mateAsk(5)).toMatch(/One more player/);
     expect(mateAsk(12)).toMatch(/next rival/);
   });
   it("lists names", () => {
