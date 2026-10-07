@@ -15,6 +15,7 @@ import { SeasonAhead } from "@/components/season-ahead";
 import { AlsoOn } from "@/components/also-on";
 import { BringAMate } from "@/components/bring-a-mate";
 import { BokTests } from "@/components/bok-tests";
+import { FullTimeCard } from "@/components/full-time";
 import { SchoolMeter } from "@/components/school-meter";
 import { callingStreak, type Streak } from "@/lib/streak";
 
@@ -77,6 +78,7 @@ export default function Home() {
         )}
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
+      {!season.is_replay && <FullTimeCard />}
       <SeasonAhead />
       <AlsoOn />
       {!season.is_replay && <BokTests />}

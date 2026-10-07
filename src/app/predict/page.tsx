@@ -6,6 +6,7 @@ import { AlertsCard } from "@/components/alerts-card";
 import { AllSet, type NextStep } from "@/components/all-set";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { NeedsEntry, useLeague } from "@/components/league";
+import { splitLines } from "@/lib/moments";
 import { RoundPicker } from "@/components/round-picker";
 import { Crowd, type CrowdRow } from "@/components/crowd";
 import { RoundDigest } from "@/components/round-digest";
@@ -363,8 +364,14 @@ function Predict() {
               )}
               {crowd.has(m.id) && <Crowd c={crowd.get(m.id)!} home={h} away={a} />}
               {mates.some((x) => x.match_id === m.id) && (
-                <details className="mates">
+                <details className="mates" open={matchStarted(m)}>
                   <summary>Your mates&apos; calls ({mates.filter((x) => x.match_id === m.id).length})</summary>
+                  {matchStarted(m) && (() => {
+                    // Kicked off: how everyone called it, yours included.
+                    const all = [...mates.filter((x) => x.match_id === m.id), ...(p ? [{ ...p, name: "You", me: true }] : [])];
+                    const { split, lone } = splitLines(all, h.display_name, a.display_name);
+                    return <p className="mates-split">{split}{lone && <> <strong>{lone}</strong></>}</p>;
+                  })()}
                   <ul>
                     {mates.filter((x) => x.match_id === m.id).map((x) => (
                       <li key={x.entry_id}>
