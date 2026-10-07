@@ -1442,14 +1442,19 @@ button.bok-hide { display: block; margin: 12px auto 0; color: var(--muted); font
 .chatlog .notice.match-day .reveal-head .nk { display: inline; flex-shrink: 0; }
 .chatlog .notice.match-day .reveal-game .reveal-calls { border-top: 0; padding-top: 0; margin-top: 8px; }
 
-/* Rugby stickers: sent without a bubble, picked from a sheet. A new sticker
-   lands once like a stamp, then stays still. */
+/* Rugby stickers: sent without a bubble, picked from a sheet. The first time
+   each person sees one, the word stamps down and the chalk mark follows; after
+   that it stays still. */
 .bubble.stickermsg, .msg.mine .bubble.stickermsg, .msg.tagged .bubble.stickermsg { line-height: 0; background: none; border-color: transparent; box-shadow: none; padding: 0; }
 .bubble.stickermsg .quote { line-height: 1.4; margin-bottom: 6px; }
 .sticker { display: block; border-radius: 14px; box-shadow: 0 6px 16px rgba(0, 0, 0, .45); }
-.bubble.stickermsg .sticker { animation: st-stamp .32s cubic-bezier(.2, .9, .3, 1.2) both; }
-@keyframes st-stamp { 0% { transform: scale(1.25) rotate(-4deg); opacity: 0; } 70% { transform: scale(.97); opacity: 1; } 100% { transform: none; } }
-@media (prefers-reduced-motion: reduce) { .bubble.stickermsg .sticker { animation: none; } }
+.sticker.play { animation: st-land .3s cubic-bezier(.2, .9, .3, 1.2) both; }
+.sticker.play .st-word { transform-box: fill-box; transform-origin: center; animation: st-stamp .45s cubic-bezier(.2, .9, .3, 1.25) .15s both; }
+.sticker.play .st-art { transform-box: fill-box; transform-origin: center; animation: st-chalk .5s ease-out .5s both; }
+@keyframes st-land { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes st-stamp { 0% { transform: scale(1.8) rotate(-6deg); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: none; } }
+@keyframes st-chalk { 0% { transform: scale(.6) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sticker.play, .sticker.play .st-word, .sticker.play .st-art { animation: none; } }
 .stickergrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px 8px; justify-items: center; padding-bottom: 8px; }
 button.stickerbtn, button.stickerbtn:hover { padding: 0; border: 0; background: none; border-radius: 14px; line-height: 0; transition: transform .12s ease; }
 button.stickerbtn:active { transform: scale(.94); }

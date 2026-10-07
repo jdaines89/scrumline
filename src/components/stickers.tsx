@@ -1,12 +1,13 @@
-import { useId, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 
 // Rugby stickers for the league chat. A sticker message stores its key in
 // chat_messages.sticker and its label as the body, so quotes, previews and
 // older versions of the app still read sensibly ("Yellow card").
 // Each one is drawn here, so stickers cost nothing to store or load.
 // The look is match-day grit, not cartoons: a dark, gritty pitch and chalk,
-// one simple chalk mark and a big stamped word. In the chat a sticker lands
-// once with a thud and then stays still.
+// one simple chalk mark and a big stamped word. In the chat a sticker plays
+// (the word stamps down, the chalk mark follows) only the first time each
+// person sees it; after that it stays still.
 
 interface Sticker { key: string; label: string; word: string; sub?: string; ink: string; art?: ReactNode }
 
@@ -55,8 +56,13 @@ export const STICKERS: Sticker[] = [
   { key: "forward_pass", label: "Forward pass", word: "FORWARD", sub: "PASS", ink: CHALK, art: (
     <g>{ballOutline(40, 31, 0, .9)}<path {...line} d="M60 31h24M76 23l8 8-8 8" /></g>
   ) },
-  { key: "hospital_pass", label: "Hospital pass", word: "HOSPITAL", sub: "PASS", ink: CHALK, art: (
-    <g>{ballOutline(46, 31, -20, .9)}<path {...line} stroke="#e0342a" strokeWidth="4.5" d="M78 20v22M67 31h22" /></g>
+  { key: "rassie", label: "Rassie!", word: "RASSIE!", sub: "GENIUS", ink: GOLD, art: (
+    <g {...line} strokeWidth="2.8">
+      <path d="M32 16l7 7M39 16l-7 7M32 36l7 7M39 36l-7 7" />
+      <circle cx="84" cy="20" r="4.5" /><circle cx="84" cy="40" r="4.5" />
+      <path d="M44 20q16-8 26 6t8 14" stroke={GOLD} />
+      <path d="M73 36l5 5 3-7" stroke={GOLD} />
+    </g>
   ) },
   { key: "lekker", label: "Lekker!", word: "LEKKER!", ink: GOLD, art: (
     <g {...line}><path d="M44 46V31h6l7-14q6 0 5 7l-2 7h12q5 0 4 5l-3 9q-1 3-5 3H50" /></g>
@@ -71,7 +77,7 @@ export function stickerLabel(key: string | null | undefined) {
 }
 
 /** One sticker, drawn at `size` pixels square. */
-export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
+export function StickerArt({ k, size = 120, play = false }: { k: string; size?: number; play?: boolean }) {
   const s = BY_KEY.get(k);
   const uid = useId().replace(/:/g, "");
   const word = s?.word ?? "RUGBY";
@@ -80,7 +86,7 @@ export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
   const fs = big ? (word.length >= 6 ? 26 : 38) : word.length >= 7 ? 20 : word.length >= 5 ? 25 : 30;
   const y = big ? (s?.sub ? 64 : 72) : s?.sub ? 80 : 88;
   return (
-    <svg className="sticker" width={size} height={size} viewBox="0 0 120 120" role="img" aria-label={s?.label ?? "Sticker"}>
+    <svg className={`sticker${play ? " play" : ""}`} width={size} height={size} viewBox="0 0 120 120" role="img" aria-label={s?.label ?? "Sticker"}>
       <defs>
         <linearGradient id={`p${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#1d3324" />
@@ -103,14 +109,32 @@ export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
         <path d="M0 18h120M0 58h120" stroke="#ffffff0d" strokeWidth="18" />
       </g>
       <g filter={`url(#r${uid})`}>
-        {s?.art}
+        <g className="st-art">{s?.art}</g>
+        <g className="st-word">
         <text x="60" y={y} textAnchor="middle" fontSize={fs} fontWeight="900" fill={s?.ink ?? CHALK} letterSpacing="-.5"
           style={{ fontStretch: "75%" }}>{word}</text>
         {s?.sub && <text x="60" y={y + 21} textAnchor="middle" fontSize="13" fontWeight="800" fill={CHALK} opacity=".8" letterSpacing="3">{s.sub}</text>}
+        </g>
       </g>
       <rect x="3" y="3" width="114" height="114" rx="14" fill="none" stroke="#ffffff1f" strokeWidth="1.5" />
     </svg>
   );
+}
+
+// Sticker messages this phone has already shown, so each plays only once per person.
+const SEEN_KEY = "sl:stickers-seen";
+function seenIds(): number[] {
+  try { return JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]") as number[]; } catch { return []; }
+}
+
+/** A sticker in the chat: plays the first time this person sees it, then stays still. */
+export function StickerMessage({ id, k, size = 128 }: { id: number; k: string; size?: number }) {
+  const [play] = useState(() => typeof window !== "undefined" && !seenIds().includes(id));
+  useEffect(() => {
+    if (!play) return;
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seenIds().filter((x) => x !== id), id].slice(-500))); } catch { /* private mode: it just plays again */ }
+  }, [id, play]);
+  return <StickerArt k={k} size={size} play={play} />;
 }
 
 /** The sticker sheet: tap one to send it. */

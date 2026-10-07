@@ -1,7 +1,7 @@
 "use client";
 
 import { PollCard, PollComposer, type PollVote } from "@/components/chat-poll";
-import { StickerArt, StickerPicker, stickerLabel } from "@/components/stickers";
+import { StickerMessage, StickerPicker, stickerLabel } from "@/components/stickers";
 import { LeaguePicture } from "@/components/league-picture";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
@@ -643,7 +643,7 @@ function Chat() {
                   {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
                   {group ? <PhotoGrid paths={group.map((x) => x.image_path!)} onOpen={(i) => setGallery({ paths: group.map((x) => x.image_path!), i })} />
                     : m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
-                  {m.sticker ? <StickerArt k={m.sticker} size={128} />
+                  {m.sticker ? <StickerMessage id={m.id} k={m.sticker} />
                   : polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!.options} closed={polls.get(m.id)!.closed} votes={votes.filter((v) => v.message_id === m.id)}
                     me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} onClosePoll={mine ? () => closePoll(m.id) : undefined} />
                   : caption.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
