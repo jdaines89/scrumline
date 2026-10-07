@@ -1451,6 +1451,17 @@ button.bok-hide { display: block; margin: 12px auto 0; color: var(--muted); font
 .chatlog .notice.match-day .reveal-head .nk { display: inline; flex-shrink: 0; }
 .chatlog .notice.match-day .reveal-game .reveal-calls { border-top: 0; padding-top: 0; margin-top: 8px; }
 
+/* Full time: a moment worth a picture, with its Share button. */
+.ft-share { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.ft-share-text { flex: 1 1 200px; font-size: 14px; line-height: 1.4; }
+.ft-share-btn { flex: none; }
+.ft-share-note { flex-basis: 100%; margin: 0; }
+.classes-share { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.classes-share .ft-share-note { flex-basis: 100%; }
+/* A class not ranked yet: what it needs, then the invite. */
+.lgc-classneed { flex-basis: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0 0 6px 56px; }
+@media (max-width: 560px) { .lgc-classneed button.lgc-invite { margin-left: 0; width: 100%; } }
+
 /* Rugby stickers: sent without a bubble, picked from a sheet. The first time
    each person sees one, the word stamps down and the chalk mark follows; after
    that it stays still. */
