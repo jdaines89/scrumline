@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ordinal, placeLine, splitLines } from "../src/lib/moments";
+import { ordinal, placeLine, splitLines, teamRef } from "../src/lib/moments";
 
 const c = (name: string, h: number, a: number, me = false) => ({ name, home_score: h, away_score: a, me });
 
@@ -18,6 +18,12 @@ describe("kickoff reveal lines", () => {
   it("says when everyone agrees, and counts draws", () => {
     expect(splitLines([c("A", 20, 10), c("B", 25, 3)], "Lions", "Sharks")).toEqual({ split: "Everyone backs the Lions.", lone: null });
     expect(splitLines([c("A", 20, 10), c("B", 15, 15)], "Lions", "Sharks").split).toBe("1 backs the Lions. 1 calls a draw.");
+  });
+
+  it("only puts 'the' before one-word plural team names", () => {
+    expect(["Stormers", "Bulls", "Connacht", "South Africa", "Wales", "Ireland", "Maties"].map(teamRef))
+      .toEqual(["the Stormers", "the Bulls", "Connacht", "South Africa", "Wales", "Ireland", "the Maties"]);
+    expect(splitLines([c("A", 20, 10), c("B", 30, 3), c("C", 10, 20)], "Connacht", "Dragons").split).toBe("2 back Connacht, 1 the Dragons.");
   });
 
   it("names nobody alone in a two-way split", () => {

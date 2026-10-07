@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+/** Past this many calls (a school league), the card shows the split and a few names, with the rest a tap away. */
+const SHORT = 6;
 import { readCache, writeCache } from "@/lib/cache";
 import { splitLines, type RevealCall } from "@/lib/moments";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +23,7 @@ export function MatchReveal({ matchId, me, people, inLeague, teams }: {
 }) {
   const key = `reveal:${matchId}`;
   const [r, setR] = useState<Reveal | null>(() => readCache<Reveal>(key) ?? null);
+  const [all, setAll] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -53,20 +57,36 @@ export function MatchReveal({ matchId, me, people, inLeague, teams }: {
   const done = r.game.home_score !== null;
   const { split, lone } = splitLines(calls, home, away);
   const best = done ? Math.max(...calls.map((c) => c.pts ?? 0)) : 0;
+  const side = (c: Call) => Math.sign(c.home_score - c.away_score);
+  const n = { home: calls.filter((c) => side(c) > 0).length, draw: calls.filter((c) => side(c) === 0).length, away: calls.filter((c) => side(c) < 0).length };
+  // A big league: at kickoff you and anyone standing alone; at full time the top three and you.
+  const alone = [1, -1].map((x) => calls.filter((c) => side(c) === x)).find((g) => g.length === 1 && calls.length - 1 >= 2)?.[0];
+  const few = calls.length <= SHORT || all ? calls
+    : done ? calls.filter((c, i) => i < 3 || c.me)
+    : calls.filter((c) => c.me || c === alone).concat(calls.filter((c) => !c.me && c !== alone).slice(0, Math.max(0, 3 - Number(calls.some((c) => c.me)) - Number(!!alone))));
+  const rank = (c: Call) => 1 + calls.filter((x) => (x.pts ?? 0) > (c.pts ?? 0)).length;
   return (
     <div className="notice reveal" role="status">
       <span className="nk">{done ? "Full time" : "Kickoff"}</span>
       <strong>{done ? `${home} ${r.game.home_score}–${r.game.away_score} ${away}` : `${home} v ${away}`}</strong>
+      <div className="reveal-bar" aria-hidden="true">
+        {n.home > 0 && <span className="h" style={{ flexGrow: n.home }} />}
+        {n.draw > 0 && <span className="d" style={{ flexGrow: n.draw }} />}
+        {n.away > 0 && <span className="a" style={{ flexGrow: n.away }} />}
+      </div>
       <span className="nsub">{split}{lone && <> {lone}</>}</span>
       <ul className="reveal-calls">
-        {calls.map((c) => (
+        {few.map((c) => (
           <li key={c.user_id} className={c.me ? "me" : ""}>
-            <span>{c.name}{c.is_banker && <span className="pchip bank2">×2</span>}</span>
+            <span>{done && calls.length > SHORT && <span className="rk">{rank(c)}</span>}{c.name}{c.is_banker && <span className="pchip bank2">×2</span>}</span>
             <strong>{c.home_score}–{c.away_score}</strong>
             {done && <span className={`pts${best > 0 && c.pts === best ? " top" : ""}`}>+{c.pts ?? 0}</span>}
           </li>
         ))}
       </ul>
+      {calls.length > SHORT && (
+        <button type="button" className="linkish reveal-all" onClick={() => setAll(!all)}>{all ? "Show fewer" : `See all ${calls.length} calls`}</button>
+      )}
     </div>
   );
 }

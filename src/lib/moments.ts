@@ -3,6 +3,11 @@ export interface RevealCall { name: string; home_score: number; away_score: numb
 
 const plural = (n: number) => (n === 1 ? "1 backs" : `${n} back`);
 
+/** "the Stormers", "the Bulls", but plain "Connacht", "South Africa", "Wales": only one-word plural names take "the". */
+export function teamRef(name: string): string {
+  return /^[A-Z][a-z]+s$/.test(name) && name !== "Wales" ? `the ${name}` : name;
+}
+
 /**
  * How a league called a game, in a line: "3 back the Stormers, 1 the Bulls."
  * and, when one person stands alone against the rest, a second line naming them.
@@ -17,14 +22,14 @@ export function splitLines(calls: RevealCall[], home: string, away: string): { s
     a.length ? [a.length, away] as const : null,
   ].filter((x): x is readonly [number, string] => !!x).sort((x, y) => y[0] - x[0]);
   let split = !parts.length ? "" : parts.length === 1 && parts[0][0] === calls.length && calls.length > 1
-    ? `Everyone backs the ${parts[0][1]}.`
-    : `${plural(parts[0][0])} the ${parts[0][1]}${parts[1] ? `, ${parts[1][0]} the ${parts[1][1]}` : ""}.`;
+    ? `Everyone backs ${teamRef(parts[0][1])}.`
+    : `${plural(parts[0][0])} ${teamRef(parts[0][1])}${parts[1] ? `, ${parts[1][0]} ${teamRef(parts[1][1])}` : ""}.`;
   if (d.length) split = `${split}${split ? " " : ""}${d.length === 1 ? "1 calls" : `${d.length} call`} a draw.`;
 
   let lone: string | null = null;
   const alone = (side: RevealCall[], others: RevealCall[], team: string) => {
     if (side.length !== 1 || others.length < 2) return;
-    lone = side[0].me ? `You're the only one backing the ${team}.` : `${side[0].name} is the only one backing the ${team}.`;
+    lone = side[0].me ? `You're the only one backing ${teamRef(team)}.` : `${side[0].name} is the only one backing ${teamRef(team)}.`;
   };
   alone(h, [...a, ...d], home);
   alone(a, [...h, ...d], away);
