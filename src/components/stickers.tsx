@@ -4,7 +4,7 @@ import { useId, type ReactNode } from "react";
 // chat_messages.sticker and its label as the body, so quotes, previews and
 // older versions of the app still read sensibly ("Yellow card").
 // Each one is drawn here, so stickers cost nothing to store or load.
-// The look is match-day grit, not cartoons: a dark pitch, mud and chalk,
+// The look is match-day grit, not cartoons: a dark, gritty pitch and chalk,
 // one simple chalk mark and a big stamped word. In the chat a sticker lands
 // once with a thud and then stays still.
 
@@ -25,14 +25,29 @@ const card = (fill: string) => (
   </g>
 );
 
+// Ordered by what mates actually send: bragging about a call first, then
+// shouting at the ref, then the match itself.
 export const STICKERS: Sticker[] = [
+  { key: "called_it", label: "Called it", word: "CALLED", sub: "IT", ink: GOLD, art: (
+    <path {...line} stroke={GOLD} strokeWidth="4.5" d="M44 30l11 11 22-24" />
+  ) },
+  { key: "banker", label: "Banker!", word: "BANKER", sub: "DOUBLE", ink: GOLD, art: (
+    <g><circle cx="60" cy="30" r="15" fill="none" stroke={GOLD} strokeWidth="3.2" /><text x="60" y="36" textAnchor="middle" fontSize="15" fontWeight="900" fill={GOLD}>×2</text></g>
+  ) },
+  { key: "try", label: "Try!", word: "TRY!", ink: GOLD, art: (
+    <g><path {...line} d="M22 44h76" />{ballOutline(60, 33, -8)}</g>
+  ) },
   { key: "yellow_card", label: "Yellow card", word: "YELLOW", sub: "CARD", ink: "#f5c518", art: card("#f5c518") },
   { key: "red_card", label: "Red card", word: "RED", sub: "CARD", ink: "#e0342a", art: card("#d42a20") },
+  { key: "ref", label: "Ref!", word: "REF!", ink: CHALK, art: (
+    <g {...line}>
+      <path d="M38 30a11 11 0 1 0 22 0v-5H38z" />
+      <path d="M58 25h20v8H60" />
+      <path d="M84 18l5-4M86 28h7" strokeWidth="2.6" />
+    </g>
+  ) },
   { key: "tmo", label: "TMO check", word: "TMO", sub: "CHECK", ink: CHALK, art: (
     <path {...line} d="M38 16h44v30H38z" strokeDasharray="7 5" />
-  ) },
-  { key: "scrum_down", label: "Scrum down", word: "SCRUM", sub: "DOWN", ink: CHALK, art: (
-    <g {...line} strokeWidth="3.6"><path d="M34 18l12 13-12 13M44 18l12 13-12 13M86 18L74 31l12 13M76 18L64 31l12 13" /></g>
   ) },
   { key: "knock_on", label: "Knock-on", word: "KNOCK", sub: "ON", ink: CHALK, art: (
     <g>{ballOutline(52, 30, -40)}<path {...line} d="M70 22l12-6M72 32h13" strokeWidth="2.6" /></g>
@@ -40,16 +55,9 @@ export const STICKERS: Sticker[] = [
   { key: "forward_pass", label: "Forward pass", word: "FORWARD", sub: "PASS", ink: CHALK, art: (
     <g>{ballOutline(40, 31, 0, .9)}<path {...line} d="M60 31h24M76 23l8 8-8 8" /></g>
   ) },
-  { key: "try", label: "Try!", word: "TRY!", ink: GOLD, art: (
-    <g><path {...line} d="M22 44h76" />{ballOutline(60, 33, -8)}</g>
+  { key: "hospital_pass", label: "Hospital pass", word: "HOSPITAL", sub: "PASS", ink: CHALK, art: (
+    <g>{ballOutline(46, 31, -20, .9)}<path {...line} stroke="#e0342a" strokeWidth="4.5" d="M78 20v22M67 31h22" /></g>
   ) },
-  { key: "drop_goal", label: "Drop goal", word: "DROP", sub: "GOAL", ink: CHALK, art: (
-    <g><path {...line} d="M44 48V10M76 48V10M44 36h32" />{ballOutline(60, 22, 35, .6)}</g>
-  ) },
-  { key: "banker", label: "Banker!", word: "BANKER", sub: "DOUBLE", ink: GOLD, art: (
-    <g><circle cx="60" cy="30" r="15" fill="none" stroke={GOLD} strokeWidth="3.2" /><text x="60" y="36" textAnchor="middle" fontSize="15" fontWeight="900" fill={GOLD}>×2</text></g>
-  ) },
-  { key: "vasbyt", label: "Vasbyt", word: "VASBYT", sub: "HOU VAS", ink: CHALK },
   { key: "lekker", label: "Lekker!", word: "LEKKER!", ink: GOLD, art: (
     <g {...line}><path d="M44 46V31h6l7-14q6 0 5 7l-2 7h12q5 0 4 5l-3 9q-1 3-5 3H50" /></g>
   ) },
@@ -61,9 +69,6 @@ const BY_KEY = new Map(STICKERS.map((s) => [s.key, s]));
 export function stickerLabel(key: string | null | undefined) {
   return (key && BY_KEY.get(key)?.label) || "Sticker";
 }
-
-// Mud thrown up from the bottom corner, the same on every sticker so they read as a set.
-const MUD = "M4 120V86c6 4 9-2 15 1s6 9 13 9 9-6 15-3 4 10 11 12 10-3 14 1 1 10 8 12 12-4 16-1 7 3 11 3V120z";
 
 /** One sticker, drawn at `size` pixels square. */
 export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
@@ -96,8 +101,6 @@ export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
       <g clipPath={`url(#c${uid})`} filter={`url(#g${uid})`}>
         <rect width="120" height="120" fill={`url(#p${uid})`} />
         <path d="M0 18h120M0 58h120" stroke="#ffffff0d" strokeWidth="18" />
-        <path d={MUD} fill="#3a2a1c" />
-        <circle cx="96" cy="22" r="2.4" fill="#3a2a1c" /><circle cx="103" cy="31" r="1.4" fill="#3a2a1c" /><circle cx="14" cy="70" r="1.8" fill="#3a2a1c" />
       </g>
       <g filter={`url(#r${uid})`}>
         {s?.art}
