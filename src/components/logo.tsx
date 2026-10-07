@@ -20,7 +20,7 @@ export function Brand() {
       <BallMark />
       <div>
         <div className="wordmark">Scrumline</div>
-        <div className="subword">Rugby Prediction Leagues</div>
+        <div className="subword">Get your school over the line</div>
       </div>
     </div>
   );

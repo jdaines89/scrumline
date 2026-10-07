@@ -120,7 +120,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   if (logo) g.drawImage(logo, pad, 120, 96, 96);
   g.fillStyle = CHALK; g.font = font(900, 54); g.fillText("SCRUMLINE", pad + (logo ? 120 : 0), 176);
   g.fillStyle = GOLD; g.font = font(700, 22); g.letterSpacing = "4px";
-  g.fillText("RUGBY PREDICTION LEAGUES", pad + (logo ? 122 : 2), 210); g.letterSpacing = "0px";
+  g.fillText("GET YOUR SCHOOL OVER THE LINE", pad + (logo ? 122 : 2), 210); g.letterSpacing = "0px";
 
   // The stamp: one big word, set at an angle in a ruled box, worn where the ink missed.
   const word = (m.stamp ?? m.kicker).toUpperCase();
