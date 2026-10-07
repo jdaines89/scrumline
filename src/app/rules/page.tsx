@@ -79,7 +79,7 @@ export default function Rules() {
       <section className="card narrow">
         <h3>7. Your information</h3>
         <ul>
-          <li>Your league mates see your name, team name, calls once they lock, and chat messages. Nobody outside your leagues does.</li>
+          <li>People in your leagues see your name, team name, calls once they lock, and chat messages. Nobody outside your leagues does.</li>
           <li>Scrumline uses your email only for your account, reminders you can switch off, and prizes you win.</li>
         </ul>
       </section>

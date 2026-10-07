@@ -176,7 +176,7 @@ export default function PoolsPage() {
     if (cp?.place && cp.ranked >= 2) bits.push(`Your class is ${ord(cp.place)} of ${cp.ranked} at the school`);
     if (p.counts_from_round) bits.push(`From ${roundName(p.counts_from_round)}`);
     const pz = prizes.get(p.id);
-    if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A mate")).join(" & ")} won ${roundText(pz.round)}'s prize`);
+    if (pz?.winners?.length) bits.push(`${pz.winners.map((u) => (u === me.user_id ? "You" : names.get(u) ?? "A player")).join(" & ")} won ${roundText(pz.round)}'s prize`);
     else if (pz) bits.push(`${roundName(pz.round)} prize`);
     return bits.join(" · ");
   }
@@ -206,7 +206,7 @@ export default function PoolsPage() {
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M19 8v6M16 11h6" />
             </svg>
-            {copied === p.id ? "Link copied" : "Invite mates"}
+            {copied === p.id ? "Link copied" : "Invite players"}
           </button>
         )}
         {!p.school_emis && p.created_by === me.user_id && (
@@ -285,9 +285,9 @@ export default function PoolsPage() {
         <h2>Your leagues</h2>
         <p className="sub">Your calls count in every league you&apos;re in.</p>
         <WaitingInvites onJoined={async (id) => { await reloadPools(); setPool(id); }} />
-        {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code from a mate.</p>}
+        {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code someone sent you.</p>}
         {mateLeagues.length > 0 && <>
-          <div className="lg-sect">Mates</div>
+          <div className="lg-sect">Your leagues</div>
           <div className="lg">{mateLeagues.map((p) => card(p))}</div>
         </>}
         {(schoolLeagues.length > 0 || looseClasses.length > 0) && <>

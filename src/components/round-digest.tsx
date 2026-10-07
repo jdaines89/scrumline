@@ -21,7 +21,7 @@ export function RoundDigest({ d, round, open, teamsOf }: {
   const foot = [
     d.moreSwings > 0 && `${d.moreSwings} more split${d.moreSwings === 1 ? "" : "s"} below`,
     d.agreed > 0 && `${d.agreed} game${d.agreed === 1 ? "" : "s"} everyone agrees on`,
-    open > 0 && `lock ${open} more to see mates there`,
+    open > 0 && `lock ${open} more to see everyone there`,
   ].filter(Boolean).join(" · ");
   return (
     <section className="digest" aria-label={`${roundName(round)} at a glance`}>

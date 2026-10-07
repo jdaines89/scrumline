@@ -1,6 +1,7 @@
 "use client";
 
 import { PollCard, PollComposer, type PollVote } from "@/components/chat-poll";
+import { StickerMessage, StickerPicker, stickerLabel } from "@/components/stickers";
 import { LeaguePicture } from "@/components/league-picture";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
@@ -88,6 +89,7 @@ function Chat() {
   // Polls need their tables; until the database has them the poll button stays hidden.
   const [pollsOn, setPollsOn] = useState(false);
   const [asking, setAsking] = useState(false);
+  const [stickering, setStickering] = useState(false);
   // Photo and poll sit behind one button, so the message box keeps its width.
   const [attach, setAttach] = useState(false);
   useEffect(() => {
@@ -426,6 +428,22 @@ function Chat() {
     requestAnimationFrame(() => { box.current?.focus(); box.current?.setSelectionRange(before.length, before.length); });
   }
 
+  async function sendSticker(key: string) {
+    if (sending) return;
+    const body = stickerLabel(key);
+    setErr(null); setSending(true); setStickering(false);
+    const { data: why } = await supabase.rpc("chat_check", { p_pool: chatId, p_body: body });
+    if (why) { setSending(false); setErr(why as string); return; }
+    const row: Record<string, unknown> = { body, sticker: key, pool_id: chatId };
+    if (replyTo) row.reply_to = replyTo.id;
+    const { data, error } = await supabase.from("chat_messages").insert(row).select().single();
+    setSending(false);
+    if (error) { setErr(error.message); return; }
+    setReplyTo(null);
+    atBottom.current = true;
+    setMsgs((xs) => xs.some((x) => x.id === data.id) ? xs : [...xs, data as ChatMessage]);
+  }
+
   async function send(e?: FormEvent) {
     e?.preventDefault();
     const body = encodeMentions(text.trim(), members);
@@ -574,7 +592,7 @@ function Chat() {
         const others = p.offered_by === me.user_id ? p.winners!.filter((u) => u !== me.user_id) : [p.offered_by];
         return (
           <button key={p.round} type="button" className="pthread" onClick={() => setPrizeChat(p)}>
-            <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a mate").join(" & ")}</span>
+            <span>🏆 Private prize chat with {others.map((u) => people.get(u)?.display_name ?? "a player").join(" & ")}</span>
             <span className="pthread-r">{roundName(p.round)} ›</span>
           </button>
         );
@@ -620,12 +638,13 @@ function Chat() {
                     {m.hidden_at ? (mine ? "Your message is held while it's checked." : "Message held while it's checked.") : "You reported this message."}
                   </div>
                 ) : (<>
-                <div className={`bubble${polls.has(m.id) ? " withpoll" : ""}${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${m.image_path && !caption.trim() ? " photoonly" : ""}${group ? " withgrid" : ""}`}
+                <div className={`bubble${polls.has(m.id) ? " withpoll" : ""}${picked === m.id ? " picked" : ""}${m.image_path ? " withphoto" : ""}${(m.image_path && !caption.trim()) || m.sticker ? " photoonly" : ""}${m.sticker ? " stickermsg" : ""}${group ? " withgrid" : ""}`}
                   onClick={() => setPicked(picked === m.id ? null : m.id)} {...swipeHandlers(m)}>
                   {m.reply_to && <Quote m={q} me={me.user_id} people={people} onClick={() => jumpTo(m.reply_to!)} />}
                   {group ? <PhotoGrid paths={group.map((x) => x.image_path!)} onOpen={(i) => setGallery({ paths: group.map((x) => x.image_path!), i })} />
                     : m.image_path && <Photo path={m.image_path} onLoad={toBottom} onOpen={setViewing} />}
-                  {polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!.options} closed={polls.get(m.id)!.closed} votes={votes.filter((v) => v.message_id === m.id)}
+                  {m.sticker ? <StickerMessage id={m.id} k={m.sticker} />
+                  : polls.has(m.id) ? <PollCard question={m.body} options={polls.get(m.id)!.options} closed={polls.get(m.id)!.closed} votes={votes.filter((v) => v.message_id === m.id)}
                     me={me.user_id} people={people} onVote={(c) => vote(m.id, c)} onClosePoll={mine ? () => closePoll(m.id) : undefined} />
                   : caption.trim() && <span className="btext">{parts.map((p, j) => "text" in p ? <span key={j}>{p.text}</span>
                     : <span key={j} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{people.get(p.userId)?.display_name ?? "someone"}</span>)}</span>}
@@ -731,25 +750,26 @@ function Chat() {
                 Poll
               </button>
             )}
+            <button type="button" role="menuitem" onClick={() => { setAttach(false); setStickering(true); }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <ellipse cx="12" cy="12" rx="9" ry="6" transform="rotate(-30 12 12)" /><path d="M8.5 13.5l7-3M10 10.5l1 2M12 9.5l1 2M14 8.5l1 2" />
+              </svg>
+              Sticker
+            </button>
           </div>
         )}
-        <button type="button" className={`ghost photobtn${attach ? " open" : ""}`} aria-label={pollsOn ? "Add a photo or poll" : "Add a photo"} aria-expanded={attach} disabled={sending}
-          onClick={() => (pollsOn ? setAttach(!attach) : fileInput.current?.click())}>
-          {pollsOn ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <rect x="3" y="5" width="18" height="14" rx="2.5" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" />
-            </svg>
-          )}
+        <button type="button" className={`ghost photobtn${attach ? " open" : ""}`} aria-label={pollsOn ? "Add a photo, poll or sticker" : "Add a photo or sticker"} aria-expanded={attach} disabled={sending}
+          onClick={() => setAttach(!attach)}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
         </button>
         <textarea ref={box} rows={1} maxLength={900} placeholder={photos.length ? "Add a caption" : "Message · @ to tag"} value={text}
           onChange={(e) => onType(e.target.value)} onKeyDown={onKey} />
         <button type="submit" disabled={sending || (!text.trim() && !photos.length)}>{sending ? "Sending…" : photos.length > 1 ? `Send ${photos.length}` : "Send"}</button>
       </form>
       )}
+      {stickering && <StickerPicker onPick={sendSticker} onClose={() => setStickering(false)} />}
       {asking && <PollComposer pool={chatId} onClose={() => setAsking(false)} onSent={() => { setAsking(false); atBottom.current = true; load(); }} />}
       {gallery && <Gallery paths={gallery.paths} start={gallery.i} onClose={() => setGallery(null)} />}
       {viewing && (

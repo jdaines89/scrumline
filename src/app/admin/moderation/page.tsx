@@ -15,7 +15,7 @@ interface Ban { user_id: string; name: string; until: string; reason: string }
 interface Term { term: string; category: string; whole: boolean }
 
 const REASON: Record<string, string> = { hate: "racism or hate", bullying: "bullying", sexual: "sexual", other: "something else" };
-const CATEGORY: Record<string, string> = { hate: "Racist or hateful", threat: "Threat", sexual: "Sexual", swearing: "Swearing" };
+const CATEGORY: Record<string, string> = { hate: "Racist or hateful", threat: "Threat", sexual: "Sexual", swearing: "Swearing", spam: "Spam" };
 
 /** The little that needs a person: messages people reported, chat bans, and the word list. */
 export default function AdminModeration() {
@@ -80,7 +80,7 @@ export default function AdminModeration() {
 
       <div className="card narrow">
         <h2>Chat bans</h2>
-        <p className="sub">Three messages stopped for hate or threats in a day mean a day off chat; a second ban within 30 days is a week.</p>
+        <p className="sub">Three messages stopped for hate or threats, or three for spam, in a day mean a day off chat; a second ban within 30 days is a week.</p>
         {bans?.length === 0 && <p className="small muted" style={{ marginBottom: 0 }}>Nobody is banned.</p>}
         {bans?.map((b, i) => (
           <div key={b.user_id} className={`rowline${i === 0 ? " first" : ""}`}>

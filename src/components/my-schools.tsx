@@ -64,7 +64,7 @@ export function MySchools({ me, members, onMessage }: { me: Member; members: Mem
           onSaved={afterSave} onMessage={onMessage} />
       ))}
       <p className="small muted">
-        You&apos;re in each school&apos;s league automatically. Your mates in the league can see these. Each one is fixed {OPEN_DAYS} days after you first save it,
+        You&apos;re in each school&apos;s league automatically. People in the league can see these. Each one is fixed {OPEN_DAYS} days after you first save it,
         and counts for the school once {NEEDED} schoolmates confirm you.
       </p>
     </div>

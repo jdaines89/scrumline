@@ -13,7 +13,7 @@ interface Pack {
   prices: Price[];
 }
 
-const KIND: Record<Price["kind"], string> = { school: "A school's league", class: "A class (old pupils) league", pool: "A league of mates" };
+const KIND: Record<Price["kind"], string> = { school: "A school's league", class: "A class (old pupils) league", pool: "A private league" };
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short", timeZone: "Africa/Johannesburg" });
 
 /**

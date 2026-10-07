@@ -18,7 +18,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<PoolPrize | null>(null);
   const [chat, setChat] = useState<PoolPrize | null>(null);
-  const nameOf = (id: string) => (id === me.user_id ? "you" : members.find((m) => m.user_id === id)?.display_name ?? "a mate");
+  const nameOf = (id: string) => (id === me.user_id ? "you" : members.find((m) => m.user_id === id)?.display_name ?? "a player");
   // The round this is about: the one asked for, else the one in play, else the next.
   const shown = round !== undefined
     ? prizes.find((p) => p.round === round)
