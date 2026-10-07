@@ -49,6 +49,21 @@ function hydrate(b: CachedBase): Base {
   return { ...b, competitions: new Map(b.competitions.map((c) => [c.id, c])), teams: new Map(b.teams.map((t) => [t.id, t])) };
 }
 
+/**
+ * Which of a tournament's tables to show: the same league you were just in
+ * (leagues play every tournament), else the one you last opened there, else the first.
+ */
+function pickPool(ps: Pool[], sid: string, current: Pool | null): number | null {
+  const league = (p: Pool) => p.league_id ?? p.id;
+  if (current) {
+    if (ps.some((p) => p.id === current.id)) return current.id;
+    const same = ps.find((p) => league(p) === league(current));
+    if (same) return same.id;
+  }
+  const saved = Number(remember(`pool:${sid}`));
+  return ps.some((p) => p.id === saved) ? saved : ps[0]?.id ?? null;
+}
+
 function remember(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
@@ -91,11 +106,14 @@ function Loaded({ children }: { children: ReactNode }) {
   const [schoolOnly, setSchoolOnly] = useState(false);
   const [base, setBase] = useState<Base | null>(null);
   const [seasonId, setSeasonId] = useState<string | null>(null);
-  // The tournament on screen right now, so a slow answer for the one you just left can't overwrite it.
-  const shownSeason = useRef<string | null>(null);
-  shownSeason.current = seasonId;
+  // The tournament asked for last, so a slow answer for one you've since left can't overwrite it.
+  const wanted = useRef<string | null>(null);
   const [data, setData] = useState<SeasonData | null>(null);
   const [poolId, setPoolId] = useState<number | null>(null);
+  // The league on screen, so switching tournament stays in it rather than flashing "No league yet".
+  const shownPool = useRef<Pool | null>(null);
+  shownPool.current = data?.pools.find((p) => p.id === poolId) ?? null;
+  const show = (sid: string) => { wanted.current = sid; setSeasonId(sid); };
   // Only ask "Who's playing?" once the real member row is in, never off last visit's copy.
   const [fresh, setFresh] = useState(false);
   // Whether you've saved a school; the school question comes once, after your name, only if not.
@@ -111,9 +129,9 @@ function Loaded({ children }: { children: ReactNode }) {
     {
       // A notification's pool link is sorted out once the fresh data arrives.
       if (new URLSearchParams(window.location.search).get("pool")) return;
-      setSeasonId(sid);
+      show(sid);
       const d = readCache<SeasonData>(`season:${sid}`);
-      if (d) { setData(d); const p = Number(remember(`pool:${sid}`)); setPoolId(d.pools.some((x) => x.id === p) ? p : d.pools[0]?.id ?? null); }
+      if (d) { setData(d); setPoolId(pickPool(d.pools, sid, null)); }
     }
   }, []);
   const [error, setError] = useState<string | null>(null);
@@ -152,12 +170,17 @@ function Loaded({ children }: { children: ReactNode }) {
       }
       // A newcomer's first visit opens the tournament they called on the invite link.
       const saved = remember("season") ?? readPendingCalls()?.season ?? null;
-      setSeasonId(ss.some((s) => s.id === saved) ? saved! : defaultSeason(ss).id);
+      show(ss.some((s) => s.id === saved) ? saved! : defaultSeason(ss).id);
     })();
   }, []);
 
-  const loadSeason = useCallback(async () => {
-    if (!base || !seasonId) return;
+  // Fetched just now by a tournament switch, so the effect below needn't fetch it again.
+  const justLoaded = useRef<string | null>(null);
+  const shownSeason = useRef<string | null>(null);
+  shownSeason.current = seasonId;
+  const loadSeason = useCallback(async (sid: string | null = seasonId) => {
+    if (!base || !sid) return;
+    const seasonId = sid;
     const [matches, entries, pools] = await Promise.all([
       supabase.from("matches").select("*").eq("season", seasonId).order("kickoff_at"),
       supabase.from("entries").select("*").eq("season", seasonId).eq("user_id", base.me.user_id),
@@ -173,12 +196,17 @@ function Loaded({ children }: { children: ReactNode }) {
     } else if (entry && readPendingCalls()?.season === seasonId) writePendingCalls(null);
     const fresh: SeasonData = { matches: (matches.data ?? []) as Match[], entry, pools: ps };
     writeCache(`season:${seasonId}`, fresh);
-    if (shownSeason.current !== seasonId) return;
+    if (wanted.current !== seasonId) return;
+    if (shownSeason.current !== seasonId) justLoaded.current = seasonId;
     setData(fresh);
-    const saved = Number(remember(`pool:${seasonId}`));
-    setPoolId(ps.some((p) => p.id === saved) ? saved : ps[0]?.id ?? null);
+    setPoolId(pickPool(ps, seasonId, shownPool.current));
+    setSeasonId(seasonId);
   }, [base, seasonId]);
-  useEffect(() => { loadSeason(); }, [loadSeason]);
+  useEffect(() => {
+    if (justLoaded.current && justLoaded.current === seasonId) { justLoaded.current = null; return; }
+    loadSeason();
+  }, [loadSeason, seasonId]);
+  const reload = useCallback(() => loadSeason(), [loadSeason]);
 
   if (business) return <BusinessOnly>{children}</BusinessOnly>;
   if (schoolOnly) return <SchoolOnly>{children}</SchoolOnly>;
@@ -188,15 +216,26 @@ function Loaded({ children }: { children: ReactNode }) {
   const season = base.seasons.find((s) => s.id === seasonId)!;
   const value: League = {
     ...base, season,
-    setSeason: (id) => { remember("season", id); setData(readCache<SeasonData>(`season:${id}`) ?? null); setSeasonId(id); },
+    // Switch in one step: the new tournament's league is picked before anything redraws.
+    // With nothing saved for it yet, the screen stays as it is until its data arrives.
+    setSeason: (id) => {
+      if (id === seasonId) return;
+      remember("season", id);
+      wanted.current = id;
+      const d = readCache<SeasonData>(`season:${id}`);
+      if (!d) { loadSeason(id); return; }
+      const p = pickPool(d.pools, id, shownPool.current);
+      if (p !== null) remember(`pool:${id}`, String(p));
+      setData(d); setPoolId(p); setSeasonId(id);
+    },
     pools: data.pools,
     pool: data.pools.find((p) => p.id === poolId) ?? null,
     setPool: (id) => { remember(`pool:${seasonId}`, String(id)); setPoolId(id); },
-    reloadPools: loadSeason,
+    reloadPools: reload,
     matches: data.matches,
     rounds: [...new Set(data.matches.map((m) => m.round))].sort((a, b) => a - b),
     entry: data.entry,
-    reloadEntry: loadSeason,
+    reloadEntry: reload,
   };
   // Saved names come back with the short name the database worked out; the entry's team name follows on the server.
   function named(m: Member) {

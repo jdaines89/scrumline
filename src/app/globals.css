@@ -1353,6 +1353,15 @@ button.poll-opt.shut.on { border-color: var(--accent); }
 .poll-confirm span { flex: 1 1 100%; color: var(--muted); }
 .poll-confirm button { flex: 1; padding: 8px 10px; }
 .poll-who-n { color: var(--text); font-variant-numeric: tabular-nums; margin-right: 4px; }
+/* On a computer the screen is wide but short: a wider poll with its answers in two
+   columns keeps one poll from filling the whole chat. Phones keep one column. */
+@media (min-width: 761px) {
+  .bubble.withpoll { width: min(580px, 100%); }
+  .poll-opts { gap: 5px; }
+  .poll-opts.many { grid-template-columns: 1fr 1fr; }
+  button.poll-opt, button.poll-opt:hover, button.poll-opt:focus { padding: 7px 10px; }
+  .poll-hint { margin-bottom: 8px; }
+}
 
 /* Several photos waiting to send: a row of thumbnails, each with its own ×, and + for more. */
 .photodraft { max-width: calc(100% - 36px); overflow-x: auto; scrollbar-width: none; }

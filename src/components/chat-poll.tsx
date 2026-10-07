@@ -26,7 +26,7 @@ export function PollCard({ question, options, closed, votes, me, people, onVote,
     <div className="poll" onClick={(e) => e.stopPropagation()}>
       <p className="poll-q">{question}</p>
       <p className="poll-hint small">{closed ? "Poll closed · final results" : mine === undefined ? "Pick one" : "Tap another answer to change your vote"}</p>
-      <div className="poll-opts" role="radiogroup" aria-label={question}>
+      <div className={`poll-opts${options.length >= 4 ? " many" : ""}`} role="radiogroup" aria-label={question}>
         {options.map((o, i) => {
           const n = count(i);
           const share = total ? Math.round((n / total) * 100) : 0;
