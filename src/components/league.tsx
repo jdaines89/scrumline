@@ -352,7 +352,7 @@ export function NeedsPool({ children }: { children: ReactNode }) {
   return (
     <div className="card narrow">
       <h2>No league yet</h2>
-      <p className="sub">You&apos;re not in a league for {season.name}. Start one or join with a code from a mate.</p>
+      <p className="sub">You&apos;re not in a league for {season.name}. Start one or join with a code someone sent you.</p>
       <Link className="btn" href="/leagues/">Go to leagues</Link>
     </div>
   );

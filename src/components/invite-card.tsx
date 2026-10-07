@@ -56,11 +56,11 @@ export function InviteCard() {
 
   return (
     <div className="card invite">
-      <h2>Bring your mates into the game</h2>
+      <h2>Bring more people into the game</h2>
       <p className="sub">
         {named
           ? <>Every old schoolmate who plays can earn a seat in the team for <strong>{named}</strong> and push your schools up the table. More players means more bragging rights, and more that sponsors put back into your schools. Your link gets them straight in, and confirms anyone who went where you did.</>
-          : "Your link gets them straight in, calling scores with you this weekend. Save your schools on your profile and every mate who plays helps push them up the schools table."}
+          : "Your link gets them straight in, calling scores with you this weekend. Save your schools on your profile and everyone who joins helps push them up the schools table."}
       </p>
       {running.length > 0 && (
         <ul className="recruit-prizes">

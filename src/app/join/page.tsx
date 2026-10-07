@@ -25,7 +25,7 @@ export default function JoinPage() {
   return (
     <div className="card narrow">
       <h2>{state === "failed" ? "That league link doesn't work" : "You're already on Scrumline"}</h2>
-      <p className="sub">{state === "failed" ? "The league may have a new code. Ask whoever sent it for a fresh link." : "Share your own invite link from the Leagues screen to bring mates in."}</p>
+      <p className="sub">{state === "failed" ? "The league may have a new code. Ask whoever sent it for a fresh link." : "Share your own invite link from the Leagues screen to invite people."}</p>
       <Link className="btn" href="/leagues/">Go to Leagues</Link>
     </div>
   );

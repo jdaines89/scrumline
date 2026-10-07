@@ -79,7 +79,7 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     const prize = prizes.find((p) => p.round === round && p.winners?.length);
     if (prize) {
       const byUser = new Map(entries.map((r) => [r.user_id, r.manager]));
-      const winners = prize.winners!.map((u) => byUser.get(u) ?? "A mate").join(" & ");
+      const winners = prize.winners!.map((u) => byUser.get(u) ?? "A player").join(" & ");
       lines.push({ label: "Prize", text: `${winners} win${prize.winners!.length === 1 ? "s" : ""} the ${prize.prize}, thanks to ${prize.sponsor}` });
     }
 

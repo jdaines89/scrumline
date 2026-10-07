@@ -50,7 +50,7 @@ export function PrizeSetup() {
   // Prizes this player's business owes: won, not yet confirmed received.
   const [chat, setChat] = useState<PoolPrize | null>(null);
   const handover = prizes.filter((p) => p.offered_by === me.user_id && p.status === "awaiting" && p.winners?.length);
-  const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
+  const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A player");
 
   useEffect(() => {
     supabase.rpc("my_businesses").then(({ data }) => setBusinesses((data ?? []) as Business[]));

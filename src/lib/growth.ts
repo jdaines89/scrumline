@@ -18,7 +18,7 @@ export function afterRoundLine(a: AfterRound, roundLabel: string): string {
 /** A small league gets asked for one more; a bigger one for the next rival. */
 export function mateAsk(members: number | null): string {
   if (!members || members < 4) return "It's more fun with a few more of you. Who should be in it next weekend?";
-  if (members < 8) return "Who else would you love to beat? One more mate makes every round closer.";
+  if (members < 8) return "Who else would you love to beat? One more player makes every round closer.";
   return "Who's the next rival? Every new player makes the table harder to top.";
 }
 

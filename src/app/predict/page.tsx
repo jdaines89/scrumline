@@ -130,7 +130,7 @@ function Predict() {
       crowd: (cr.data ?? []) as CrowdRow[],
       locks: (ml.data ?? []).map((r: { match_id: string }) => r.match_id),
       mates: ((theirs.data ?? []) as Prediction[]).map((x) => ({
-        ...x, name: members.find((m) => m.user_id === owner.get(x.entry_id))?.display_name ?? "A mate",
+        ...x, name: members.find((m) => m.user_id === owner.get(x.entry_id))?.display_name ?? "A player",
         pts: pts.get(`${x.entry_id}:${x.match_id}`) ?? null,
       })).sort((a, b) => a.name.localeCompare(b.name)),
       preds: (p.data ?? []) as Prediction[],
@@ -183,7 +183,7 @@ function Predict() {
   if (allIn) {
     const openIds = ms.filter((m) => !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
     if (openIds.length) steps.push({
-      title: `Lock ${openIds.length === ms.length ? "your" : openIds.length} call${openIds.length === 1 ? "" : "s"} to see your mates'`,
+      title: `Lock ${openIds.length === ms.length ? "your" : openIds.length} call${openIds.length === 1 ? "" : "s"} to see everyone's`,
       detail: "You'll see what everyone who's locked the same games called. A lock can't be undone.",
       onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after.`)) lockMatches(openIds); },
     });
@@ -271,7 +271,7 @@ function Predict() {
     <>
       {pools.length === 0 && (
         <form className="notice joinnudge" onSubmit={joinPool}>
-          <span>You&apos;re not in a league for {season.name} yet, so nobody sees your score on a leaderboard. Got a code from a mate?</span>
+          <span>You&apos;re not in a league for {season.name} yet, so nobody sees your score on a leaderboard. Got a code from someone?</span>
           <span className="row">
             <input required maxLength={6} placeholder="League code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
             <button type="submit">Join</button>
@@ -365,7 +365,7 @@ function Predict() {
               {crowd.has(m.id) && <Crowd c={crowd.get(m.id)!} home={h} away={a} />}
               {mates.some((x) => x.match_id === m.id) && (
                 <details className="mates" open={matchStarted(m)}>
-                  <summary>Your mates&apos; calls ({mates.filter((x) => x.match_id === m.id).length})</summary>
+                  <summary>Everyone&apos;s calls ({mates.filter((x) => x.match_id === m.id).length})</summary>
                   {matchStarted(m) && (() => {
                     // Kicked off: how everyone called it, yours included.
                     const all = [...mates.filter((x) => x.match_id === m.id), ...(p ? [{ ...p, name: "You", me: true }] : [])];
@@ -406,7 +406,7 @@ function Predict() {
               const open = ms.filter((m) => preds.has(m.id) && !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
               return open.length > 0 && !allIn && (
                 <button type="button" onClick={() => {
-                  if (window.confirm(`Lock ${open.length} call${open.length === 1 ? "" : "s"}? You can't change them after, but you'll see the calls of mates who've locked the same games.`)) lockMatches(open);
+                  if (window.confirm(`Lock ${open.length} call${open.length === 1 ? "" : "s"}? You can't change them after, but you'll see the calls of others who've locked the same games.`)) lockMatches(open);
                 }}>Lock {open.length === ms.length ? "all" : open.length} call{open.length === 1 ? "" : "s"}</button>
               );
             })()}
@@ -416,7 +416,7 @@ function Predict() {
           </div>
         )}
         {!season.is_replay && !done && (
-          <p className="small muted">Every call locks at kickoff anyway. Lock one earlier and you&apos;ll see the calls of mates who&apos;ve locked that game too. A lock can&apos;t be undone.</p>
+          <p className="small muted">Every call locks at kickoff anyway. Lock one earlier and you&apos;ll see the calls of others who&apos;ve locked that game too. A lock can&apos;t be undone.</p>
         )}
         {!done && season.is_replay && (
           <>

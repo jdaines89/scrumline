@@ -21,7 +21,7 @@ export function PrizeChat({ prize, onClose }: { prize: PoolPrize; onClose: () =>
   const [err, setErr] = useState<string | null>(null);
   const log = useRef<HTMLDivElement>(null);
   const poolId = pool!.id;
-  const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A mate");
+  const nameOf = (id: string) => (id === me.user_id ? "You" : members.find((m) => m.user_id === id)?.display_name ?? "A player");
   const giver = prize.offered_by === me.user_id;
   const others = giver ? (prize.winners ?? []).filter((u) => u !== me.user_id) : [prize.offered_by];
   const withWho = others.map(nameOf).join(" & ");

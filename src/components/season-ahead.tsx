@@ -24,7 +24,7 @@ export function SeasonAhead() {
     <div className="card season-ahead">
       <h2>{when ? `Starts ${when}` : "Starting soon"}</h2>
       <p>The {season.name} fixtures appear here as soon as they&apos;re published, and you call every score from there.</p>
-      <p className="small muted">Your leagues are ready now, so it&apos;s a good time to bring your mates in. <Link href="/leagues/">Your leagues</Link></p>
+      <p className="small muted">Your leagues are ready now, so it&apos;s a good time to invite people. <Link href="/leagues/">Your leagues</Link></p>
     </div>
   );
 }

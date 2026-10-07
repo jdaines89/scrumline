@@ -49,7 +49,7 @@ export default function PrizesPage() {
             ) : <Link href="/leagues/" className="nopool">Join a league first</Link>}
           </label>
         </div>
-        {pool?.school_emis && <p className="small muted" style={{ margin: "10px 0 0" }}>School leagues take recruiter prizes only. Round prizes are for leagues of mates of up to 50.</p>}
+        {pool?.school_emis && <p className="small muted" style={{ margin: "10px 0 0" }}>School leagues take recruiter prizes only. Round prizes are for private leagues of up to 50.</p>}
       </div>
       <PrizeSetup />
       <RecruiterPrizeSetup />

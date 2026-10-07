@@ -42,7 +42,7 @@ export function MatchReveal({ matchId, me, people, inLeague, teams, nested = fal
       const pts = new Map(((scores.data ?? []) as { entry_id: number; total_pts: number }[]).map((x) => [x.entry_id, x.total_pts]));
       const out: Call[] = rows.map((x) => {
         const u = owner.get(x.entry_id) ?? "";
-        return { ...x, user_id: u, me: u === me, name: u === me ? "You" : people.get(u)?.display_name ?? "A mate", pts: pts.get(x.entry_id) ?? null };
+        return { ...x, user_id: u, me: u === me, name: u === me ? "You" : people.get(u)?.display_name ?? "A player", pts: pts.get(x.entry_id) ?? null };
       }).sort((a, b) => (b.pts ?? 0) - (a.pts ?? 0) || Number(b.me) - Number(a.me) || a.name.localeCompare(b.name));
       const next = { game: g.data as Game, calls: out };
       if (!live) return;
