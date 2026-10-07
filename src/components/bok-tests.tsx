@@ -122,7 +122,7 @@ async function drawCard(seasonName: string, tests: BokTest[], teams: Map<string,
   g.fillStyle = "#0d1412"; g.fillRect(0, 0, W, H);
   g.fillStyle = "#1d6f4d"; g.fillRect(0, 0, W, 14);
   g.fillStyle = "#e8f0ec"; g.font = font(800, 44); g.fillText("SCRUMLINE", pad, 120);
-  g.fillStyle = "#e0b23c"; g.font = font(700, 22); g.fillText("RUGBY PREDICTION LEAGUES", pad, 158);
+  g.fillStyle = "#e0b23c"; g.font = font(700, 22); g.fillText("GET YOUR SCHOOL OVER THE LINE", pad, 158);
   g.fillStyle = "#e8f0ec"; fit("Call the Boks' tests", 800, 80, W - pad * 2); g.fillText("Call the Boks' tests", pad, 300);
   g.fillText("with us", pad, 390);
   g.fillStyle = "#8aa79a"; fit(seasonName, 500, 34, W - pad * 2); g.fillText(seasonName, pad, 450);

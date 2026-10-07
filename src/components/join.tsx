@@ -90,14 +90,14 @@ export function Join() {
           <p className="kicker">{league.season_name}</p>
           <h2>{info.inviter} wants you in {league.pool_name}</h2>
           <p className="sub">
-            A rugby prediction league{league.players > 1 ? ` with ${league.players} players already in` : ""}. Call the scores, climb the table and win
+            A Scrumline league{league.players > 1 ? ` with ${league.players} players already in` : ""}. Call the scores, climb the table and win
             prizes from local businesses, while every game you play helps fund South African schools.
           </p>
         </>
       ) : (
         <>
           <h2>{info.inviter} invited you to Scrumline</h2>
-          <p className="sub">Rugby prediction leagues with your friends, your class and your school. Win prizes from local businesses and help fund South African schools.</p>
+          <p className="sub">A free rugby calling game with your friends, your class and your school. Get your school over the line, win prizes from local businesses and help fund South African schools.</p>
         </>
       )}
       <form onSubmit={submit} className="stack">

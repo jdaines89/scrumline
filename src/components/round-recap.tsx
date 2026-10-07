@@ -208,7 +208,7 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
   g.fillStyle = "#1d6f4d"; g.fillRect(0, 0, W, 14);
   const font = (w: number, px: number) => `${w} ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
   g.fillStyle = "#e8f0ec"; g.font = font(800, 44); g.fillText("SCRUMLINE", pad, 120);
-  g.fillStyle = "#e0b23c"; g.font = font(700, 22); g.fillText("RUGBY PREDICTION LEAGUES", pad, 158);
+  g.fillStyle = "#e0b23c"; g.font = font(700, 22); g.fillText("GET YOUR SCHOOL OVER THE LINE", pad, 158);
   g.fillStyle = "#e8f0ec"; g.font = font(800, 72); g.fillText(title, pad, 290);
   g.fillStyle = "#8aa79a"; g.font = font(500, 32); g.fillText(sub, pad, 342);
 

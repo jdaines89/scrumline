@@ -50,7 +50,7 @@ export default function SponsorPack() {
         <header>
           <p className="sp-kicker">Sponsor pack</p>
           <h1>Back the rugby your customers already play</h1>
-          <p className="sub">Scrumline is a free rugby prediction league for South Africans. Friends, old pupils and whole schools call the score of every URC and Test match, every week, on their phones.</p>
+          <p className="sub">Scrumline is a free rugby calling game for South Africans. Friends, old pupils and whole schools call the score of every URC and Test match, every week, on their phones.</p>
         </header>
 
         <section className="pack-stats">
