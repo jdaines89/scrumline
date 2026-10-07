@@ -72,7 +72,7 @@ declare
   until timestamptz := moderation.muted_until(me);
   kind text;
 begin
-  if not public.is_pool_member(p_pool) then return 'You''re not in this pool.'; end if;
+  if not public.is_pool_member(p_pool) then return 'You''re not in this league.'; end if;
   if until is not null then return 'You can''t post in chat until ' || moderation.when_text(until) || '.'; end if;
   kind := moderation.flood_kind(me, p_pool, p_body);
   if kind in ('copy', 'link') then
