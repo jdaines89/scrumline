@@ -25,6 +25,7 @@ import { usePoolRecruiterPrizes } from "@/lib/recruiter-prizes";
 import { RecruiterPrizeLine } from "@/components/recruiter-prize";
 import type { LeaderRow } from "@/lib/types";
 import { PoolName } from "@/components/pool-name";
+import { RemovedPlayers, RemovePlayer, runsLeague } from "@/components/league-admin";
 import { fullName, useSchoolLabels } from "@/lib/names";
 import { ord } from "@/lib/growth";
 import { roundText } from "@/lib/format";
@@ -46,6 +47,9 @@ function Leaderboard() {
   const [picked, setPicked] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
   const [view, setView] = useState<"overall" | "round" | "schools">("overall");
+  // Bumped when someone is removed, so the table and the removed list reload.
+  const [removals, setRemovals] = useState(0);
+  const runs = runsLeague(pool!, me);
   // Whoever started the league can open its picture setting under the name.
   const [editPic, setEditPic] = useState(false);
   const [picMsg, setPicMsg] = useState<string | null>(null);
@@ -71,7 +75,7 @@ function Leaderboard() {
     supabase.from("pool_leaderboard").select("*").eq("pool_id", pool!.id)
       .order("total_points", { ascending: false }).order("exact_scores", { ascending: false }).order("manager")
       .then(({ data }) => { const r = (data ?? []) as LeaderRow[]; writeCache(`board:${pool!.id}`, r); setRows(r); });
-  }, [pool]);
+  }, [pool, removals]);
 
   // Members with no calls in their last two rounds sit under the table, points kept, until they call again.
   const playing = rows?.filter((r) => !r.resting) ?? [];
@@ -88,7 +92,7 @@ function Leaderboard() {
 
   const row = (r: LeaderRow, rank: number | null) => (
     <li key={r.user_id} className={`${r.user_id === me.user_id ? "me" : ""}${picked === r.user_id ? " open" : ""}`}
-      onClick={() => r.entry_id && setPicked(picked === r.user_id ? null : r.user_id)}>
+      onClick={() => (r.entry_id || runs) && setPicked(picked === r.user_id ? null : r.user_id)}>
       <div className="brow">
         <span className="rank">{rank ?? "–"}</span>
         <div className="who">
@@ -112,6 +116,10 @@ function Leaderboard() {
         </div>
       )}
       {picked === r.user_id && r.entry_id && <HeadToHead mine={mine} theirs={r.entry_id} name={r.team_name ?? r.manager} />}
+      {picked === r.user_id && runs && r.user_id !== me.user_id && r.user_id !== pool!.created_by && (
+        <RemovePlayer pool={pool!} userId={r.user_id} name={fullName(person(r.user_id)) || r.manager}
+          onRemoved={() => { setPicked(null); setRemovals((n) => n + 1); }} />
+      )}
     </li>
   );
 
@@ -159,6 +167,7 @@ function Leaderboard() {
             <ol className="board resting">{resting.map((r) => row(r, null))}</ol>
           </details>
         )}
+        {runs && <RemovedPlayers pool={pool!} tick={removals} />}
         {prizeBlock}
         <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />
         {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
