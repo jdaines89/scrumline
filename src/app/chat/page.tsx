@@ -9,7 +9,7 @@ import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { photoSize, photoUrl, rememberPhotoSize, shrinkPhoto, sizedName } from "@/lib/photo";
 import { supabase } from "@/lib/supabase";
-import type { ChatMessage, LeaderRow, Member } from "@/lib/types";
+import type { ChatMessage, LeaderRow, Member, Team } from "@/lib/types";
 import { RoundRecap } from "@/components/round-recap";
 import { PrizeChat } from "@/components/prize-chat";
 import { usePoolPrizes, type PoolPrize } from "@/lib/prizes";
@@ -18,6 +18,8 @@ import { readCache, writeCache } from "@/lib/cache";
 import { PoolName, poolLabel } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
 import { roundName } from "@/lib/format";
+import { MatchDay } from "@/components/match-reveal";
+import { groupReveals, type RevealRow } from "@/lib/moments";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -25,14 +27,18 @@ const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "B
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
 const MAX_PHOTOS = 10;
-interface Notice { id: number; kind: "prize_won" | "round_recap"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string }
+interface Notice { id: number; kind: "prize_won" | "round_recap" | "reveal"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string; match_ids?: string[] }
+/** A day's kickoff reveals, one card in the log like an announcement. Negative ids keep them apart from notices. */
+const asNotices = (rs: RevealRow[]): Notice[] => groupReveals(rs).map((d) =>
+  ({ id: -d.id, kind: "reveal", round: 0, winners: [], prize: null, sponsor: null, created_at: d.created_at, match_ids: d.match_ids }));
+const byTime = (xs: Notice[]) => [...xs].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
 export default function ChatPage() {
   return <NeedsPool><Chat /></NeedsPool>;
 }
 
 function Chat() {
-  const { me, members: everyone, pool, pools, setPool, season, seasons, setSeason } = useLeague();
+  const { me, members: everyone, pool, pools, setPool, season, seasons, setSeason, teams } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   // One chat per league, whichever tournament you're looking at: it lives on the league's first table.
@@ -185,11 +191,26 @@ function Chat() {
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
     setNotices([]);
-    supabase.from("chat_notices").select("*").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20)
-      .then(({ data }) => setNotices(((data ?? []) as Notice[]).reverse()));
+    let reveals: RevealRow[] = [];
+    Promise.all([
+      supabase.from("chat_notices").select("*").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20),
+      supabase.from("match_reveals").select("id, match_id, created_at").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20),
+    ]).then(([n, r]) => {
+      reveals = (r.data ?? []) as RevealRow[];
+      setNotices(byTime([...((n.data ?? []) as Notice[]), ...asNotices(reveals)]));
+    });
+    const add = (n: Notice) => setNotices((xs) => xs.some((x) => x.id === n.id) ? xs : byTime([...xs, n]));
+    // A game kicking off joins its day's card rather than adding another.
+    const addReveal = (r: RevealRow) => {
+      if (reveals.some((x) => x.id === r.id)) return;
+      reveals = [...reveals, r];
+      setNotices((xs) => byTime([...xs.filter((x) => x.kind !== "reveal"), ...asNotices(reveals)]));
+    };
     const ch = supabase.channel(`notices:${poolId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_notices", filter: `pool_id=eq.${poolId}` },
-        (p) => setNotices((xs) => xs.some((x) => x.id === (p.new as Notice).id) ? xs : [...xs, p.new as Notice]))
+        (p) => add(p.new as Notice))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "match_reveals", filter: `pool_id=eq.${poolId}` },
+        (p) => addReveal(p.new as RevealRow))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [poolId]);
@@ -566,7 +587,7 @@ function Chat() {
       }}>
         {more && <p className="muted small" style={{ textAlign: "center" }}>{loadingOlder ? "Loading older messages…" : "Scroll up for older messages"}</p>}
         {msgs.length === 0 && !notices.length && <p className="muted small">No messages yet. Start the banter.</p>}
-        {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
+        {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} inLeague={inPool} teams={teams} />)}
         {msgs.map((m, i) => {
           // Announcements that came after the previous message and before this one (or after the last).
           const t = Date.parse(m.created_at), from = i === 0 ? (more ? t : -Infinity) : Date.parse(msgs[i - 1].created_at);
@@ -584,7 +605,7 @@ function Chat() {
             && new Date(m.created_at).getTime() - new Date(msgs[i - 1].created_at).getTime() < 5 * 60_000;
           return (
             <Fragment key={m.id}>
-            {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
+            {before.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} inLeague={inPool} teams={teams} />)}
             <div data-id={m.id} className={`msg${mine ? " mine" : ""}${tagsMe ? " tagged" : ""}${grouped ? " grouped" : ""}${flash === m.id ? " flash" : ""}`}>
               {!grouped && !mine && <button type="button" className="msgwho" aria-label={`${who?.display_name ?? "Player"}'s profile`} onClick={() => who && setProfile(who)}><Avatar member={who} size={28} /></button>}
               <div className="msgbody">
@@ -646,7 +667,7 @@ function Chat() {
                 </>)}
               </div>
             </div>
-            {after.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} />)}
+            {after.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} inLeague={inPool} teams={teams} />)}
             </Fragment>
           );
         })}
@@ -872,11 +893,13 @@ function Reactions({ list, me, people, onToggle }: {
 }
 
 /** A league announcement: who won the round prize. */
-function NoticeRow({ n, me, people, recap }: {
+function NoticeRow({ n, me, people, recap, inLeague, teams }: {
   n: Notice; me: string; people: Map<string, Member>;
   recap: { rows: LeaderRow[]; prizes: PoolPrize[]; sponsor: PoolSponsor | null; onOpen: (url: string) => void };
+  inLeague: Set<string>; teams: Map<string, Team>;
 }) {
   if (n.kind === "round_recap") return <RoundRecap {...recap} round={n.round} inChat />;
+  if (n.kind === "reveal") return <MatchDay matchIds={n.match_ids ?? []} at={n.created_at} me={me} people={people} inLeague={inLeague} teams={teams} />;
   // Winners and the member who offered the prize are tagged, like a chat mention.
   const giver = recap.prizes.find((p) => p.round === n.round)?.offered_by;
   const tag = (id: string) => (

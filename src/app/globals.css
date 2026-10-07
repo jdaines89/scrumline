@@ -1388,3 +1388,42 @@ button.pcell, button.pcell:hover { position: relative; display: block; aspect-ra
 .inv-code > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .inv-code-value { font-size: 22px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .inv-code button { flex: none; }
+
+/* Kickoff reveal in league chat: the league's locked calls, then the points at full time. Green, where prizes are gold. */
+.chatlog .notice.reveal { border-color: #2a5a45; background: #12241c; max-width: 340px; width: 100%; }
+.chatlog .notice.reveal .nk { color: var(--accent); }
+.chatlog .notice.reveal strong { color: var(--text); }
+.reveal-calls { list-style: none; margin: 10px 0 0; padding: 8px 0 0; border-top: 1px solid #24382f; display: grid; gap: 6px; text-align: left; }
+.reveal-calls li { display: grid; grid-template-columns: 1fr auto 44px; gap: 10px; align-items: baseline; font-size: 14px; }
+.reveal-calls li strong { display: inline; margin: 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+.reveal-calls li.me span:first-child { color: var(--accent); font-weight: 600; }
+.reveal-calls .pts { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.reveal-calls .pts.top { color: var(--accent); font-weight: 700; }
+.mates-split { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.mates-split strong { color: var(--text); font-weight: 600; }
+
+/* Full time on Home: the results you called, your points, and where you stand now. */
+.fulltime .ft-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+.fulltime .ft-k { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.fulltime .ft-total { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ft-list { list-style: none; margin: 0; padding: 0; }
+.ft-list li { display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.ft-list li:last-child { border-bottom: 0; }
+.ft-score { font-size: 16px; font-variant-numeric: tabular-nums; }
+.ft-pts { color: var(--accent); font-weight: 600; }
+.ft-more { margin: 4px 0 0; }
+.ft-place { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font-weight: 600; }
+.reveal-calls .pchip { margin-left: 8px; }
+.reveal-bar { display: flex; gap: 2px; height: 6px; margin: 10px 0 8px; border-radius: 3px; overflow: hidden; }
+.reveal-bar .h { background: var(--accent); }
+.reveal-bar .d { background: var(--muted); }
+.reveal-bar .a { background: #d9b75a; }
+.reveal-calls .rk { display: inline-block; min-width: 26px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chatlog .notice.reveal .reveal-all { margin-top: 8px; font-size: 13px; color: var(--accent); }
+/* A match day: the day's games in one card, each a short block until opened. */
+.chatlog .notice.match-day .reveal-game { text-align: left; padding: 12px 0 0; margin-top: 12px; border-top: 1px solid #24382f; }
+.chatlog .notice.match-day .reveal-game:first-of-type { margin-top: 8px; }
+.reveal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.chatlog .notice.match-day .reveal-head strong { display: inline; margin: 0; font-size: 15px; }
+.chatlog .notice.match-day .reveal-head .nk { display: inline; flex-shrink: 0; }
+.chatlog .notice.match-day .reveal-game .reveal-calls { border-top: 0; padding-top: 0; margin-top: 8px; }

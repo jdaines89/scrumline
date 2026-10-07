@@ -15,6 +15,7 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
   const [busy, setBusy] = useState(false);
   const [remind, setRemind] = useState<"off" | "push" | "email">(!me.email_reminders ? "off" : me.reminder_by === "email" ? "email" : "push");
   const [tags, setTags] = useState(me.push_mentions);
+  const [results, setResults] = useState(me.push_results ?? true);
   const [installable, setInstallable] = useState(false);
   const [installed, setInstalled] = useState(false);
   const [how, setHow] = useState<InstallHow | null>(null);
@@ -43,7 +44,7 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
     setState(await pushState());
   }
 
-  async function save(field: "push_mentions", value: boolean, set: (v: boolean) => void) {
+  async function save(field: "push_mentions" | "push_results", value: boolean, set: (v: boolean) => void) {
     set(value);
     const { error } = await supabase.from("members").update({ [field]: value }).eq("user_id", me.user_id);
     if (error) { set(!value); onMessage(false, error.message); }
@@ -85,6 +86,16 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
           <div className="seg sm">
             <button type="button" className={!tags || !pushOn ? "on" : ""} onClick={() => save("push_mentions", false, setTags)}>Off</button>
             <button type="button" className={tags && pushOn ? "on" : ""} disabled={!pushOn} onClick={() => save("push_mentions", true, setTags)}>Push</button>
+          </div>
+        </div>
+        <div className="pref">
+          <div className="pref-text">
+            <strong>Full time</strong>
+            <span className="small muted">After a game you called: your points and where you stand</span>
+          </div>
+          <div className="seg sm">
+            <button type="button" className={!results || !pushOn ? "on" : ""} onClick={() => save("push_results", false, setResults)}>Off</button>
+            <button type="button" className={results && pushOn ? "on" : ""} disabled={!pushOn} onClick={() => save("push_results", true, setResults)}>Push</button>
           </div>
         </div>
       </div>
