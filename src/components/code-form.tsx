@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 // Supabase checks each kind separately, so try them in turn.
 const KINDS = ["email", "invite", "magiclink"] as const;
 
-/** Type the 6-digit code from the email, right here: no links. A newcomer chooses a password next. */
+/** Type the code from the email, right here: no links. A newcomer chooses a password next. */
 export function CodeForm({ email, onBack, resend }: { email: string; onBack: () => void; resend: () => Promise<void> }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -17,7 +17,7 @@ export function CodeForm({ email, onBack, resend }: { email: string; onBack: () 
   async function submit(e: FormEvent) {
     e.preventDefault();
     const token = code.replace(/\D/g, "");
-    if (token.length !== 6) { setMsg("The code is 6 digits."); return; }
+    if (token.length < 6 || token.length > 10) { setMsg("Type the whole code from the email."); return; }
     setBusy(true); setMsg(null);
     for (const type of KINDS) {
       const { error } = await supabase.auth.verifyOtp({ email, token, type });
@@ -30,10 +30,10 @@ export function CodeForm({ email, onBack, resend }: { email: string; onBack: () 
   return (
     <>
       <h2>Check your email</h2>
-      <p className="sub">We sent a 6-digit code to <strong>{email}</strong>. Type it here. If it isn&apos;t there in a minute, check spam.</p>
+      <p className="sub">We sent a code to <strong>{email}</strong>. Type it here. If it isn&apos;t there in a minute, check spam.</p>
       <form onSubmit={submit} className="stack">
-        <input className="code-input" required autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={7}
-          placeholder="6-digit code" value={code} onChange={(e) => setCode(e.target.value.replace(/[^\d ]/g, ""))} />
+        <input className="code-input" required autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={12}
+          placeholder="Code from the email" value={code} onChange={(e) => setCode(e.target.value.replace(/[^\d ]/g, ""))} />
         <button type="submit" disabled={busy}>{busy ? "Checking…" : "Continue"}</button>
       </form>
       {msg && <p className="small" style={{ color: "var(--danger)", marginBottom: 0 }}>{msg}</p>}
