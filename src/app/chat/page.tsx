@@ -18,7 +18,8 @@ import { readCache, writeCache } from "@/lib/cache";
 import { PoolName, poolLabel } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
 import { roundName } from "@/lib/format";
-import { MatchReveal } from "@/components/match-reveal";
+import { MatchDay } from "@/components/match-reveal";
+import { groupReveals, type RevealRow } from "@/lib/moments";
 
 const PAGE = 30;
 const EMOJI = ["👍", "😂", "🔥", "😮", "😢", "🏉"];
@@ -26,10 +27,10 @@ const REASONS: [string, string][] = [["hate", "Racism or hate"], ["bullying", "B
 
 interface Reaction { message_id: number; user_id: string; emoji: string }
 const MAX_PHOTOS = 10;
-interface Notice { id: number; kind: "prize_won" | "round_recap" | "reveal"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string; match_id?: string }
-/** A kickoff reveal, shown in the log like an announcement. Negative ids keep them apart from notices. */
-const asNotice = (r: { id: number; match_id: string; created_at: string }): Notice =>
-  ({ id: -r.id, kind: "reveal", round: 0, winners: [], prize: null, sponsor: null, created_at: r.created_at, match_id: r.match_id });
+interface Notice { id: number; kind: "prize_won" | "round_recap" | "reveal"; round: number; winners: string[]; prize: string | null; sponsor: string | null; created_at: string; match_ids?: string[] }
+/** A day's kickoff reveals, one card in the log like an announcement. Negative ids keep them apart from notices. */
+const asNotices = (rs: RevealRow[]): Notice[] => groupReveals(rs).map((d) =>
+  ({ id: -d.id, kind: "reveal", round: 0, winners: [], prize: null, sponsor: null, created_at: d.created_at, match_ids: d.match_ids }));
 const byTime = (xs: Notice[]) => [...xs].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
 export default function ChatPage() {
@@ -190,16 +191,26 @@ function Chat() {
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
     setNotices([]);
+    let reveals: RevealRow[] = [];
     Promise.all([
       supabase.from("chat_notices").select("*").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20),
       supabase.from("match_reveals").select("id, match_id, created_at").eq("pool_id", poolId).order("created_at", { ascending: false }).limit(20),
-    ]).then(([n, r]) => setNotices(byTime([...((n.data ?? []) as Notice[]), ...((r.data ?? []) as { id: number; match_id: string; created_at: string }[]).map(asNotice)])));
+    ]).then(([n, r]) => {
+      reveals = (r.data ?? []) as RevealRow[];
+      setNotices(byTime([...((n.data ?? []) as Notice[]), ...asNotices(reveals)]));
+    });
     const add = (n: Notice) => setNotices((xs) => xs.some((x) => x.id === n.id) ? xs : byTime([...xs, n]));
+    // A game kicking off joins its day's card rather than adding another.
+    const addReveal = (r: RevealRow) => {
+      if (reveals.some((x) => x.id === r.id)) return;
+      reveals = [...reveals, r];
+      setNotices((xs) => byTime([...xs.filter((x) => x.kind !== "reveal"), ...asNotices(reveals)]));
+    };
     const ch = supabase.channel(`notices:${poolId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_notices", filter: `pool_id=eq.${poolId}` },
         (p) => add(p.new as Notice))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "match_reveals", filter: `pool_id=eq.${poolId}` },
-        (p) => add(asNotice(p.new as { id: number; match_id: string; created_at: string })))
+        (p) => addReveal(p.new as RevealRow))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [poolId]);
@@ -888,7 +899,7 @@ function NoticeRow({ n, me, people, recap, inLeague, teams }: {
   inLeague: Set<string>; teams: Map<string, Team>;
 }) {
   if (n.kind === "round_recap") return <RoundRecap {...recap} round={n.round} inChat />;
-  if (n.kind === "reveal") return <MatchReveal matchId={n.match_id!} me={me} people={people} inLeague={inLeague} teams={teams} />;
+  if (n.kind === "reveal") return <MatchDay matchIds={n.match_ids ?? []} at={n.created_at} me={me} people={people} inLeague={inLeague} teams={teams} />;
   // Winners and the member who offered the prize are tagged, like a chat mention.
   const giver = recap.prizes.find((p) => p.round === n.round)?.offered_by;
   const tag = (id: string) => (

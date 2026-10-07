@@ -1420,3 +1420,10 @@ button.pcell, button.pcell:hover { position: relative; display: block; aspect-ra
 .reveal-bar .a { background: #d9b75a; }
 .reveal-calls .rk { display: inline-block; min-width: 26px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .chatlog .notice.reveal .reveal-all { margin-top: 8px; font-size: 13px; color: var(--accent); }
+/* A match day: the day's games in one card, each a short block until opened. */
+.chatlog .notice.match-day .reveal-game { text-align: left; padding: 12px 0 0; margin-top: 12px; border-top: 1px solid #24382f; }
+.chatlog .notice.match-day .reveal-game:first-of-type { margin-top: 8px; }
+.reveal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.chatlog .notice.match-day .reveal-head strong { display: inline; margin: 0; font-size: 15px; }
+.chatlog .notice.match-day .reveal-head .nk { display: inline; flex-shrink: 0; }
+.chatlog .notice.match-day .reveal-game .reveal-calls { border-top: 0; padding-top: 0; margin-top: 8px; }

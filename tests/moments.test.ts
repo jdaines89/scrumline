@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ordinal, placeLine, splitLines, teamRef } from "../src/lib/moments";
+import { groupReveals, ordinal, placeLine, splitLines, teamRef } from "../src/lib/moments";
 
 const c = (name: string, h: number, a: number, me = false) => ({ name, home_score: h, away_score: a, me });
 
@@ -41,5 +41,21 @@ describe("full-time place line", () => {
   });
   it("writes places the English way", () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 101].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "101st"]);
+  });
+});
+
+describe("match-day cards", () => {
+  it("puts a day's games in one card, by South African date", () => {
+    const g = groupReveals([
+      { id: 3, match_id: "c", created_at: "2026-10-10T15:05:00Z" },
+      { id: 1, match_id: "a", created_at: "2026-10-09T18:50:00Z" },
+      { id: 2, match_id: "b", created_at: "2026-10-10T13:00:00Z" },
+      { id: 4, match_id: "d", created_at: "2026-10-10T22:30:00Z" }, // after midnight in South Africa
+    ]);
+    expect(g).toEqual([
+      { id: 1, created_at: "2026-10-09T18:50:00Z", match_ids: ["a"] },
+      { id: 2, created_at: "2026-10-10T13:00:00Z", match_ids: ["b", "c"] },
+      { id: 4, created_at: "2026-10-10T22:30:00Z", match_ids: ["d"] },
+    ]);
   });
 });

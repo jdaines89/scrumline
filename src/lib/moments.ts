@@ -58,3 +58,23 @@ export function placeLine(l: NonNullable<FullTime["league"]>): string {
   if (l.rank_now > l.rank_before) return `Down to ${at}.`;
   return `Still ${at}.`;
 }
+
+/** A kickoff reveal as the chat loads it: one per league and game. */
+export interface RevealRow { id: number; match_id: string; created_at: string }
+
+/** The South African day a reveal falls on, so a weekend's games share one card a day. */
+export const revealDay = (iso: string) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Johannesburg", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+
+/**
+ * One card per match day instead of one per game, so a busy weekend adds a card or two
+ * to a league's chat, not eight. The card sits where the day's first game kicked off.
+ */
+export function groupReveals(rows: RevealRow[]): { id: number; created_at: string; match_ids: string[] }[] {
+  const days = new Map<string, RevealRow[]>();
+  for (const r of [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id)) {
+    const k = revealDay(r.created_at);
+    days.set(k, [...(days.get(k) ?? []), r]);
+  }
+  return [...days.values()].map((rs) => ({ id: rs[0].id, created_at: rs[0].created_at, match_ids: [...new Set(rs.map((r) => r.match_id))] }));
+}
