@@ -1388,3 +1388,18 @@ button.pcell, button.pcell:hover { position: relative; display: block; aspect-ra
 .inv-code > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .inv-code-value { font-size: 22px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .inv-code button { flex: none; }
+
+/* The Bok tests invite: the fixtures, then one clear way to send the league. */
+.bok-list { list-style: none; margin: 0 0 14px; padding: 0; }
+.bok-list li { display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.bok-list li:first-child { padding-top: 2px; }
+.bok-list li:last-child { border-bottom: 0; }
+.bok-when { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+.bok-league { display: grid; gap: 4px; margin-bottom: 12px; }
+.bok-league select { width: 100%; font-weight: 600; }
+a.btn.bok-send { display: block; text-align: center; padding: 11px 16px; font-size: 15px; border-radius: 10px; border-color: var(--accent); background: var(--accent); color: #07140e; }
+a.btn.bok-send:hover { filter: brightness(1.06); }
+.bok-more { flex-wrap: wrap; margin-top: 10px; }
+
+.bok-more button { flex: 1 1 0; }
+button.bok-hide { display: block; margin: 12px auto 0; color: var(--muted); font-weight: 500; font-size: 14px; }
