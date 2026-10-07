@@ -4,101 +4,139 @@ import type { ReactNode } from "react";
 // chat_messages.sticker and its label as the body, so quotes, previews and
 // older versions of the app still read sensibly ("Yellow card").
 // Each one is drawn here, so stickers cost nothing to store or load.
+// Moving parts carry an `a-*` class (see globals.css): in the chat a sticker
+// pops in and plays a few times, then rests; in the picker it keeps playing.
 
 interface Sticker { key: string; label: string; tone: [string, string]; art: ReactNode }
 
 const W = "#fff";
-const ball = (cx: number, cy: number, r = 1, rot = -30) => (
-  <g transform={`translate(${cx} ${cy}) rotate(${rot}) scale(${r})`}>
-    <ellipse rx="17" ry="11" fill="#c8733a" stroke="#5a2c10" strokeWidth="2" />
-    <path d="M-9 0h18M-5-3v6M0-3v6M5-3v6" stroke={W} strokeWidth="1.8" strokeLinecap="round" />
+const INK = "#1b1530";
+
+const ball = (cx: number, cy: number, s = 1, rot = -30) => (
+  <g transform={`translate(${cx} ${cy}) rotate(${rot}) scale(${s})`}>
+    <ellipse rx="17" ry="11" fill="#e07b39" stroke={INK} strokeWidth="2.5" />
+    <path d="M-12-4q12-6 24 0" fill="none" stroke="#ffffff66" strokeWidth="2" strokeLinecap="round" />
+    <path d="M-8 1h16M-4-2v6M0-2v6M4-2v6" stroke={W} strokeWidth="1.8" strokeLinecap="round" />
   </g>
 );
+const spark = (x: number, y: number, s = 1, delay = 0, fill = "#fff27a") => (
+  <g className="a-twinkle" style={{ animationDelay: `${delay}s` }}>
+    <path transform={`translate(${x} ${y}) scale(${s})`} d="M0-7L1.8-1.8 7 0 1.8 1.8 0 7-1.8 1.8-7 0-1.8-1.8z" fill={fill} />
+  </g>
+);
+// A raised arm holding a card up, ref-style.
+const cardUp = (fill: string) => (
+  <g className="a-flick">
+    <path d="M58 84l4-22" stroke={INK} strokeWidth="12" strokeLinecap="round" />
+    <path d="M58 84l4-22" stroke="#f2c79a" strokeWidth="7" strokeLinecap="round" />
+    <g transform="rotate(-12 62 40)">
+      <rect x="46" y="14" width="34" height="46" rx="5" fill={fill} stroke={INK} strokeWidth="3" />
+      <path d="M52 21h13" stroke="#ffffff99" strokeWidth="3.5" strokeLinecap="round" />
+    </g>
+    <circle cx="61" cy="62" r="6.5" fill="#f2c79a" stroke={INK} strokeWidth="2.5" />
+  </g>
+);
+const flash = <path className="a-pulse" d="M26 30l-8-4M24 44h-9M90 26l8-5M94 40h9" stroke={W} strokeWidth="3.5" strokeLinecap="round" />;
 
 export const STICKERS: Sticker[] = [
-  { key: "yellow_card", label: "Yellow card", tone: ["#3d3510", "#1d1a08"], art: (
-    <g transform="rotate(-10 60 46)">
-      <rect x="42" y="18" width="36" height="50" rx="4" fill="#f5c518" stroke="#7a5d00" strokeWidth="2" />
-      <path d="M48 26h14" stroke="#fff6" strokeWidth="3" strokeLinecap="round" />
-    </g>
-  ) },
-  { key: "red_card", label: "Red card", tone: ["#43150f", "#200806"], art: (
-    <g transform="rotate(8 60 46)">
-      <rect x="42" y="18" width="36" height="50" rx="4" fill="#e23b2e" stroke="#7a1209" strokeWidth="2" />
-      <path d="M48 26h14" stroke="#fff6" strokeWidth="3" strokeLinecap="round" />
-    </g>
-  ) },
-  { key: "tmo", label: "TMO check", tone: ["#14283d", "#0a1420"], art: (
+  { key: "yellow_card", label: "Yellow card", tone: ["#8a5cff", "#5326d6"], art: <g>{cardUp("#ffd21f")}{flash}</g> },
+  { key: "red_card", label: "Red card", tone: ["#3f86ff", "#1d4fd1"], art: <g>{cardUp("#ff3b30")}{flash}</g> },
+  { key: "tmo", label: "TMO check", tone: ["#16345c", "#0a1730"], art: (
     <g>
-      <rect x="30" y="20" width="60" height="42" rx="5" fill="#0f1b28" stroke="#7fb3e6" strokeWidth="2.5" strokeDasharray="7 5" />
-      <text x="60" y="48" textAnchor="middle" fontSize="17" fontWeight="800" fill="#cfe6ff" letterSpacing="2">TMO</text>
+      <rect x="24" y="16" width="72" height="50" rx="8" fill="#0b1f38" stroke={INK} strokeWidth="3" />
+      <rect className="a-march" x="30" y="22" width="60" height="38" rx="5" fill="none" stroke="#3ff0ff" strokeWidth="3" strokeDasharray="8 6" />
+      <text x="60" y="47" textAnchor="middle" fontSize="16" fontWeight="900" fill="#c9fbff" letterSpacing="3">TMO</text>
+      <g className="a-blink"><circle cx="88" cy="22" r="3.5" fill="#ff3b30" /></g>
     </g>
   ) },
-  { key: "ref", label: "Ref!", tone: ["#1f2a33", "#0e1419"], art: (
+  { key: "ref", label: "Ref!", tone: ["#ff9a2e", "#e05a00"], art: (
     <g>
-      <path d="M34 46a16 16 0 1 0 32 0V38H34z" fill="#d7dde2" stroke="#59646d" strokeWidth="2" />
-      <rect x="62" y="34" width="26" height="12" rx="3" fill="#d7dde2" stroke="#59646d" strokeWidth="2" />
-      <circle cx="50" cy="48" r="5" fill="#59646d" />
-      <path d="M90 26l6-6M92 36h8M88 18l2-8" stroke="#f5c518" strokeWidth="3" strokeLinecap="round" />
+      <g className="a-wiggle">
+        <path d="M30 44a17 17 0 1 0 34 0V36H30z" fill="#e9eef2" stroke={INK} strokeWidth="3" />
+        <rect x="60" y="31" width="28" height="13" rx="4" fill="#e9eef2" stroke={INK} strokeWidth="3" />
+        <circle cx="47" cy="47" r="5.5" fill={INK} />
+        <path d="M36 40q4-4 10-4" fill="none" stroke={W} strokeWidth="3" strokeLinecap="round" />
+      </g>
+      <g className="a-pulse"><path d="M94 24q8 10 0 20M100 18q13 16 0 32" fill="none" stroke={W} strokeWidth="3.5" strokeLinecap="round" /></g>
     </g>
   ) },
-  { key: "try", label: "Try!", tone: ["#14402a", "#0a2016"], art: (
+  { key: "try", label: "Try!", tone: ["#2fd16f", "#0f8f47"], art: (
     <g>
-      <path d="M14 58h92" stroke={W} strokeWidth="3" />
-      <path d="M14 66h92" stroke="#ffffff55" strokeWidth="2" strokeDasharray="4 6" />
-      {ball(60, 50, 1.15, -12)}
-      <path d="M30 26l4 8M60 14v10M90 26l-4 8" stroke="#f5c518" strokeWidth="3" strokeLinecap="round" />
+      <path d="M10 66h100" stroke={W} strokeWidth="4" />
+      <path d="M10 74h100" stroke="#ffffff77" strokeWidth="2.5" strokeDasharray="5 6" />
+      <g className="a-slam">{ball(60, 54, 1.25, -10)}</g>
+      {spark(26, 30, 1.2, 0)}{spark(94, 26, 1.4, .3)}{spark(60, 18, 1, .6, W)}{spark(80, 42, .8, .9)}{spark(40, 42, .8, .45, W)}
     </g>
   ) },
-  { key: "drop_goal", label: "Drop goal", tone: ["#14402a", "#0a2016"], art: (
+  { key: "drop_goal", label: "Drop goal", tone: ["#4fc8ff", "#1b82e0"], art: (
     <g>
-      <path d="M40 70V12M80 70V12M40 46h40" stroke={W} strokeWidth="4" strokeLinecap="round" />
-      {ball(60, 28, 0.75, 20)}
-      <path d="M60 64v-14" stroke="#ffffff66" strokeWidth="2" strokeDasharray="3 4" />
+      <path d="M38 78V10M82 78V10M38 52h44" stroke={INK} strokeWidth="8" strokeLinecap="round" />
+      <path d="M38 78V10M82 78V10M38 52h44" stroke={W} strokeWidth="4.5" strokeLinecap="round" />
+      <g className="a-arc">{ball(60, 30, .8, 30)}</g>
+      {spark(26, 20, .9, .2)}{spark(94, 30, .9, .7)}
     </g>
   ) },
-  { key: "scrum_down", label: "Scrum down", tone: ["#2c2416", "#16120a"], art: (
-    <g strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 30l18 16-18 16" fill="none" stroke="#35c98a" strokeWidth="7" />
-      <path d="M36 30l18 16-18 16" fill="none" stroke="#35c98a" strokeWidth="7" opacity=".6" />
-      <path d="M98 30L80 46l18 16" fill="none" stroke="#e0b23c" strokeWidth="7" />
-      <path d="M84 30L66 46l18 16" fill="none" stroke="#e0b23c" strokeWidth="7" opacity=".6" />
+  { key: "scrum_down", label: "Scrum down", tone: ["#ffc93c", "#f08a00"], art: (
+    <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <g className="a-push-r">
+        <path d="M14 28l18 18-18 18" stroke={INK} strokeWidth="11" />
+        <path d="M14 28l18 18-18 18" stroke="#16b85e" strokeWidth="6" />
+        <path d="M30 28l18 18-18 18" stroke={INK} strokeWidth="11" />
+        <path d="M30 28l18 18-18 18" stroke="#2fe07d" strokeWidth="6" />
+      </g>
+      <g className="a-push-l">
+        <path d="M106 28L88 46l18 18" stroke={INK} strokeWidth="11" />
+        <path d="M106 28L88 46l18 18" stroke="#d6331f" strokeWidth="6" />
+        <path d="M90 28L72 46l18 18" stroke={INK} strokeWidth="11" />
+        <path d="M90 28L72 46l18 18" stroke="#ff5a3c" strokeWidth="6" />
+      </g>
     </g>
   ) },
-  { key: "knock_on", label: "Knock-on", tone: ["#33230f", "#191107"], art: (
+  { key: "knock_on", label: "Knock-on", tone: ["#ff6b9a", "#d61f5b"], art: (
     <g>
-      {ball(44, 30, 0.95, -40)}
-      <path d="M58 26q16-10 26 10" fill="none" stroke={W} strokeWidth="3" strokeLinecap="round" strokeDasharray="4 5" />
-      {ball(86, 56, 0.8, 30)}
-      <path d="M22 64h30" stroke="#ffffff55" strokeWidth="2" />
+      <path d="M14 74h92" stroke="#ffffff88" strokeWidth="3" strokeLinecap="round" />
+      <g className="a-hop">{ball(54, 42, 1.1, -35)}</g>
+      <g className="a-wiggle"><text x="94" y="36" textAnchor="middle" fontSize="22" fontWeight="900" fill={W} stroke={INK} strokeWidth="1.2">!?</text></g>
     </g>
   ) },
-  { key: "forward_pass", label: "Forward pass", tone: ["#33230f", "#191107"], art: (
+  { key: "forward_pass", label: "Forward pass", tone: ["#ff5a47", "#c4200f"], art: (
     <g>
-      {ball(36, 46, 0.9, 0)}
-      <path d="M54 46h34" stroke={W} strokeWidth="4" strokeLinecap="round" />
-      <path d="M80 36l12 10-12 10" fill="none" stroke={W} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      {ball(30, 44, .95, 0)}
+      <g className="a-nudge" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M52 44h36M80 32l14 12-14 12" stroke={INK} strokeWidth="10" />
+        <path d="M52 44h36M80 32l14 12-14 12" stroke={W} strokeWidth="5" />
+      </g>
+      <g className="a-blink"><path d="M78 12l12 12M90 12L78 24" stroke="#ffe14d" strokeWidth="4" strokeLinecap="round" /></g>
     </g>
   ) },
-  { key: "banker", label: "Banker!", tone: ["#3d3010", "#1d1708"], art: (
+  { key: "banker", label: "Banker!", tone: ["#14c98a", "#067a50"], art: (
     <g>
-      <circle cx="60" cy="42" r="26" fill="#e0b23c" stroke="#7a5d00" strokeWidth="2.5" />
-      <circle cx="60" cy="42" r="19" fill="none" stroke="#fff3" strokeWidth="2" />
-      <text x="60" y="50" textAnchor="middle" fontSize="22" fontWeight="800" fill="#3d2c00">×2</text>
+      <g className="a-coin">
+        <circle cx="60" cy="42" r="27" fill="#ffd23f" stroke={INK} strokeWidth="3" />
+        <circle cx="60" cy="42" r="20" fill="none" stroke="#b07a00" strokeWidth="2.5" />
+        <text x="60" y="51" textAnchor="middle" fontSize="24" fontWeight="900" fill="#6b4700">×2</text>
+      </g>
+      {spark(24, 22, 1.2, 0)}{spark(98, 30, 1.3, .4)}{spark(94, 66, .9, .8, W)}
     </g>
   ) },
-  { key: "lekker", label: "Lekker!", tone: ["#14402a", "#0a2016"], art: (
+  { key: "lekker", label: "Lekker!", tone: ["#1fd6c1", "#068a7c"], art: (
     <g>
-      <path d="M44 66V42h8l10-22c6 0 9 4 8 10l-3 10h17c5 0 8 4 7 8l-4 14c-1 4-4 6-8 6H52" fill="#f2c79a" stroke="#7a4a22" strokeWidth="2.5" strokeLinejoin="round" />
-      <rect x="32" y="40" width="12" height="30" rx="3" fill="#35c98a" stroke="#1d6f4d" strokeWidth="2" />
+      <g className="a-thumb">
+        <path d="M46 76V48h9l11-25c7 0 10 5 9 11l-3 11h18c6 0 9 5 8 9l-5 16c-1 4-5 6-9 6H55" fill="#f6c58f" stroke={INK} strokeWidth="3" strokeLinejoin="round" />
+        <rect x="32" y="46" width="14" height="34" rx="4" fill="#ffd21f" stroke={INK} strokeWidth="3" />
+      </g>
+      {spark(24, 24, 1.1, .1)}{spark(98, 22, 1.2, .5)}
     </g>
   ) },
-  { key: "eish", label: "Eish", tone: ["#2a1f33", "#140f19"], art: (
+  { key: "eish", label: "Eish", tone: ["#b366ff", "#7426e0"], art: (
     <g>
-      <circle cx="60" cy="44" r="26" fill="#f5c518" stroke="#7a5d00" strokeWidth="2.5" />
-      <path d="M48 40q4-4 8 0M64 40q4-4 8 0" fill="none" stroke="#3d2c00" strokeWidth="3" strokeLinecap="round" />
-      <path d="M50 56q10-6 20 0" fill="none" stroke="#3d2c00" strokeWidth="3" strokeLinecap="round" />
-      <path d="M82 30q4 8 0 12q-4-4 0-12z" fill="#7fc6ff" />
+      <g className="a-wiggle">
+        <circle cx="58" cy="44" r="28" fill="#ffd21f" stroke={INK} strokeWidth="3" />
+        <path d="M45 42q5-5 10 0M62 42q5-5 10 0" fill="none" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M47 60q11-7 22 0" fill="none" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M40 28q8-10 22-8" fill="none" stroke="#ffffff99" strokeWidth="3" strokeLinecap="round" />
+      </g>
+      <g className="a-drip"><path d="M92 22q6 10 0 15q-6-5 0-15z" fill="#7fd4ff" stroke={INK} strokeWidth="2" /></g>
     </g>
   ) },
 ];
@@ -109,23 +147,29 @@ export function stickerLabel(key: string | null | undefined) {
   return (key && BY_KEY.get(key)?.label) || "Sticker";
 }
 
-/** One sticker, drawn at `size` pixels square. */
-export function StickerArt({ k, size = 120 }: { k: string; size?: number }) {
+/** One sticker, drawn at `size` pixels square. `loop` keeps it moving (the picker). */
+export function StickerArt({ k, size = 120, loop = false }: { k: string; size?: number; loop?: boolean }) {
   const s = BY_KEY.get(k);
   const id = `st-${k}`;
+  const label = s?.label ?? "Sticker";
+  // The label pill grows with the words, so "Forward pass" fits as well as "Ref!".
+  const fs = label.length > 10 ? 12 : 13.5;
+  const pill = Math.min(102, 22 + label.length * fs * 0.64);
   return (
-    <svg className="sticker" width={size} height={size} viewBox="0 0 120 120" role="img" aria-label={s?.label ?? "Sticker"}>
+    <svg className={`sticker${loop ? " loop" : ""}`} width={size} height={size} viewBox="0 0 120 120" role="img" aria-label={label}>
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={s?.tone[0] ?? "#182621"} />
-          <stop offset="1" stopColor={s?.tone[1] ?? "#0d1412"} />
+        <linearGradient id={id} x1="0" y1="0" x2=".4" y2="1">
+          <stop offset="0" stopColor={s?.tone[0] ?? "#2fd16f"} />
+          <stop offset="1" stopColor={s?.tone[1] ?? "#0f8f47"} />
         </linearGradient>
       </defs>
-      <rect x="2" y="2" width="116" height="116" rx="22" fill={`url(#${id})`} stroke="#ffffff22" strokeWidth="2" />
+      <rect x="5" y="5" width="110" height="110" rx="30" fill={`url(#${id})`} stroke={W} strokeWidth="5" />
+      <path d="M24 14h34" stroke="#ffffff40" strokeWidth="5" strokeLinecap="round" />
       {s?.art}
-      <text x="60" y="102" textAnchor="middle" fontSize={(s?.label.length ?? 7) > 10 ? 13 : 15} fontWeight="800" fill="#fff" letterSpacing=".5">
-        {s?.label ?? "Sticker"}
-      </text>
+      <g transform="rotate(-4 60 98)">
+        <rect x={60 - pill / 2} y="86" width={pill} height="22" rx="11" fill={INK} stroke={W} strokeWidth="2.5" />
+        <text x="60" y="101.5" textAnchor="middle" fontSize={fs} fontWeight="900" fill={W} letterSpacing=".3">{label}</text>
+      </g>
     </svg>
   );
 }
@@ -142,7 +186,7 @@ export function StickerPicker({ onPick, onClose }: { onPick: (key: string) => vo
         <div className="stickergrid">
           {STICKERS.map((s) => (
             <button key={s.key} type="button" className="stickerbtn" aria-label={`Send ${s.label}`} onClick={() => onPick(s.key)}>
-              <StickerArt k={s.key} size={88} />
+              <StickerArt k={s.key} size={88} loop />
             </button>
           ))}
         </div>
