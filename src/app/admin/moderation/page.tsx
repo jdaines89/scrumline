@@ -12,6 +12,7 @@ interface Held {
 }
 interface Caught { id: number; author_name: string | null; place: string; pool_name: string | null; body: string; category: string; created_at: string }
 interface Ban { user_id: string; name: string; until: string; reason: string }
+interface Problem { id: number; name: string | null; email: string | null; body: string; page: string | null; error: string | null; device: string | null; created_at: string; done_at: string | null }
 interface Term { term: string; category: string; whole: boolean }
 
 const REASON: Record<string, string> = { hate: "racism or hate", bullying: "bullying", sexual: "sexual", other: "something else" };
@@ -23,10 +24,12 @@ export default function AdminModeration() {
   const [held, setHeld] = useState<Held[] | null>(null);
   const [caught, setCaught] = useState<Caught[] | null>(null);
   const [bans, setBans] = useState<Ban[] | null>(null);
+  const [problems, setProblems] = useState<Problem[] | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => {
     const [h, c, b] = await Promise.all([supabase.rpc("mod_queue"), supabase.rpc("mod_caught", { p_limit: 50 }), supabase.rpc("mod_bans")]);
+    supabase.rpc("mod_problems", { p_limit: 50 }).then(({ data }) => setProblems((data ?? []) as Problem[]));
     setHeld((h.data ?? []) as Held[]);
     setCaught((c.data ?? []) as Caught[]);
     setBans((b.data ?? []) as Ban[]);
@@ -74,6 +77,23 @@ export default function AdminModeration() {
               <button type="button" className="danger" onClick={() => decide(h, "ban")}>Remove and ban</button>
               <button type="button" className="linkish small" onClick={() => run(supabase.rpc("mod_clear_avatar", { p_user: h.author_id }), "Profile picture cleared.")}>Clear their profile picture</button>
             </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card narrow">
+        <h2>Problems players reported</h2>
+        <p className="sub">From Report a problem. Each one is also emailed to you; reply there to answer the player.</p>
+        {problems === null && <div className="skeleton" style={{ height: 60 }} />}
+        {problems?.length === 0 && <p className="small muted" style={{ marginBottom: 0 }}>No problems reported.</p>}
+        {problems?.map((p, i) => (
+          <div key={p.id} className={`rowline${i === 0 ? " first" : ""}`} style={p.done_at ? { opacity: 0.55 } : undefined}>
+            <span style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{p.body}
+              {p.error && <small className="muted block">Error: {p.error}</small>}
+              <small className="muted block">{p.name ?? "Not signed in"}{p.email ? ` · ${p.email}` : ""} · {p.page ?? ""} · {when(p.created_at)}</small>
+              {p.device && <small className="muted block">{p.device}</small>}
+            </span>
+            {!p.done_at && <button type="button" className="ghost" onClick={() => run(supabase.rpc("mod_problem_done", { p_id: p.id }), "Marked as sorted.")}>Sorted</button>}
           </div>
         ))}
       </div>
