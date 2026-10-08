@@ -1492,3 +1492,7 @@ button.stickerbtn:focus-visible { outline: 2px solid var(--accent); outline-offs
 .brm .notice, .inv-code-ask .notice { margin: 0 0 10px; }
 .brm-acts { display: flex; gap: 8px; flex-wrap: wrap; }
 .inv-code-change { margin-top: 8px; }
+
+/* Leagues: the school question again, for anyone who skipped it. */
+.lg-school-empty { padding: 14px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.lg-school-empty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }

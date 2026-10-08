@@ -6,6 +6,7 @@ import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
 import { ListCrest, useCrests } from "@/components/crest";
+import { SchoolStep } from "@/components/school-step";
 import { schoolHref } from "@/lib/crest";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -68,6 +69,16 @@ export default function PoolsPage() {
   const [busy, setBusy] = useState(false);
   // The league whose invite sheet is open.
   const [inviting, setInviting] = useState<Pool | null>(null);
+  // The school question again, for anyone who skipped it at sign-up.
+  const [addingSchool, setAddingSchool] = useState(false);
+  // Asked of the schools you've saved, not of the leagues on screen, so it never shows to someone who has one.
+  const [noSchool, setNoSchool] = useState(false);
+  useEffect(() => {
+    let live = true;
+    supabase.from("member_schools").select("stage").eq("user_id", me.user_id)
+      .then(({ data, error }) => { if (live) setNoSchool(!error && (data ?? []).length === 0); });
+    return () => { live = false; };
+  }, [me.user_id, addingSchool]);
   const ids = pools.map((p) => p.id).join(",");
   const [scores, setScores] = useState<Score[]>(() => readCache<Score[]>(`leagues:${ids}`) ?? []);
   // Each card's extras draw from last visit's copy straight away, so nothing arrives late and pushes the cards down.
@@ -312,6 +323,13 @@ export default function PoolsPage() {
             {looseClasses.map((p) => card(p))}
           </div>
         </>}
+        {noSchool && schoolLeagues.length === 0 && looseClasses.length === 0 && <>
+          <div className="lg-sect">Schools</div>
+          <div className="lg-panel lg-school-empty">
+            <p>Add the school you went to and you&apos;ll join its league and your class&apos;s league, playing for your school against old schoolmates.</p>
+            <button type="button" onClick={() => setAddingSchool(true)}>Add your school</button>
+          </div>
+        </>}
         <div className="lg-actions">
           <button type="button" className={open === "start" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
           <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>
@@ -361,6 +379,9 @@ export default function PoolsPage() {
         {business && <p className="small muted" style={{ margin: "14px 0 0" }}>Putting up a prize from your business? That&apos;s in <Link href="/sponsor/prizes/">Business, Prizes</Link>.</p>}
       </div>
       <InviteCard />
+      {addingSchool && (
+        <SchoolStep me={me} onJoined={reloadPools} onDone={() => setAddingSchool(false)} onLater={() => setAddingSchool(false)} />
+      )}
       {inviting && (
         <InviteSheet poolId={inviting.id} poolName={inviting.name} joinCode={inviting.join_code} onClose={() => setInviting(null)}
           runs={runsLeague(inviting, me)} onCodeChanged={(c) => { setInviting({ ...inviting, join_code: c }); reloadPools(); }}
