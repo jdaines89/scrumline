@@ -19,7 +19,6 @@ create index if not exists problem_reports_recent on public.problem_reports (cre
 alter table public.problem_reports enable row level security;
 revoke all on public.problem_reports from anon, authenticated;
 grant select (id, body, page, created_at, done_at) on public.problem_reports to authenticated;
-drop policy if exists problem_reports_own on public.problem_reports;
 create policy problem_reports_own on public.problem_reports for select to authenticated using (user_id = auth.uid());
 
 create or replace function public.report_problem(p_body text, p_page text default null, p_error text default null,
