@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { BlockedPeople } from "@/components/blocked-people";
 import { MySchools } from "@/components/my-schools";
+import { reportProblem } from "@/components/report-problem";
 import { NotifySettings } from "@/components/notify-settings";
 import { Numbers } from "@/components/numbers";
 import { useLeague } from "@/components/league";
@@ -119,6 +120,11 @@ export default function MePage() {
               <strong>Look after your school&apos;s account?</strong>
               <span className="small muted">Principals, bursars, governing bodies and alumni offices can claim the school and receive what sponsors give it.</span>
               <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link></div>
+            </div>
+            <div className="me-biz">
+              <strong>Something not working?</strong>
+              <span className="small muted">Tell us what went wrong and we&apos;ll fix it.</span>
+              <div className="row"><button type="button" className="ghost" onClick={() => reportProblem()}>Report a problem</button></div>
             </div>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { ReportLink } from "@/components/report-problem";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { HowItWorks } from "@/components/how-it-works";
@@ -131,7 +132,8 @@ function SignIn() {
       </form>
       {msg && <p className="small muted" style={{ marginBottom: 0 }}>{msg}</p>}
       <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link>
-        <br />Run a school? <Link href="/schools/">Claim it</Link></p>
+        <br />Run a school? <Link href="/schools/">Claim it</Link>
+        <br />Can&apos;t get in? <ReportLink label="Tell us" /></p>
     </div>
     <HowItWorks />
     </>

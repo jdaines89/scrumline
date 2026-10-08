@@ -1,3 +1,4 @@
+import { ReportProblem } from "@/components/report-problem";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <LeagueProvider>{children}</LeagueProvider>
           </AuthGate>
         </main>
+        <ReportProblem />
       </body>
     </html>
   );
