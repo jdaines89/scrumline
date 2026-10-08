@@ -26,7 +26,7 @@ create or replace function public.report_problem(p_body text, p_page text defaul
 returns text language plpgsql security definer set search_path = public as $$
 declare
   me uuid := auth.uid();
-  ip text := split_part(coalesce(current_setting('request.headers', true)::jsonb ->> 'x-forwarded-for', ''), ',', 1);
+  req_ip text := split_part(coalesce(current_setting('request.headers', true)::jsonb ->> 'x-forwarded-for', ''), ',', 1);
   mail text := coalesce((select u.email from auth.users u where u.id = me), nullif(trim(p_email), ''));
   key text;
   cfg jsonb := (select jsonb_object_agg(s.key, s.value) from notify.settings s);
@@ -41,14 +41,14 @@ begin
 
   -- Limits: 5 an hour per player or per connection, and 40 an hour from people not signed in, so it can't flood Justin's inbox.
   if (select count(*) from public.problem_reports r where r.created_at > now() - interval '1 hour'
-        and ((me is not null and r.user_id = me) or (me is null and ip <> '' and r.ip = ip))) >= 5
+        and ((me is not null and r.user_id = me) or (me is null and req_ip <> '' and r.ip = req_ip))) >= 5
      or (me is null and (select count(*) from public.problem_reports r
                          where r.user_id is null and r.created_at > now() - interval '1 hour') >= 40) then
     raise exception 'Thanks, we already have your reports. Give us a little time to look.';
   end if;
 
   insert into public.problem_reports (user_id, email, body, page, error, device, ip)
-  values (me, left(mail, 200), left(p_body, 2000), left(p_page, 300), left(p_error, 1000), left(p_device, 300), nullif(ip, ''))
+  values (me, left(mail, 200), left(p_body, 2000), left(p_page, 300), left(p_error, 1000), left(p_device, 300), nullif(req_ip, ''))
   returning id into new_id;
 
   select decrypted_secret into key from vault.decrypted_secrets where name = 'brevo_api_key';
