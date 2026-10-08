@@ -10,10 +10,11 @@ const YEAR: Record<Stage, string> = { high: "Matric year", primary: "Year you fi
 /**
  * Asked once, straight after "Who's playing?": the school you went to. Saving
  * puts you in its league and your class league at once; "Skip for now" never
- * asks again, and the school can still be added on your profile.
+ * pops up again, and the school can still be added from Leagues or your profile.
+ * Opened again from Leagues, `onLater` closes it without noting anything.
  */
-export function SchoolStep({ me, onJoined, onDone }: {
-  me: Member; onJoined: () => Promise<void>; onDone: (m: Member) => void;
+export function SchoolStep({ me, onJoined, onDone, onLater }: {
+  me: Member; onJoined: () => Promise<void>; onDone: (m: Member) => void; onLater?: () => void;
 }) {
   const [stage, setStage] = useState<Stage>("high");
   const [q, setQ] = useState("");
@@ -133,7 +134,7 @@ export function SchoolStep({ me, onJoined, onDone }: {
         <p className="wip-hint">You can change it for 14 days, then it&apos;s fixed. Add your other school on your profile.</p>
         {msg && <p className="small" style={{ color: "var(--danger)", margin: "10px 0 0" }}>{msg}</p>}
         <button type="submit" className="wip-save" disabled={busy || !pick}>{busy ? "Joining…" : "Join my school's leagues"}</button>
-        <button type="button" className="sch-skip" disabled={busy} onClick={skip}>Skip for now</button>
+        <button type="button" className="sch-skip" disabled={busy} onClick={onLater ?? skip}>{onLater ? "Not now" : "Skip for now"}</button>
       </form>
     </div>
   );
