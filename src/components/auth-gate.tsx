@@ -133,7 +133,8 @@ function SignIn() {
       {msg && <p className="small muted" style={{ marginBottom: 0 }}>{msg}</p>}
       <p className="small muted signin-biz">Own a business? <Link href="/business/">Sponsor a school</Link>
         <br />Run a school? <Link href="/schools/">Claim it</Link>
-        <br />Can&apos;t get in? <ReportLink label="Tell us" /></p>
+        <br />Can&apos;t get in? <ReportLink label="Tell us" />
+        <br /><Link href="/privacy/">Privacy</Link> · <Link href="/rules/">Rules</Link></p>
     </div>
     <HowItWorks />
     </>

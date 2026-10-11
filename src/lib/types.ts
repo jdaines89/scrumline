@@ -17,6 +17,9 @@ export interface Match {
   home_score: number | null; away_score: number | null;
   venue: string | null; status: string;
 }
+/** The members columns players may read: everything but email, which only its owner sees (from their session). */
+export const MEMBER_COLS = "user_id, display_name, first_name, last_name, known_as, team_name, is_admin, email_reminders, push_mentions, push_results, reminder_by, avatar_path, school_asked_at";
+/** email is only filled in for you (from your session); it's "" for everyone else. */
 export interface Member { user_id: string; email: string; display_name: string; first_name: string | null; last_name: string | null; known_as: string | null; team_name: string | null; is_admin: boolean; email_reminders: boolean; push_mentions: boolean; push_results?: boolean; reminder_by: "push" | "email"; avatar_path: string | null; school_asked_at?: string | null }
 export interface School { emis: string; name: string; town: string | null; no_fee: boolean }
 export interface ChatMessage { id: number; author_id: string; body: string; created_at: string; image_path?: string | null; hidden_at?: string | null; reply_to?: number | null; sticker?: string | null }
