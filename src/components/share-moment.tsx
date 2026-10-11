@@ -7,7 +7,7 @@ import { logEvent } from "@/lib/events";
 import { joinLink } from "@/lib/join-link";
 import { bestMoment, type Moment, type Moments } from "@/lib/share-moments";
 import { supabase } from "@/lib/supabase";
-import { drawTagline } from "@/lib/tagline";
+import { DESCRIPTOR, drawMasthead, loadBrand } from "@/lib/share-brand";
 
 /** Your moments, from last visit's copy first so the card doesn't jump. */
 export function useShareMoment(): Moment | null {
@@ -79,7 +79,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   const font = (w: number, px: number) => `${w} ${px}px ${family}`;
   const rand = seeded(`${m.kind}|${m.headline}`);
   const CHALK = "#f1efe6", GOLD = "#e0b23c", MUTED = "#a9b8ae";
-  const logo = await loadImage(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/brand/shield.png`);
+  const brand = await loadBrand();
   // Full names always: shrink the type until the line fits rather than cutting it.
   const fit = (text: string, w: number, px: number, min: number, room = W - pad * 2) => {
     let s = px; g.font = font(w, s);
@@ -117,11 +117,8 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   };
   chalkLine(-20, 330, W + 20, 312, 10, .55);
 
-  // The masthead: the shield and the name in chalk.
-  if (logo) g.drawImage(logo, pad + 5, 118, 88, 100);
-  g.fillStyle = CHALK; g.font = font(900, 54); g.fillText("SCRUMLINE", pad + (logo ? 120 : 0), 176);
-  g.font = font(700, 22); g.letterSpacing = "4px";
-  drawTagline(g, pad + (logo ? 122 : 2), 210, CHALK, GOLD); g.letterSpacing = "0px";
+  // The masthead: the logo's own shield, wordmark and tagline, as in the app header.
+  drawMasthead(g, brand, pad, 96, 170);
 
   // The stamp: one big word, set at an angle in a ruled box, worn where the ink missed.
   const word = (m.stamp ?? m.kicker).toUpperCase();
@@ -198,7 +195,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   g.lineTo(W, H); g.lineTo(0, H); g.closePath(); g.fill();
   g.fillStyle = GOLD; g.font = font(900, 58); g.letterSpacing = "1px"; g.fillText("CALL EVERY MATCH WITH ME", pad, top + 118, W - pad * 2);
   g.letterSpacing = "0px";
-  g.fillStyle = CHALK; g.font = font(600, 34); g.fillText("Free to play. No betting.", pad, top + 180);
+  g.fillStyle = CHALK; g.font = font(600, 34); g.fillText(DESCRIPTOR, pad, top + 180);
   g.fillStyle = MUTED; g.font = font(500, 32); g.fillText("Helping fund South African schools.", pad, top + 228);
   // A photo-like picture: JPEG keeps the grain at a size that sends quickly.
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/jpeg", .9));
@@ -215,12 +212,3 @@ function seeded(key: string) {
   return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; };
 }
 
-function loadImage(src: string): Promise<HTMLImageElement | null> {
-  return new Promise((ok) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => ok(null);
-    img.src = src;
-    setTimeout(() => ok(null), 3000);
-  });
-}

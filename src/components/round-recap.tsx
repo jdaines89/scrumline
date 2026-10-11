@@ -12,7 +12,7 @@ import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
 import { roundName } from "@/lib/format";
 import { countsFrom } from "@/lib/rounds";
-import { drawTagline } from "@/lib/tagline";
+import { DESCRIPTOR, drawGround, drawMasthead, loadBrand } from "@/lib/share-brand";
 
 interface Scored {
   entry_id: number; round: number; match_id: string; total_pts: number; is_banker: boolean;
@@ -205,11 +205,9 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const g = c.getContext("2d")!;
-  g.fillStyle = "#0d1412"; g.fillRect(0, 0, W, H);
-  g.fillStyle = "#1d6f4d"; g.fillRect(0, 0, W, 14);
   const font = (w: number, px: number) => `${w} ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-  g.fillStyle = "#e8f0ec"; g.font = font(800, 44); g.fillText("SCRUMLINE", pad, 120);
-  g.font = font(700, 22); drawTagline(g, pad, 158, "#e8f0ec", "#e0b23c");
+  drawGround(g, W, H);
+  drawMasthead(g, await loadBrand(), pad, 56, 150);
   g.fillStyle = "#e8f0ec"; g.font = font(800, 72); g.fillText(title, pad, 290);
   g.fillStyle = "#8aa79a"; g.font = font(500, 32); g.fillText(sub, pad, 342);
 
@@ -238,6 +236,8 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
     g.font = font(800, 32); g.textAlign = "right"; g.fillText(String(t.pts), W - pad, y); g.textAlign = "left";
     y += 62;
   }
+  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, y + 20);
+  y += 70;
   H = Math.max(1350, y - 10 + foot);
   const out = document.createElement("canvas");
   out.width = W; out.height = H;
