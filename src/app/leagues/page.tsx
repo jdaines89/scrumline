@@ -1,6 +1,7 @@
 "use client";
 
-import { LeaguePicture, leagueOf } from "@/components/league-picture";
+import { LeaguePicture, leagueOf, leaguePictureLink } from "@/components/league-picture";
+import { drawLeagueInvite } from "@/lib/league-invite-card";
 import { RoundOptions } from "@/components/counts-from";
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
@@ -9,7 +10,7 @@ import { ListCrest, useCrests } from "@/components/crest";
 import { SchoolStep } from "@/components/school-step";
 import { schoolHref } from "@/lib/crest";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
 import { InviteSheet, WaitingInvites } from "@/components/league-invites";
@@ -144,7 +145,6 @@ export default function PoolsPage() {
         writeCache(`leagues-confirm:${ids}`, [...counts]); setToConfirm(counts);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
   const byPool = useMemo(() => {
@@ -281,9 +281,34 @@ export default function PoolsPage() {
     return { link, text };
   }
 
+  // Each league's invite picture is drawn ahead of the tap, so sharing it is instant.
+  const cards = useRef(new Map<string, Promise<File | null>>());
+  function inviteCard(p: Pool): Promise<File | null> {
+    const key = `${p.id}:${p.join_code}:${p.picture_path ?? ""}`;
+    let f = cards.current.get(key);
+    if (!f) {
+      f = leaguePictureLink(p)
+        .then((url) => drawLeagueInvite(poolTitle(p), p.join_code, url))
+        .then((b) => new File([b], "scrumline-league-invite.png", { type: "image/png" }), () => null);
+      cards.current.set(key, f);
+    }
+    return f;
+  }
+  const mateKey = mateLeagues.map((p) => `${p.id}:${p.join_code}:${p.picture_path ?? ""}`).join();
+  useEffect(() => {
+    const t = setTimeout(() => mateLeagues.forEach((p) => { inviteCard(p); }), 1200);
+    return () => clearTimeout(t);
+  }, [mateKey]);
+
   async function share(id: number, joinCode: string, poolName: string, school = false) {
     const { text } = invite(joinCode, poolName, school);
     logEvent("invite_shared", { from: school ? "school" : "league" }, id);
+    const p = pools.find((x) => x.id === id && x.join_code === joinCode);
+    // A mates' league goes out with its picture beside Scrumline's, and the message and link as its caption.
+    const file = p && !p.school_emis ? await inviteCard(p) : null;
+    try {
+      if (file && navigator.canShare?.({ files: [file], text })) { await navigator.share({ files: [file], text }); setCopied(id); return; }
+    } catch (e) { if ((e as Error).name === "AbortError") return; }
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);
