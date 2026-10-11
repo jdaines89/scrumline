@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { ChatButton } from "@/components/chat-button";
 import { ClassTable } from "@/components/class-table";
@@ -50,9 +51,17 @@ const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "n
 
 /** A school's own page: the school, its players, how it's doing, and what has been given to it. */
 export default function SchoolPage() {
+  return <Suspense fallback={<div className="skeleton" style={{ height: 240 }} />}><School /></Suspense>;
+}
+
+/** Reads the school from the link each time it changes, so a partner school's link opens that school. */
+function School() {
+  const emis = useSearchParams().get("e");
+  return <SchoolBody key={emis ?? ""} emis={emis} />;
+}
+
+function SchoolBody({ emis }: { emis: string | null }) {
   const { season } = useLeague();
-  const [emis, setEmis] = useState<string | null>(null);
-  useEffect(() => { setEmis(new URLSearchParams(window.location.search).get("e")); }, []);
   const key = `schoolpage1:${emis}:${season.id}`;
   const [page, setPage] = useState<Page | null | undefined>(undefined);
 
