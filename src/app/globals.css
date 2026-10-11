@@ -1645,3 +1645,28 @@ button.chat-back:hover { color: var(--text); }
 @media (min-width: 761px) { .btn.tc-go { display: inline-block; width: auto; min-width: 220px; } }
 /* Your banker on the full-time card: quiet gold words, clear of the score. */
 .ft-bank { color: var(--gold); font-weight: 600; white-space: nowrap; }
+
+/* Achievements */
+.achgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+.achtile { display: grid; justify-items: center; gap: 2px; padding: 14px 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.achtile:hover { border-color: var(--accent-dim); }
+.achtile strong { margin-top: 8px; font-size: 15px; }
+.achbadge { display: block; }
+.achbadge:not(.on) { filter: grayscale(1); opacity: .7; }
+.achbadge.play { animation: ab-pop .7s cubic-bezier(.2, 1.4, .4, 1) both; }
+.achbadge .ab-glint { animation: none; transform: skewX(-20deg) translateX(-40px); }
+.achbadge.play .ab-glint { animation: ab-glint 1s .55s ease-out both; }
+@keyframes ab-pop { 0% { transform: scale(.55) rotate(-10deg); opacity: 0; } 60% { transform: scale(1.12) rotate(3deg); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes ab-glint { from { transform: skewX(-20deg) translateX(-40px); } to { transform: skewX(-20deg) translateX(260px); } }
+.achsheet { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.achsheet p { margin: 0; }
+.achsheet h2 { margin: 6px 0 0; }
+.achbtn {
+  position: absolute; top: 18px; right: 64px; width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--gold); border: 1px solid var(--gold); background: var(--panel);
+}
+.achbtn:hover, .achbtn.on { text-decoration: none; background: #e0b23c1f; }
+@media (min-width: 561px) { .achbtn { width: 54px; height: 54px; top: 14px; right: 78px; } .achbtn svg { width: 26px; height: 26px; } }
+header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
+@media (max-width: 340px) { .achbtn { width: 32px; height: 32px; top: 22px; right: 60px; } .achbtn svg { width: 17px; height: 17px; } }
+@media (prefers-reduced-motion: reduce) { .achbadge.play, .achbadge.play .ab-glint { animation: none; } }
