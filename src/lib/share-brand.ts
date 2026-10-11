@@ -8,7 +8,7 @@ import { drawTagline } from "@/lib/tagline";
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export const BRAND_GREEN = "#053120";
-export const DESCRIPTOR = "The game is free. The game gives back.";
+export const DESCRIPTOR = "Free to play. Every call builds something bigger than the game.";
 
 export interface BrandArt { shield: HTMLImageElement | null; word: HTMLImageElement | null; tag: HTMLImageElement | null }
 

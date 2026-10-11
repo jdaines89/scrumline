@@ -195,7 +195,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   g.lineTo(W, H); g.lineTo(0, H); g.closePath(); g.fill();
   g.fillStyle = GOLD; g.font = font(900, 58); g.letterSpacing = "1px"; g.fillText("CALL EVERY MATCH WITH ME", pad, top + 118, W - pad * 2);
   g.letterSpacing = "0px";
-  g.fillStyle = CHALK; g.font = font(600, 34); g.fillText(DESCRIPTOR, pad, top + 180);
+  g.fillStyle = CHALK; g.font = font(600, 29); g.fillText(DESCRIPTOR, pad, top + 180, W - pad * 2);
   g.fillStyle = MUTED; g.font = font(500, 32); g.fillText("Helping fund South African schools.", pad, top + 228);
   // A photo-like picture: JPEG keeps the grain at a size that sends quickly.
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/jpeg", .9));

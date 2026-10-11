@@ -236,7 +236,7 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
     g.font = font(800, 32); g.textAlign = "right"; g.fillText(String(t.pts), W - pad, y); g.textAlign = "left";
     y += 62;
   }
-  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, y + 20);
+  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, y + 20, W - pad * 2);
   y += 70;
   H = Math.max(1350, y - 10 + foot);
   const out = document.createElement("canvas");

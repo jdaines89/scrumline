@@ -152,6 +152,6 @@ async function drawCard(seasonName: string, tests: BokTest[], teams: Map<string,
   } else {
     g.fillStyle = "#e8f0ec"; g.font = font(800, 46); g.fillText("Join me on Scrumline", pad, H - foot + 110);
   }
-  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, H - foot + 178);
+  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, H - foot + 178, W - pad * 2);
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
 }

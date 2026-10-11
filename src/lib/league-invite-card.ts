@@ -107,7 +107,7 @@ export async function drawLeagueInvite(leagueName: string, joinCode: string | nu
     g.fillStyle = GOLD; g.font = font(800, 54); g.fillText(joinCode, W - pad, TOP + 124);
     g.textAlign = "left";
   }
-  g.fillStyle = MUTED; g.font = font(500, 26); g.fillText(DESCRIPTOR, pad, TOP + 186);
+  g.fillStyle = MUTED; g.font = font(500, 26); g.fillText(DESCRIPTOR, pad, TOP + 186, W - pad * 2);
 
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
 }
