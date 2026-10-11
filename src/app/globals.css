@@ -1682,5 +1682,6 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 .board.everyone li.gap::before { content: "···"; position: absolute; top: 2px; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 12px; letter-spacing: 2px; }
 .board.everyone li, .board.resting li { cursor: default; }
 .seg button { white-space: nowrap; }
-.seg.four button { padding: 6px 12px; }
+
 .nowrap { white-space: nowrap; }
+.board-switch { margin: -4px 0 10px; }

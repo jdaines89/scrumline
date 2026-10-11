@@ -154,12 +154,19 @@ function Leaderboard() {
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
       {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
-      <div className="seg four" role="tablist">
-        <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
-        <button type="button" role="tab" aria-selected={view === "round"} className={view === "round" ? "on" : ""} onClick={() => setView("round")}>By round</button>
+      {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
+      <div className="seg" role="tablist">
+        <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
         <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
       </div>
+      {(view === "overall" || view === "round") && rows && rows.length > 0 && (
+        <p className="small board-switch">
+          <button type="button" className="linkish small" onClick={() => setView(view === "round" ? "overall" : "round")}>
+            {view === "round" ? "‹ Back to the season total" : "See each round's points ›"}
+          </button>
+        </p>
+      )}
       {view === "schools" ? <SchoolTable /> : view === "everyone" ? <EveryoneTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
