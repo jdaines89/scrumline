@@ -1648,7 +1648,7 @@ button.chat-back:hover { color: var(--text); }
 
 /* Achievements */
 .achgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
-.achtile { display: grid; justify-items: center; gap: 2px; padding: 14px 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.achtile { display: grid; align-content: start; justify-items: center; gap: 2px; padding: 14px 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
 .achtile:hover { border-color: var(--accent-dim); }
 .achtile strong { margin-top: 8px; font-size: 15px; }
 .achbadge { display: block; }
@@ -1670,3 +1670,9 @@ button.chat-back:hover { color: var(--text); }
 header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 @media (max-width: 340px) { .achbtn { width: 32px; height: 32px; top: 22px; right: 60px; } .achbtn svg { width: 17px; height: 17px; } }
 @media (prefers-reduced-motion: reduce) { .achbadge.play, .achbadge.play .ab-glint { animation: none; } }
+.ach-tag { color: var(--gold); font-weight: 600; }
+.ach-reward { display: grid; justify-items: center; gap: 6px; margin-top: 4px; padding: 12px; width: 100%; border: 1px solid var(--gold); border-radius: 10px; }
+.ach-code { font-size: 20px; font-weight: 800; letter-spacing: .12em; color: var(--gold); }
+.adm-form, .adm-card { display: grid; gap: 12px; }
+.adm-form label, .adm-card label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.adm-form input, .adm-form select, .adm-card textarea { width: 100%; }
