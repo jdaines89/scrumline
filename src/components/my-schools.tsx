@@ -4,6 +4,7 @@ import { fullName } from "@/lib/names";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { Crest, useCrests } from "@/components/crest";
 import { schoolHref } from "@/lib/crest";
 import { useLeague } from "@/components/league";
 import { ROLE_NAME } from "@/lib/school";
@@ -54,12 +55,13 @@ export function MySchools({ me, members, onMessage }: { me: Member; members: Mem
   useEffect(() => { load(); }, [load]);
   // Saving a school changes which school pools you're in.
   const { reloadPools } = useLeague();
+  const crests = useCrests();
   const afterSave = useCallback(async () => { await load(); await reloadPools(); }, [load, reloadPools]);
 
   return (
     <div className="stack schools">
-      {(["primary", "high"] as Stage[]).map((st) => (
-        <SchoolRow key={st} stage={st} me={me} saved={saved?.find((s) => s.stage === st)} loading={!saved}
+      {(["high", "primary"] as Stage[]).map((st) => (
+        <SchoolRow key={st} stage={st} me={me} saved={saved?.find((s) => s.stage === st)} loading={!saved} crests={crests}
           mates={mates.filter((x) => x.stage === st)} members={members} given={given}
           onSaved={afterSave} onMessage={onMessage} />
       ))}
@@ -71,8 +73,8 @@ export function MySchools({ me, members, onMessage }: { me: Member; members: Mem
   );
 }
 
-function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, onMessage }: {
-  stage: Stage; me: Member; saved?: Saved; loading: boolean; mates: Mate[]; members: Member[]; given: Set<string>;
+function SchoolRow({ stage, me, saved, loading, crests, mates, members, given, onSaved, onMessage }: {
+  stage: Stage; me: Member; saved?: Saved; loading: boolean; crests: Map<string, string>; mates: Mate[]; members: Member[]; given: Set<string>;
   onSaved: () => Promise<void>; onMessage: (ok: boolean, text: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -132,55 +134,74 @@ function SchoolRow({ stage, me, saved, loading, mates, members, given, onSaved, 
 
   return (
     <div className="school">
-      <label className="small muted">{LABEL[stage].title}</label>
-      {loading && <div className="skeleton" style={{ height: 44 }} />}
+      {loading && <div className="skeleton school-card-skel" />}
       {!loading && !editing && saved && (
         <>
-          <div className="school-saved">
-            <div>
-              <Link href={schoolHref(saved.schools.emis)} className="school-name sch-link">{saved.schools.name}</Link>
-              <div className="small muted">
-                {[saved.schools.town, saved.last_year && `${stage === "high" ? "Matric" : "Completed"} ${saved.last_year}`].filter(Boolean).join(" · ")}
-              </div>
+          <div className="school-card">
+            <Link href={schoolHref(saved.schools.emis)} className="school-card-main">
+              <Crest emis={saved.schools.emis} path={crests.get(saved.schools.emis)} size={64} name={saved.schools.name} />
+              <span className="school-card-text">
+                <span className="school-card-stage">{LABEL[stage].title}</span>
+                <span className="school-card-name">{saved.schools.name}</span>
+                <span className="small muted">
+                  {[saved.schools.town, saved.last_year && `${stage === "high" ? "Matric" : "Completed"} ${saved.last_year}`].filter(Boolean).join(" · ")}
+                </span>
+              </span>
+            </Link>
+            <p className={`school-card-status small${mine?.verified ? " ok" : ""}`}>
+              {mine?.verified
+                ? (mine.vouches ? `Confirmed by ${mine.vouches} schoolmates. You count for the school.` : "Confirmed by your schoolmates. You count for the school.")
+                : `Needs ${NEEDED - (mine?.vouches ?? 0)} more schoolmate${NEEDED - (mine?.vouches ?? 0) === 1 ? "" : "s"} to confirm you before you count for the school.`}
+            </p>
+            <ClaimLine emis={saved.emis} onMessage={onMessage} />
+            {others.length > 0 && (
+              <ul className="school-mates" aria-label="Schoolmates on Scrumline">
+                {others.map((m) => {
+                  const who = members.find((x) => x.user_id === m.user_id);
+                  const on = given.has(`${m.user_id}:${m.stage}:${m.emis}`);
+                  return (
+                    <li key={m.user_id}>
+                      <Avatar member={who} size={28} />
+                      <span className="mate-name">
+                        {fullName(who) || "A member"}
+                        {m.last_year && <span className="small muted mate-year">{stage === "high" ? "Matric" : "Completed"} {m.last_year}</span>}
+                      </span>
+                      <button type="button" className={on ? "ghost" : ""} disabled={busy} onClick={() => vouch(m, !on)}
+                        title={on ? "Tap to take it back" : "You went to school with them"}>
+                        {on ? "Confirmed" : "Confirm"}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="school-card-actions">
+              <Link className="btn" href={schoolHref(saved.schools.emis)}>Open school page</Link>
+              {locked
+                ? <span className="small muted">Fixed since {day(fixedFrom(saved))}</span>
+                : <button type="button" className="ghost" onClick={start}>Change school</button>}
             </div>
-            {locked
-              ? <span className="small muted">Fixed</span>
-              : <button type="button" className="ghost" onClick={start}>Change</button>}
           </div>
-          <p className={`small ${mine?.verified ? "school-ok" : "muted"}`}>
-            {mine?.verified
-              ? (mine.vouches ? `Confirmed by ${mine.vouches} schoolmates` : "Confirmed by your schoolmates")
-              : `Needs ${NEEDED - (mine?.vouches ?? 0)} more schoolmate${NEEDED - (mine?.vouches ?? 0) === 1 ? "" : "s"} to confirm you`}
-          </p>
-          <ClaimLine emis={saved.emis} onMessage={onMessage} />
-          {others.length > 0 && (
-            <ul className="school-mates">
-              {others.map((m) => {
-                const who = members.find((x) => x.user_id === m.user_id);
-                const on = given.has(`${m.user_id}:${m.stage}:${m.emis}`);
-                return (
-                  <li key={m.user_id}>
-                    <Avatar member={who} size={28} />
-                    <span className="mate-name">
-                      {fullName(who) || "A member"}
-                      {m.last_year && <span className="small muted"> · {stage === "high" ? "Matric" : "Completed"} {m.last_year}</span>}
-                    </span>
-                    <button type="button" className={on ? "ghost" : ""} disabled={busy} onClick={() => vouch(m, !on)}
-                      title={on ? "Tap to take it back" : "You went to school with them"}>
-                      {on ? "Confirmed" : "Confirm"}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
         </>
       )}
       {!loading && !editing && !saved && (
-        <button type="button" className="ghost school-add" onClick={start}>Add your {stage} school</button>
+        <div className="school-card empty">
+          <div className="school-card-main">
+            <Crest emis="" size={64} />
+            <span className="school-card-text">
+              <span className="school-card-stage">{LABEL[stage].title}</span>
+              <span className="school-card-name">Add your {stage} school</span>
+              <span className="small muted">Play for it every round and help it win sponsors&apos; support.</span>
+            </span>
+          </div>
+          <div className="school-card-actions">
+            <button type="button" onClick={start}>Add your {stage} school</button>
+          </div>
+        </div>
       )}
       {editing && (
         <form onSubmit={save} className="stack school-edit">
+          <label className="small muted">{LABEL[stage].title}</label>
           {pick ? (
             <div className="school-saved">
               <div>

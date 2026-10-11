@@ -1550,3 +1550,28 @@ html[data-intro="still"] .intro-sweep, html[data-intro="still"] .intro-swoosh { 
 @keyframes intro-rule { 0% { opacity: 0; transform: scaleX(0); } 100% { opacity: 1; transform: scaleX(1); } }
 @keyframes intro-out { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(1.04); visibility: hidden; pointer-events: none; } }
 @keyframes intro-out-fast { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+/* Your schools: first on the profile, each school as its own panel with its crest. */
+.myschools-card { margin-bottom: 18px; }
+.myschools-card .schools { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.myschools-card .schools > p.small { grid-column: 1 / -1; margin: 2px 0 0; }
+@media (min-width: 760px) { .myschools-card .schools { grid-template-columns: 1fr 1fr; align-items: start; } }
+.school-card { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); }
+.school-card.empty { border-style: dashed; background: transparent; }
+.school-card-skel { height: 168px; border-radius: var(--radius); }
+.school-card-main { display: flex; align-items: center; gap: 14px; color: inherit; min-width: 0; }
+a.school-card-main:hover { text-decoration: none; }
+a.school-card-main:hover .school-card-name { text-decoration: underline; }
+.school-card-main .school-mark { width: 64px; height: 64px; }
+.school-card-text { display: grid; gap: 2px; min-width: 0; }
+.school-card-stage { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
+.school-card-name { font-size: 17px; font-weight: 650; line-height: 1.3; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.school-card-status { margin: 0; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
+.school-card-status.ok { color: var(--accent); }
+.school-card-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.school-card-actions .btn, .school-card.empty .school-card-actions button { flex: 1 1 auto; text-align: center; }
+.school-card-actions button.ghost { flex: 0 0 auto; }
+.school-card .school-mates { margin: 0; }
+.school-card .claim-line { margin: 0; }
+.mepage > .myschools-card { margin-top: 0; }
+.school-card .mate-name { display: grid; gap: 1px; }
