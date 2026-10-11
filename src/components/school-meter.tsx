@@ -9,6 +9,7 @@ import { schoolHref } from "@/lib/crest";
 import type { ProjectState } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
+import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
 type Stage = "primary" | "high";
 interface Standing { stage: Stage; position: number | null; of: number; score: number | null; confirmed: number; members: number }
@@ -18,7 +19,8 @@ interface Page { school: { emis: string; name: string }; crest_path: string | nu
 interface Mine { stage: Stage; page: Page }
 
 /** Confirmed players a school needs in a round for it to count on the school table (school_round_minimum()). */
-const MINIMUM = 10;
+const MINIMUM = SCHOOL_MINIMUM;
+const CONFIRMED = SCHOOL_TRIAL ? "" : "confirmed ";
 
 /**
  * What playing does for your school, in real numbers only: what a project it
@@ -75,7 +77,7 @@ function SchoolLine({ m }: { m: Mine }) {
   } else {
     bar = confirmed / MINIMUM;
     line = confirmed >= MINIMUM
-      ? <><b>{confirmed}</b> confirmed players{st?.position ? <>, {ordinal(st.position)} of {st.of} on the school table</> : null}</>
+      ? <><b>{confirmed}</b> {CONFIRMED}{confirmed === 1 ? "player" : "players"}{st?.position ? <>, {ordinal(st.position)} of {st.of} on the school table</> : null}</>
       : <><b>{confirmed} of {MINIMUM}</b> confirmed players</>;
     sub = confirmed >= MINIMUM
       ? "Nothing given yet. A school with players calling every week is what sponsors back."
