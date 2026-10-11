@@ -2,6 +2,10 @@
 -- Every check raises on failure, so a clean run prints "ALL CHECKS PASSED".
 \set ON_ERROR_STOP on
 
+-- The tests check the real school rules (2 vouches, 10 players a round), so
+-- switch off the live trial (20261011000400) here; the trial is checked at the end.
+create or replace function public.school_rules_relaxed() returns boolean language sql immutable as $$ select false $$;
+
 -- Two invited members and one stranger who was never invited.
 insert into auth.users (id, email, invited_at, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', 'justin@example.com', now(), '{"display_name":"Justin"}'),
@@ -2184,4 +2188,9 @@ select pg_temp.check(not exists (select 1 from public.pool_members pm join publi
 set role anon;
 select pg_temp.check((select players > 0 from public.pool_invite_info(:'lgcode')), 'a league link shows its name and size before sign-in');
 reset role;
+-- The trial switch: every schoolmate counts and one player makes a round count.
+create or replace function public.school_rules_relaxed() returns boolean language sql immutable as $$ select true $$;
+select pg_temp.check((select bool_and(verified) from public.school_members), 'in the trial every schoolmate counts');
+select pg_temp.check(public.school_round_minimum() = 1, 'in the trial one player makes a round count');
+create or replace function public.school_rules_relaxed() returns boolean language sql immutable as $$ select false $$;
 \echo ALL CHECKS PASSED
