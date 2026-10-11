@@ -304,6 +304,9 @@ label.season-pick:hover .season-pick-box, .season-pick:focus-within .season-pick
 }
 .stepper .which strong { font-size: 17px; }
 .stepper .which span { font-size: 12px; color: var(--muted); }
+/* The round on now: a soft gold wash so it's easy to find again. */
+.stepper .which.live { background: linear-gradient(rgba(224, 178, 60, .10), rgba(224, 178, 60, .10)), var(--panel); border-color: rgba(224, 178, 60, .45); }
+.stepper .which.live strong { color: #f0d488; }
 .stepper select { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 
 /* Fixtures */
@@ -928,7 +931,8 @@ button.lgc-recruit:focus-visible { outline: 2px solid var(--accent); outline-off
 .lg-form p { margin: 0 0 8px; }
 .lg-back { display: inline-block; font-size: 14px; margin: 0 0 8px; }
 /* Fixtures and the log share the Matches tab */
-.matches-seg { margin: 0 0 14px; }
+.matches-seg { display: flex; margin: 0 0 14px; }
+.matches-seg button { flex: 1; padding: 9px 16px; font-size: 14px; }
 
 /* "Who's playing?": asked once, can't be skipped */
 .wip-dim { position: fixed; inset: 0; z-index: 60; background: rgba(3, 6, 5, .72); display: flex; align-items: flex-end; justify-content: center; }
