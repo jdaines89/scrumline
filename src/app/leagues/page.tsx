@@ -1,12 +1,11 @@
 "use client";
 
-import { LeaguePicture, leagueOf, leaguePictureLink } from "@/components/league-picture";
+import { LeaguePicture, SchoolPicture, leagueOf, leaguePictureLink } from "@/components/league-picture";
 import { drawLeagueInvite } from "@/lib/league-invite-card";
 import { RoundOptions } from "@/components/counts-from";
 import { OrganiserLine } from "@/components/organiser-line";
 import { joinLink } from "@/lib/join-link";
 import Link from "next/link";
-import { ListCrest, useCrests } from "@/components/crest";
 import { SchoolStep } from "@/components/school-step";
 import { schoolHref } from "@/lib/crest";
 import { useRouter } from "next/navigation";
@@ -52,7 +51,6 @@ function standing(rows: Score[], me: string): Standing | null {
 
 export default function PoolsPage() {
   const { season, pools, pool, setPool, reloadPools, members, me, rounds } = useLeague();
-  const crests = useCrests();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   // Where a new league's points start: "" for every round.
@@ -336,7 +334,7 @@ export default function PoolsPage() {
               return (
                 <div key={p.id} className="lg-panel">
                   <div className="lg-panel-head">
-                    <ListCrest emis={p.school_emis!} crests={crests} size={26} />
+                    <SchoolPicture pool={p} size={26} />
                     <span className="lg-panel-name"><PoolName pool={p} /></span>
                     <Link className="lg-panel-link" href={schoolHref(p.school_emis!)}>School page ›</Link>
                   </div>
