@@ -12,7 +12,8 @@ export function Brand() {
       <BallMark />
       <div>
         <div className="wordmark">Scrum<span>line</span></div>
-        <div className="subword">Get <b>our</b> schools over the line</div>
+        {/* The tagline in the logo's own brush lettering; width and height keep its space while it loads. */}
+        <img className="subword" src={`${base}/brand/tagline.png`} width={156} height={20} alt="Get our schools over the line" />
       </div>
     </div>
   );
