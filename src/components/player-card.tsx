@@ -1,15 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
+import { schoolHref } from "@/lib/crest";
 import { fullName } from "@/lib/names";
 import { CATEGORIES } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
 
-interface School { stage: "primary" | "high"; last_year: number | null; name: string; verified: boolean }
+interface School { stage: "primary" | "high"; emis: string; last_year: number | null; name: string; verified: boolean }
 interface Played { season: string; season_name: string; team_name: string; points: number; rank: number; players: number; matches: number; right_results: number }
 interface Business { id: number; name: string; category: string; about: string | null; website: string | null; logo_path: string | null }
 interface Profile { schools: School[]; record: Played[]; businesses: Business[] }
@@ -35,9 +37,9 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
     ]).then(([ms, sm, rec, biz]) => {
       if (!live) return;
       const ok = new Map(((sm.data ?? []) as { stage: string; verified: boolean }[]).map((r) => [r.stage, r.verified]));
-      const schools = ((ms.data ?? []) as unknown as { stage: "primary" | "high"; last_year: number | null; schools: { name: string } | null }[])
+      const schools = ((ms.data ?? []) as unknown as { stage: "primary" | "high"; emis: string; last_year: number | null; schools: { name: string } | null }[])
         .filter((r) => r.schools)
-        .map((r) => ({ stage: r.stage, last_year: r.last_year, name: r.schools!.name, verified: !!ok.get(r.stage) }))
+        .map((r) => ({ stage: r.stage, emis: r.emis, last_year: r.last_year, name: r.schools!.name, verified: !!ok.get(r.stage) }))
         .sort((a, b) => (a.stage === "high" ? -1 : 1) - (b.stage === "high" ? -1 : 1));
       const out = { schools, record: (rec.data ?? []) as Played[], businesses: (biz.data ?? []) as Business[] };
       writeCache(key, out);
@@ -71,9 +73,14 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
                 <h3>Schools</h3>
                 <ul className="pc-list">
                   {p.schools.map((s) => (
-                    <li key={s.stage}>
-                      <span>{s.name}{s.verified && <span className="pc-ok" title="Confirmed by schoolmates"> ✓</span>}</span>
-                      {s.last_year && <span className="muted">{s.stage === "high" ? "Matric" : "Completed"} {s.last_year}</span>}
+                    <li key={s.stage} className="pc-schoolrow">
+                      <Link href={schoolHref(s.emis)} className="pc-school" onClick={onClose}>
+                        <span>{s.name}{s.verified && <span className="pc-ok" title="Confirmed by schoolmates"> ✓</span>}</span>
+                        <span className="pc-go">
+                          {s.last_year && <span className="muted">{s.stage === "high" ? "Matric" : "Completed"} {s.last_year}</span>}
+                          <span className="pc-chev" aria-hidden="true">›</span>
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
