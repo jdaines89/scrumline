@@ -84,7 +84,7 @@ export default function SchoolPage() {
 function SchoolView({ p, season, seasonName, onChange }: { p: Page; season: string; seasonName: string; onChange: () => void }) {
   const s = p.school;
   // Your league for this school, if you're in it: the whole school's, else your class's.
-  const { pools } = useLeague();
+  const { pools, me } = useLeague();
   const mine = pools.filter((x) => x.school_emis === s.emis).sort((a, b) => (a.school_year === null ? -1 : 0) - (b.school_year === null ? -1 : 0))[0];
   const facts = [
     schoolKind(s),
@@ -112,6 +112,7 @@ function SchoolView({ p, season, seasonName, onChange }: { p: Page; season: stri
         <ShareSchool name={s.name} seasonName={seasonName} />
         {mine && <div className="sch-chat"><ChatButton pool={mine} label="School chat" /></div>}
         {p.can_set_crest && <CrestUpload emis={s.emis} hasCrest={!!p.crest_path} onDone={onChange} note="Only admins and the school's own contact can change it." />}
+        {me.is_admin && p.crest_path && <HideCrest emis={s.emis} onDone={onChange} />}
       </div>
 
       <Standings standing={p.standing} seasonName={seasonName} />
@@ -119,6 +120,26 @@ function SchoolView({ p, season, seasonName, onChange }: { p: Page; season: stri
       <Players players={p.players} />
       <GivenCard p={p} />
     </>
+  );
+}
+
+/** Admins take a crest down if the school asks. It stays set aside and is never shown again by itself. */
+function HideCrest({ emis, onDone }: { emis: string; onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  async function hide() {
+    if (!window.confirm("Hide this crest for everyone? Do this if the school has asked.")) return;
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.rpc("hide_school_crest", { p_emis: emis });
+    setBusy(false);
+    if (error) return setMsg(error.message);
+    onDone();
+  }
+  return (
+    <div className="sch-crest-up">
+      <button type="button" className="ghost" disabled={busy} onClick={hide}>{busy ? "Hiding…" : "Hide this crest"}</button>
+      {msg && <p className="small" style={{ margin: 0, color: "var(--danger)" }}>{msg}</p>}
+    </div>
   );
 }
 

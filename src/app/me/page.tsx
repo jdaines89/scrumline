@@ -60,6 +60,12 @@ export default function MePage() {
   return (
     <div className="mepage">
       {msg && <p className="small mepage-msg" style={{ color: msg.ok ? "var(--accent)" : "var(--danger)" }}>{msg.text}</p>}
+      <div className="card myschools-card">
+        <h2>Your schools</h2>
+        <p className="sub">Every call you make counts for the schools you went to</p>
+        <MySchools me={me} members={members} onMessage={say} />
+      </div>
+
       <div className="grid2">
         <div className="card">
           <h2>Your profile</h2>
@@ -90,12 +96,6 @@ export default function MePage() {
         </div>
 
         <div className="mepage-side">
-          <div className="card">
-            <h2>Your schools</h2>
-            <p className="sub">Where you went, so you can play for them</p>
-            <MySchools me={me} members={members} onMessage={say} />
-          </div>
-
           <NotifySettings me={me} onMessage={say} />
 
           <BlockedPeople members={members} />
