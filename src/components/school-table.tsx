@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ListCrest, useCrests } from "@/components/crest";
+import { Fragment, useEffect, useState } from "react";
+import { Crest, useCrests } from "@/components/crest";
 import { useLeague } from "@/components/league";
 import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
@@ -51,7 +51,7 @@ export function SchoolTable() {
       </div>
       {rows === null ? (
         <ol className="board" aria-busy="true" aria-label="Loading the table">
-          {[0, 1].map((i) => <li key={i} className="skeleton" style={{ height: 64 }} />)}
+          {[0, 1].map((i) => <li key={i} className="skeleton" style={{ height: 66 }} />)}
         </ol>
       ) : rows.length === 0 ? (
         <p className="muted">No one has added a {stage} school yet. Add yours on your profile.</p>
@@ -61,14 +61,12 @@ export function SchoolTable() {
             <ol className="board schools-table">
               {ranked.map((r) => (
                 <li key={r.emis} className={r.mine ? "me" : ""}>
-                  <div className="brow">
+                  <div className="srow">
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
-                    <ListCrest emis={r.emis} crests={crests} size={30} />
-                    <div className="who">
-                      <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
-                      <span className="small muted">{[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
-                    </div>
+                    <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
+                    <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
+                    <Meta parts={[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`]} />
                   </div>
                 </li>
               ))}
@@ -80,18 +78,15 @@ export function SchoolTable() {
               <ol className="board schools-table waiting">
                 {waiting.map((r) => (
                   <li key={r.emis} className={r.mine ? "me" : ""}>
-                    <div className="brow">
-                    <ListCrest emis={r.emis} crests={crests} size={30} />
-                    <div className="who">
-                      <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
-                      <span className="small muted">
-                        {SCHOOL_TRIAL
-                          ? `${r.members} in the league · ranked once a player's call is scored`
-                          : r.confirmed < MINIMUM
-                          ? `${r.confirmed} of ${MINIMUM} confirmed players needed · ${r.members} in the league`
-                          : `${r.confirmed} confirmed · needs ${MINIMUM} to play in the same round`}
-                      </span>
-                    </div>
+                    <div className="srow">
+                      <span className="rank blank" aria-hidden />
+                      <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
+                      <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
+                      <Meta parts={SCHOOL_TRIAL
+                        ? [`${r.members} in the league`, "ranked after a scored call"]
+                        : r.confirmed < MINIMUM
+                        ? [`${r.confirmed} of ${MINIMUM} confirmed players needed`, `${r.members} in the league`]
+                        : [`${r.confirmed} confirmed`, `needs ${MINIMUM} to play in the same round`]} />
                     </div>
                   </li>
                 ))}
@@ -114,5 +109,15 @@ export function SchoolTable() {
       </p>
       <p className="small" style={{ marginTop: 8 }}><Link href="/giving/">See what sponsors have given each school</Link></p>
     </>
+  );
+}
+
+/** The line under a school's name. Breaks only between parts, never inside one. */
+function Meta({ parts }: { parts: (string | null)[] }) {
+  const shown = parts.filter(Boolean) as string[];
+  return (
+    <span className="smeta small muted">
+      {shown.map((p, i) => <Fragment key={i}>{i > 0 && " · "}<span>{p}</span></Fragment>)}
+    </span>
   );
 }
