@@ -981,6 +981,11 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .pc-list li:first-child { border-top: 0; }
 .pc-list li > span:last-child { text-align: right; flex: none; }
 .pc-ok { color: var(--accent); }
+.pc-list li.pc-schoolrow { padding: 0; }
+.pc-school { display: flex; flex: 1; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; color: inherit; text-decoration: none; }
+.pc-school:hover { background: var(--panel); text-decoration: none; }
+.pc-go { display: flex; align-items: center; gap: 8px; flex: none; text-align: right; }
+.pc-chev { color: var(--muted); font-size: 18px; line-height: 1; }
 .pc-sub, .pc-rank > span { display: block; }
 .pc-biz { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); padding: 10px 12px; }
 .pc-biz + .pc-biz { margin-top: 8px; }
