@@ -5,19 +5,25 @@ import { TapToEnlarge } from "@/components/image-view";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 
+/** Crests narrower than this (in pixels) look soft full size, so they only show small. */
+const BIG_ENOUGH = 400;
+
 /**
  * A school's crest when it has added its real one. Until then a plain school
  * icon, the same for every school: we never invent a crest for a school.
  */
 export function Crest({ emis, path, size = 40, name, expandable = false }: { emis: string; path?: string | null; size?: number; name?: string; expandable?: boolean }) {
   const [broken, setBroken] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [natural, setNatural] = useState(0);
   if (path && !broken) {
     const url = supabase.storage.from("school-crests").getPublicUrl(path).data.publicUrl;
     // Fades in once it has arrived; the box is its full size from the start so nothing moves.
-    const img = <img className={`school-mark${loaded ? "" : " loading"}`} src={url} alt={name ? `${name} crest` : ""} width={size} height={size}
-      onLoad={() => setLoaded(true)} ref={(el) => { if (el?.complete && el.naturalWidth) setLoaded(true); }} onError={() => setBroken(true)} />;
-    return expandable ? <TapToEnlarge src={url} alt={name ? `${name} crest` : "School crest"}>{img}</TapToEnlarge> : img;
+    const img = <img className={`school-mark${natural ? "" : " loading"}`} src={url} alt={name ? `${name} crest` : ""} width={size} height={size}
+      onLoad={(e) => setNatural(e.currentTarget.naturalWidth || 1)} ref={(el) => { if (el?.complete && el.naturalWidth) setNatural(el.naturalWidth); }} onError={() => setBroken(true)} />;
+    // Only crests sharp enough to stay crisp open big, and never past what the picture holds.
+    return expandable && natural >= BIG_ENOUGH
+      ? <TapToEnlarge src={url} alt={name ? `${name} crest` : "School crest"} maxPx={Math.round(natural / 1.5)}>{img}</TapToEnlarge>
+      : img;
   }
   return (
     <span className="school-mark plain" data-emis={emis} aria-hidden style={{ width: size, height: size }}>
