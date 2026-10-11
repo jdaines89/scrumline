@@ -216,9 +216,13 @@ function Chat({ onBack }: { onBack?: () => void }) {
 
   const load = useCallback(async () => {
     const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId).order("id", { ascending: false }).limit(PAGE);
-    setMsgs(((data ?? []) as ChatMessage[]).reverse());
-    setMore((data ?? []).length === PAGE);
-  }, [chatId]);
+    const list = ((data ?? []) as ChatMessage[]).reverse();
+    // Reactions and polls come in with the messages, so nothing pops in afterwards and moves the chat.
+    shownIds.current = list.map((m) => m.id);
+    await Promise.all([loadReactions(), loadPolls()]);
+    setMsgs(list);
+    setMore(list.length === PAGE);
+  }, [chatId, loadReactions, loadPolls]);
 
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
@@ -556,6 +560,8 @@ function Chat({ onBack }: { onBack?: () => void }) {
     const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId)
       .lt("id", msgs[0].id).order("id", { ascending: false }).limit(PAGE);
     const page = ((data ?? []) as ChatMessage[]).reverse();
+    shownIds.current = [...page.map((m) => m.id), ...msgs.map((m) => m.id)];
+    await Promise.all([loadReactions(), loadPolls()]);
     setMore(page.length === PAGE);
     setMsgs((xs) => [...page, ...xs]);
     requestAnimationFrame(() => { el.scrollTop += el.scrollHeight - before; setLoadingOlder(false); });
