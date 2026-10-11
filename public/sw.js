@@ -12,8 +12,8 @@ self.addEventListener("push", (event) => {
     body: data.body || "",
     tag: data.tag || undefined,
     renotify: Boolean(data.tag),
-    icon: scope + "icons/icon-192.png",
-    badge: scope + "icons/badge-96.png",
+    icon: scope + "icons/icon-192-v2.png",
+    badge: scope + "icons/badge-96-v2.png",
     data: { url: data.url || scope },
   }));
 });
