@@ -214,7 +214,7 @@ function Standings({ standing, seasonName, emis, season, how }: {
                 <li className="sch-how">
                   <button type="button" className="sch-how-btn" aria-expanded={open === t.stage}
                     onClick={() => setOpen(open === t.stage ? null : t.stage)}>
-                    How {Number(t.score).toFixed(1)} adds up
+                    Points by round
                     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" className={open === t.stage ? "up" : ""}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </button>
                   {open === t.stage && <Breakdown emis={emis} stage={t.stage} season={season} total={Number(t.score)} />}
@@ -236,9 +236,9 @@ interface BreakdownRound {
 const NAMED = 3;
 
 /**
- * Round by round, how a school's season score was reached: each round adds the
- * average of its best players that round. Running totals are rounded the way
- * the table rounds, so the rows always add up to the score above.
+ * Round by round, who played for a school and what each round gave it. The
+ * rounds' points come from rounded running totals, so they always sum to the
+ * score above. No formula wording on screen, by Justin's choice.
  */
 function Breakdown({ emis, stage, season, total }: { emis: string; stage: "primary" | "high"; season: string; total: number }) {
   const key = `schoolhow1:${emis}:${stage}:${season}`;
@@ -247,12 +247,8 @@ function Breakdown({ emis, stage, season, total }: { emis: string; stage: "prima
     supabase.rpc("school_score_breakdown", { p_emis: emis, p_stage: stage, p_season: season })
       .then(({ data, error }) => { if (error) return; const r = (data ?? []) as BreakdownRound[]; writeCache(key, r); setRows(r); });
   }, [emis, key, season, stage]);
-  const team = 20;
   return (
     <div className="sch-how-body">
-      <p className="small muted" style={{ margin: "0 0 8px" }}>
-        Each round adds the average of the school&apos;s best {team} players that round. The rounds add up to the season score.
-      </p>
       {rows === null ? (
         <div className="skeleton" style={{ height: 120 }} aria-busy="true" />
       ) : (
@@ -265,18 +261,15 @@ function Breakdown({ emis, stage, season, total }: { emis: string; stage: "prima
                 <div>
                   <b>{roundName(r.round)}</b>
                   <span className="small muted">
-                    {r.counted === 1 ? "1 player" : `Average of ${r.counted} players`}: {shown.map((x) => `${x.name} ${x.pts}`).join(", ")}{more > 0 ? ` and ${more} more` : ""}
+                    {shown.map((x) => `${x.name} ${x.pts}`).join(" · ")}{more > 0 ? ` · ${more} more` : ""}
                   </span>
                 </div>
-                <div className="sch-how-nums">
-                  <b>+{Number(r.adds).toFixed(1)}</b>
-                  <span className="small muted">{Number(r.running).toFixed(1)}</span>
-                </div>
+                <div className="sch-how-nums"><b>{Number(r.adds).toFixed(1)}</b></div>
               </li>
             );
           })}
           <li className="sch-how-total">
-            <b>Season score</b>
+            <b>Total</b>
             <div className="sch-how-nums"><b>{total.toFixed(1)}</b></div>
           </li>
         </ol>
