@@ -20,7 +20,7 @@ export function ChatButton({ pool, label = "Chat" }: { pool: Pool; label?: strin
       .then(({ data }) => { const n = (data as { unread: number } | null)?.unread ?? 0; writeCache(key, n); setUnread(n); });
   }, [chat, key]);
   return (
-    <Link href="/chat/" className="chat-btn" onClick={() => setPool(pool.id)}>
+    <Link href="/chat/?c=1" className="chat-btn" onClick={() => setPool(pool.id)}>
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
       </svg>
