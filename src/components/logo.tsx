@@ -12,7 +12,7 @@ export function Brand() {
       <BallMark />
       <div>
         <div className="wordmark">Scrum<span>line</span></div>
-        <div className="subword">Get your school over the line</div>
+        <div className="subword">Get our schools over the line</div>
       </div>
     </div>
   );
