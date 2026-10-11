@@ -1153,6 +1153,16 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .sch-rows li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .sch-rows li:first-child { border-top: 0; padding-top: 0; }
 .sch-rows li > div { display: grid; gap: 2px; min-width: 0; }
+.sch-rows li.sch-how { display: block; padding-top: 0; border-top: 0; }
+.sch-how-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 500; color: var(--text); }
+.sch-how-btn svg { transition: transform .15s; }
+.sch-how-btn svg.up { transform: rotate(180deg); }
+.sch-how-body { margin-top: 12px; }
+.sch-how-list { list-style: none; margin: 0; padding: 0; }
+.sch-how-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.sch-how-list li > div:first-child { display: grid; gap: 2px; min-width: 0; }
+.sch-how-nums { display: grid; justify-items: end; gap: 2px; min-width: 56px; font-variant-numeric: tabular-nums; }
+.sch-how-total { border-top: 2px solid var(--line) !important; }
 .sch-score { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .sch-players { list-style: none; margin: 0; padding: 0; }
 .sch-players li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
@@ -1705,3 +1715,4 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 
 .nowrap { white-space: nowrap; }
 .board-switch { margin: -4px 0 10px; }
+.srow a.btotal { color: inherit; text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
