@@ -137,7 +137,7 @@ function Leaderboard() {
           <ChatButton pool={pool!} />
         </div>
       )}
-      {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
+      {view === "schools" && <p className="sub">Every school playing this tournament, not just the ones in this league.</p>}
       {view !== "schools" && view !== "everyone" && <CountsFrom />}
       {view !== "schools" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
       {view !== "schools" && view !== "everyone" && !pool!.school_emis && pool!.created_by === me.user_id && (
