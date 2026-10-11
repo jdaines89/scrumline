@@ -1607,3 +1607,34 @@ button.chat-back, button.chat-back:hover { display: inline-flex; align-items: ce
   background: transparent; border: 0; color: var(--accent); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
 button.chat-back:hover { color: var(--text); }
 @media (max-width: 560px) { .card.chatlist { border-radius: 0; border-left: 0; border-right: 0; margin: 0; } }
+
+/* Home: your team, front and centre. A mown-pitch card with the name big and the round's calls as one chalk segment per match. */
+.card.teamcard {
+  position: relative; overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(19, 30, 27, 0) 0%, var(--panel) 92%),
+    repeating-linear-gradient(90deg, #15241e 0 44px, #121c18 44px 88px);
+  border-top: 2px solid var(--gold);
+}
+.tc-head { display: flex; align-items: center; gap: 14px; }
+.tc-head > :first-child { flex: none; }
+.tc-who { display: flex; flex-direction: column; min-width: 0; }
+.tc-hi { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card .tc-name { margin: 2px 0 0; font-size: 28px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.card .tc-name.tc-none { color: var(--muted); font-size: 20px; }
+.tc-replay { margin: 12px 0 0; }
+.tc-round { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.tc-round-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.tc-round-name { font-weight: 700; font-size: 15px; }
+.tc-count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tc-bar { display: flex; gap: 4px; margin: 10px 0 14px; }
+.tc-bar span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .3s; }
+.tc-bar span.on { background: var(--accent); }
+.btn.tc-go { display: block; width: 100%; text-align: center; padding: 12px 16px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: #07140e; }
+.btn.tc-go:hover { filter: brightness(1.08); }
+.btn.tc-go.done { background: transparent; border-color: var(--line); color: var(--text); }
+.btn.tc-go.done:hover { background: var(--panel-2); filter: none; }
+.card.teamcard > .btn.tc-go { margin-top: 16px; }
+@media (min-width: 761px) { .btn.tc-go { display: inline-block; width: auto; min-width: 220px; } }
+/* Your banker on the full-time card: quiet gold words, clear of the score. */
+.ft-bank { color: var(--gold); font-weight: 600; white-space: nowrap; }

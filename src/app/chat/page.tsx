@@ -216,9 +216,13 @@ function Chat({ onBack }: { onBack?: () => void }) {
 
   const load = useCallback(async () => {
     const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId).order("id", { ascending: false }).limit(PAGE);
-    setMsgs(((data ?? []) as ChatMessage[]).reverse());
-    setMore((data ?? []).length === PAGE);
-  }, [chatId]);
+    const list = ((data ?? []) as ChatMessage[]).reverse();
+    // Reactions and polls come in with the messages, so nothing pops in afterwards and moves the chat.
+    shownIds.current = list.map((m) => m.id);
+    await Promise.all([loadReactions(), loadPolls()]);
+    setMsgs(list);
+    setMore(list.length === PAGE);
+  }, [chatId, loadReactions, loadPolls]);
 
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
@@ -289,8 +293,11 @@ function Chat({ onBack }: { onBack?: () => void }) {
       const top = el.getBoundingClientRect().top + window.scrollY;
       // With the keyboard up there's little room: let the log shrink further rather than push the box off screen.
       const least = vh < 520 ? 140 : 260;
-      let h = Math.max(least, vh - top - f.offsetHeight - 24);
+      let h = Math.max(least, vh - top - f.offsetHeight);
       el.style.height = `${h}px`;
+      // Then close any gap left under the message box, so it sits right at the bottom of the screen.
+      const gap = vh - (document.body.getBoundingClientRect().bottom + window.scrollY);
+      if (gap > 0) { h += gap; el.style.height = `${h}px`; }
       // Whatever still hangs below the screen (padding, the error line) comes off too,
       // so the box sits at the bottom without scrolling the page.
       const over = document.documentElement.scrollHeight - vh;
@@ -553,6 +560,8 @@ function Chat({ onBack }: { onBack?: () => void }) {
     const { data } = await supabase.from("chat_messages").select("*").eq("pool_id", chatId)
       .lt("id", msgs[0].id).order("id", { ascending: false }).limit(PAGE);
     const page = ((data ?? []) as ChatMessage[]).reverse();
+    shownIds.current = [...page.map((m) => m.id), ...msgs.map((m) => m.id)];
+    await Promise.all([loadReactions(), loadPolls()]);
     setMore(page.length === PAGE);
     setMsgs((xs) => [...page, ...xs]);
     requestAnimationFrame(() => { el.scrollTop += el.scrollHeight - before; setLoadingOlder(false); });
