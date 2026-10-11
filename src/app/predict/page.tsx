@@ -22,6 +22,7 @@ import { kickoff, roundName, roundText } from "@/lib/format";
 import { isRugbyScore, scoreInput } from "@/lib/rugby";
 import { firstOpenRound, lockRound, useRoundLocks } from "@/lib/rounds";
 import { readCache, writeCache } from "@/lib/cache";
+import { callSaver, type SaveState } from "@/lib/call-saver";
 import { supabase } from "@/lib/supabase";
 import type { LeaderRow, Prediction } from "@/lib/types";
 
@@ -86,6 +87,26 @@ function Predict() {
   // Boxes typed into since the round opened, so a fresh copy landing late never overwrites them.
   const touched = useRef<Set<string>>(new Set());
   const shown = useRef<string | null>(null);
+  // Per match: whether the last thing typed is saving, saved or failed to save.
+  const [saveState, setSaveState] = useState<Record<string, { s: SaveState; error?: string }>>({});
+  const saver = useRef<ReturnType<typeof callSaver<[number, number]>> | null>(null);
+  saver.current ??= callSaver<[number, number]>({
+    send: async (matchId, [h, a]) => {
+      const { error } = await supabase.from("predictions").upsert(
+        { entry_id: entry!.id, match_id: matchId, home_score: h, away_score: a });
+      return error?.message ?? null;
+    },
+    onSaved: (matchId, [h, a]) => setPreds((p) => new Map(p).set(matchId,
+      { entry_id: entry!.id, match_id: matchId, home_score: h, away_score: a, is_banker: p.get(matchId)?.is_banker ?? false })),
+    onState: (matchId, s, error) => setSaveState((x) => ({ ...x, [matchId]: { s, error } })),
+  });
+  // Leaving the page or the app mid-typing still sends the last call typed.
+  useEffect(() => {
+    const out = () => saver.current?.flushAll();
+    window.addEventListener("pagehide", out);
+    document.addEventListener("visibilitychange", out);
+    return () => { window.removeEventListener("pagehide", out); document.removeEventListener("visibilitychange", out); out(); };
+  }, []);
 
   useEffect(() => { if (round === null && rounds.length) setRound(firstOpenRound(rounds, isLocked)); }, [round, rounds, isLocked]);
 
@@ -211,16 +232,13 @@ function Predict() {
     }
   }
 
-  async function save(matchId: string, rawH: string, rawA: string) {
+  function save(matchId: string, rawH: string, rawA: string) {
     const h = scoreInput(rawH), a = scoreInput(rawA);
     touched.current.add(matchId);
     setDraft((d) => ({ ...d, [matchId]: [h, a] }));
-    if (h === "" || a === "" || !isRugbyScore(+h) || !isRugbyScore(+a)) return;
     setMsg(null);
-    const { error } = await supabase.from("predictions").upsert(
-      { entry_id: entry!.id, match_id: matchId, home_score: Number(h), away_score: Number(a) });
-    if (error) setMsg(error.message);
-    else setPreds((p) => new Map(p).set(matchId, { entry_id: entry!.id, match_id: matchId, home_score: +h, away_score: +a, is_banker: p.get(matchId)?.is_banker ?? false }));
+    if (h === "" || a === "" || !isRugbyScore(+h) || !isRugbyScore(+a)) { saver.current!.drop(matchId); setSaveState((x) => { const n = { ...x }; delete n[matchId]; return n; }); return; }
+    saver.current!.set(matchId, [+h, +a]);
   }
 
   async function back(matchId: string) {
@@ -339,10 +357,10 @@ function Predict() {
                   </div>
                 ) : <>
                 <input className={`pbox${bad(d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
-                  aria-label={`${h.display_name} score`} onChange={(e) => save(m.id, e.target.value, d[1])} />
+                  aria-label={`${h.display_name} score`} onChange={(e) => save(m.id, e.target.value, d[1])} onBlur={() => saver.current!.flush(m.id)} />
                 <span className="muted">–</span>
                 <input className={`pbox${bad(d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[1]}
-                  aria-label={`${a.display_name} score`} onChange={(e) => save(m.id, d[0], e.target.value)} />
+                  aria-label={`${a.display_name} score`} onChange={(e) => save(m.id, d[0], e.target.value)} onBlur={() => saver.current!.flush(m.id)} />
                 </>}
                 <span className="pteam away"><span className="ha">Away</span><Crest team={a} size={30} /></span>
               </div>
@@ -350,6 +368,11 @@ function Predict() {
                 <span><strong>{h.display_name}</strong><Form f={form.get(h.id)} /></span>
                 <span className="away"><strong>{a.display_name}</strong><Form f={form.get(a.id)} align="right" /></span>
               </div>
+              {!shut && saveState[m.id] && !(bad(d[0]) || bad(d[1])) && (
+                saveState[m.id].s === "failed"
+                  ? <p className="savestate failed" role="alert">Not saved: {saveState[m.id].error}. <button type="button" className="linkish" onClick={() => saver.current!.flush(m.id)}>Try again</button></p>
+                  : <p className="savestate" aria-live="polite">{saveState[m.id].s === "saving" ? "Saving…" : <>Saved {d[0]}–{d[1]}</>}</p>
+              )}
               {!shut && (bad(d[0]) || bad(d[1])) && (
                 <p className="scorewarn">A rugby side can&apos;t score 1, 2 or 4, so this call isn&apos;t saved yet.</p>
               )}
