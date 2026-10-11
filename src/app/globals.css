@@ -1497,3 +1497,11 @@ button.stickerbtn:focus-visible { outline: 2px solid var(--accent); outline-offs
 .lg-school-empty { padding: 14px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .lg-school-empty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
 .signin-biz .linkish { font-size: inherit; font-weight: inherit; color: var(--accent); }
+
+/* Bok days: the league table for the Springboks' tests only. Four tabs fit a 360px phone. */
+.seg.four { max-width: 100%; }
+.seg.four button { flex: 1 1 auto; padding: 6px 10px; white-space: nowrap; }
+.bokdays-tests { margin-top: 4px; }
+.bokdays-tests li.done strong, .bokdays-tests li.done .bok-when { color: var(--muted); }
+.bokdays-call { display: block; max-width: 420px; text-align: center; margin: 0 0 16px; }
+.bokdays-empty { margin-top: 4px; }

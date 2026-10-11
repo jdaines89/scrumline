@@ -5,6 +5,7 @@ import { LeaguePicture, LeaguePicturePicker } from "@/components/league-picture"
 import { CountsFrom } from "@/components/counts-from";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { BokDaysTable } from "@/components/bok-days";
 import { ClassTable } from "@/components/class-table";
 import { HeadToHead } from "@/components/head-to-head";
 import { NeedsPool, useLeague } from "@/components/league";
@@ -46,7 +47,7 @@ function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[] | null>(() => readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
   const [picked, setPicked] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
-  const [view, setView] = useState<"overall" | "round" | "schools">("overall");
+  const [view, setView] = useState<"overall" | "round" | "boks" | "schools">("overall");
   // Bumped when someone is removed, so the table and the removed list reload.
   const [removals, setRemovals] = useState(0);
   const runs = runsLeague(pool!, me);
@@ -54,7 +55,8 @@ function Leaderboard() {
   const [editPic, setEditPic] = useState(false);
   const [picMsg, setPicMsg] = useState<string | null>(null);
   // ?tab=schools opens the schools table straight away (a school's page links here).
-  useEffect(() => { if (new URLSearchParams(window.location.search).get("tab") === "schools") setView("schools"); }, []);
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("tab") === "schools") setView("schools");
+    if (new URLSearchParams(window.location.search).get("tab") === "boks") setView("boks"); }, []);
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
@@ -134,7 +136,7 @@ function Leaderboard() {
         </div>
       )}
       {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
-      {view !== "schools" && <CountsFrom />}
+      {view !== "schools" && view !== "boks" && <CountsFrom />}
       {view !== "schools" && !pool!.school_emis && pool!.created_by === me.user_id && (
         <div className="league-pic-edit">
           <p className="small muted">
@@ -147,14 +149,15 @@ function Leaderboard() {
         </div>
       )}
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
-      {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
+      {view === "boks" ? null : view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
-      <div className="seg" role="tablist">
+      <div className="seg four" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall"} className={view === "overall" ? "on" : ""} onClick={() => setView("overall")}>Overall</button>
         <button type="button" role="tab" aria-selected={view === "round"} className={view === "round" ? "on" : ""} onClick={() => setView("round")}>By round</button>
+        <button type="button" role="tab" aria-selected={view === "boks"} className={view === "boks" ? "on" : ""} onClick={() => setView("boks")}>Bok days</button>
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
       </div>
-      {view === "schools" ? <SchoolTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
+      {view === "schools" ? <SchoolTable /> : view === "boks" ? <BokDaysTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
         {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={playing} />}

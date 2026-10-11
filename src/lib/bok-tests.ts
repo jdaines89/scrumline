@@ -18,5 +18,5 @@ export function opponents(names: string[]): string {
 /** The WhatsApp message: who the Boks play, which league to join, and the one link that does it. */
 export function bokInvite(rivals: string, seasonName: string, league: string | null, link: string): string {
   const where = league ? `I'm calling the scores in "${league}" on Scrumline` : "I'm calling the scores on Scrumline";
-  return `The Boks play ${rivals} in the ${seasonName} this November. ${where}. Call the Boks' tests with us: free to play, no betting.\n\nTap to join: ${link}`;
+  return `The Boks play ${rivals} in the ${seasonName} this November. ${where}. Call the Boks' tests with us. If you only watch the Boks, just call their games: they have their own table. Free to play, no betting.\n\nTap to join: ${link}`;
 }

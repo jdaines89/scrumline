@@ -75,7 +75,7 @@ export function BokTests() {
   return (
     <div className="card bok">
       <h2>Call the Boks&apos; tests with your league</h2>
-      <p className="sub">The {season.name} brings the Springboks to Scrumline. Send your league to the group chat and call these with them.</p>
+      <p className="sub">The {season.name} brings the Springboks to Scrumline. Send your league to the group chat and call these with them. Anyone who only watches the Boks can call just these: they get their own Bok days table.</p>
       <ul className="bok-list">
         {ahead.map((t) => (
           <li key={t.id}>
