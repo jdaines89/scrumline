@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LeaguePicture, leagueOf } from "@/components/league-picture";
+import { LeaguePicture, SchoolPicture, leagueOf } from "@/components/league-picture";
 import { PoolName } from "@/components/pool-name";
 import { stickerLabel } from "@/components/stickers";
 import { useLeague } from "@/components/league";
@@ -72,39 +72,44 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
     return `${who}: ${l.image_path && !l.sticker && text !== "Photo" ? `📷 ${text}` : text}`;
   };
 
+  const row = ({ p, last, unread }: (typeof rows)[number]) => {
+    const n = unread?.unread ?? 0, at = (unread?.tagged ?? 0) > 0;
+    return (
+      <li key={p.id}>
+        <button type="button" className={`chatrow${n ? " new" : ""}${p.school_emis ? " school" : ""}`} onClick={() => onOpen(p)}>
+          {/* Every row keeps the same picture spot: a school's crest on a square plaque, a mates' league's round picture or plain icon. */}
+          {p.school_emis ? <SchoolPicture pool={p} size={46} /> : (
+            <span className="chatrow-pic" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="3.2" /><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6" /><circle cx="16.5" cy="8" r="2.6" /><path d="M16.5 13c2.2 0 3.7 1.3 4.2 3.8" /></svg>
+              <LeaguePicture pool={p} size={46} />
+            </span>
+          )}
+          <span className="chatrow-main">
+            <span className="chatrow-top">
+              <span className="chatrow-name"><PoolName pool={p} /></span>
+              {last && <span className="chatrow-time">{when(last.created_at)}</span>}
+            </span>
+            <span className="chatrow-bottom">
+              <span className="chatrow-last">{last ? preview(last) : p.school_emis ? "Say hi to your old schoolmates" : "No messages yet"}</span>
+              {n > 0 && <span className={at ? "chatrow-count at" : "chatrow-count"} aria-label={at ? "You were mentioned" : `${n} unread`}>{at ? "@" : n > 99 ? "99+" : n}</span>}
+            </span>
+          </span>
+        </button>
+      </li>
+    );
+  };
+  // Schools first, under their own heading, so old schoolmates are always one tap away.
+  const schools = rows.filter((r) => r.p.school_emis), mates = rows.filter((r) => !r.p.school_emis);
+
   return (
     <div className="card chatlist">
       <h2>Chats</h2>
-      <ul>
-        {rows.map(({ p, last, unread }) => {
-          const n = unread?.unread ?? 0, at = (unread?.tagged ?? 0) > 0;
-          return (
-            <li key={p.id}>
-              <button type="button" className={`chatrow${n ? " new" : ""}`} onClick={() => onOpen(p)}>
-                {/* Every row keeps the same picture spot; a league without a picture shows a plain icon. */}
-                <span className="chatrow-pic" aria-hidden="true">
-                  {p.school_emis ? (
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M3 10 12 5l9 5M5 10v9h14v-9M10 19v-5h4v5" /></svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="3.2" /><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6" /><circle cx="16.5" cy="8" r="2.6" /><path d="M16.5 13c2.2 0 3.7 1.3 4.2 3.8" /></svg>
-                  )}
-                  <LeaguePicture pool={p} size={46} />
-                </span>
-                <span className="chatrow-main">
-                  <span className="chatrow-top">
-                    <span className="chatrow-name"><PoolName pool={p} /></span>
-                    {last && <span className="chatrow-time">{when(last.created_at)}</span>}
-                  </span>
-                  <span className="chatrow-bottom">
-                    <span className="chatrow-last">{last ? preview(last) : "No messages yet"}</span>
-                    {n > 0 && <span className={at ? "chatrow-count at" : "chatrow-count"} aria-label={at ? "You were mentioned" : `${n} unread`}>{at ? "@" : n > 99 ? "99+" : n}</span>}
-                  </span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      {schools.length > 0 && mates.length > 0 ? <>
+        <div className="chatlist-sect">Your schools</div>
+        <ul>{schools.map(row)}</ul>
+        <div className="chatlist-sect">Your leagues</div>
+        <ul>{mates.map(row)}</ul>
+      </> : <ul>{rows.map(row)}</ul>}
     </div>
   );
 }

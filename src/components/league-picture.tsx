@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
+import { CrestUpload, useCrests } from "@/components/crest";
 import { TapToEnlarge } from "@/components/image-view";
 import { PicturePicker } from "@/components/picture-picker";
 import { readCache, writeCache } from "@/lib/cache";
@@ -34,11 +35,66 @@ function leaguePath(league: number): Promise<string | null> {
 export const leagueOf = (pool: Pool) => pool.league_id ?? pool.id;
 
 /**
+ * A school league's picture: the school's crest on a plaque, square-cornered so
+ * school chats stand apart from mates' round pictures. A class league adds its
+ * year under the crest. A school with no real crest gets a plain school icon:
+ * we never invent one.
+ */
+export function SchoolPicture({ pool, size = 40, expandable = false }: { pool: Pool; size?: number; expandable?: boolean }) {
+  const crests = useCrests();
+  const path = crests.get(pool.school_emis!) ?? null;
+  const url = path ? supabase.storage.from("school-crests").getPublicUrl(path).data.publicUrl : null;
+  // The year only where it can be read; small spots carry it in the name already.
+  const year = pool.school_year && size >= 40 ? pool.school_year : null;
+  const mark = Math.round(size * (year ? 0.6 : 0.78));
+  const pic = (
+    <span className={`school-pic${year ? " with-year" : ""}`} style={{ width: size, height: size }} aria-hidden="true">
+      {url ? <img src={url} alt="" width={mark} height={mark} decoding="async" />
+        : <svg viewBox="0 0 24 24" width={Math.round(mark * 0.72)} height={Math.round(mark * 0.72)} fill="none" stroke="currentColor"
+          strokeWidth="1.6" strokeLinejoin="round"><path d="M3 10 12 5l9 5M5 10v9h14v-9M10 19v-5h4v5" /></svg>}
+      {year && <span className="school-pic-year" style={{ fontSize: Math.max(9, Math.round(size * 0.21)) }}>{year}</span>}
+    </span>
+  );
+  return expandable && url ? <TapToEnlarge src={url} alt="School crest" maxPx={240}>{pic}</TapToEnlarge> : pic;
+}
+
+/** For an admin or the school's own contact: change the crest every league of the school shows. */
+export function SchoolPictureEdit({ pool }: { pool: Pool }) {
+  const emis = pool.school_emis;
+  const crests = useCrests();
+  const [can, setCan] = useState(false);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!emis) return;
+    let live = true;
+    supabase.rpc("can_set_crest", { p_emis: emis }).then(({ data }) => { if (live) setCan(data === true); });
+    return () => { live = false; };
+  }, [emis]);
+  if (!emis || !can) return null;
+  const has = crests.has(emis);
+  return (
+    <div className="league-pic-edit">
+      <p className="small muted">
+        <button type="button" className="linkish small" onClick={() => setOpen(!open)}>
+          {open ? "Close" : has ? "Change the school crest" : "Add the school crest"}
+        </button>
+      </p>
+      {open && <CrestUpload emis={emis} hasCrest={has} onDone={() => setOpen(false)}
+        note="It shows on every league and class of the school. Only admins and the school's own contact can change it." />}
+    </div>
+  );
+}
+
+/**
  * A mates' league's picture, like a WhatsApp group's. Nothing at all when the
  * league has none; when it has one, its space is kept while it loads so the
  * page doesn't jump.
  */
 export function LeaguePicture({ pool, size = 40, expandable = false }: { pool: Pool; size?: number; expandable?: boolean }) {
+  return pool.school_emis ? <SchoolPicture pool={pool} size={size} expandable={expandable} /> : <MatesPicture pool={pool} size={size} expandable={expandable} />;
+}
+
+function MatesPicture({ pool, size, expandable }: { pool: Pool; size: number; expandable: boolean }) {
   const league = leagueOf(pool);
   const borrowed = !pool.school_emis && league !== pool.id;
   // Start from what this phone last saw, so the picture is there on the first frame.

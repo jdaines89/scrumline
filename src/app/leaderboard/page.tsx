@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatButton } from "@/components/chat-button";
-import { LeaguePicture, LeaguePicturePicker } from "@/components/league-picture";
+import { LeaguePicture, LeaguePicturePicker, SchoolPictureEdit } from "@/components/league-picture";
 import { CountsFrom } from "@/components/counts-from";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -135,6 +135,7 @@ function Leaderboard() {
       )}
       {view === "schools" && <p className="sub">Every school in the league, not just this league.</p>}
       {view !== "schools" && <CountsFrom />}
+      {view !== "schools" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
       {view !== "schools" && !pool!.school_emis && pool!.created_by === me.user_id && (
         <div className="league-pic-edit">
           <p className="small muted">

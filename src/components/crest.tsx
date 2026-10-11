@@ -55,6 +55,7 @@ export function CrestUpload({ emis, hasCrest, onDone, note }: { emis: string; ha
       if (up.error) throw new Error(up.error.message);
       const { error } = await supabase.rpc("set_school_crest", { p_emis: emis, p_path: path });
       if (error) throw new Error(error.message);
+      crestsChanged();
       onDone();
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "That didn't work. Try another picture.");
@@ -97,15 +98,29 @@ async function squarePng(file: File): Promise<Blob> {
   }
 }
 
+// One read of the crest list per page, however many places show crests.
+let crestRead: Promise<Record<string, string>> | null = null;
+function readCrests(): Promise<Record<string, string>> {
+  crestRead ??= Promise.resolve(supabase.from("school_crests").select("emis, image_path")).then(({ data }) => {
+    const out: Record<string, string> = {};
+    for (const r of (data ?? []) as { emis: string; image_path: string }[]) out[r.emis] = r.image_path;
+    writeCache("crests1", out);
+    return out;
+  }, () => readCache<Record<string, string>>("crests1") ?? {});
+  return crestRead;
+}
+/** After a crest changes: everything showing crests looks again. */
+export function crestsChanged() { crestRead = null; window.dispatchEvent(new Event("crests")); }
+
 /** Real crests schools have added, by EMIS number. Small: one row per school that has one. */
 export function useCrests(): Map<string, string> {
   const [rows, setRows] = useState<Record<string, string>>(() => readCache<Record<string, string>>("crests1") ?? {});
   useEffect(() => {
-    supabase.from("school_crests").select("emis, image_path").then(({ data }) => {
-      const out: Record<string, string> = {};
-      for (const r of (data ?? []) as { emis: string; image_path: string }[]) out[r.emis] = r.image_path;
-      writeCache("crests1", out); setRows(out);
-    });
+    let live = true;
+    const load = () => readCrests().then((r) => { if (live) setRows(r); });
+    load();
+    window.addEventListener("crests", load);
+    return () => { live = false; window.removeEventListener("crests", load); };
   }, []);
   return new Map(Object.entries(rows));
 }
