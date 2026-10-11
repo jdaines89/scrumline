@@ -108,7 +108,13 @@ function Predict() {
     return () => { window.removeEventListener("pagehide", out); document.removeEventListener("visibilitychange", out); out(); };
   }, []);
 
-  useEffect(() => { if (round === null && rounds.length) setRound(firstOpenRound(rounds, isLocked)); }, [round, rounds, isLocked]);
+  // Opened from a card about a game (Home's full-time "See them all"): show that game's round.
+  useEffect(() => {
+    if (round !== null || !rounds.length) return;
+    const id = new URLSearchParams(window.location.search).get("match");
+    const from = id ? matches.find((m) => m.id === id)?.round : undefined;
+    setRound(from ?? firstOpenRound(rounds, isLocked));
+  }, [round, rounds, isLocked, matches]);
 
   const ms = matches.filter((m) => m.round === round);
   const apply = useCallback((b: RoundBundle) => {

@@ -44,7 +44,7 @@ export function FullTimeCard() {
           </li>
         ))}
       </ul>
-      {ft.matches.length > games.length && <p className="small muted ft-more">And {ft.matches.length - games.length} more. <Link href="/predict/">See them all</Link></p>}
+      {ft.matches.length > games.length && <p className="small muted ft-more">And {ft.matches.length - games.length} more. <Link href={`/predict/?match=${encodeURIComponent(games[games.length - 1].match_id)}`}>See them all</Link></p>}
       {ft.league && <p className="ft-place">{placeLine(ft.league)}</p>}
       {moment && <ShareMomentLine moment={moment} />}
     </div>
