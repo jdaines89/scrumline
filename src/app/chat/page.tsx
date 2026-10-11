@@ -39,7 +39,7 @@ export default function ChatPage() {
 }
 
 function Chat() {
-  const { me, members: everyone, pool, pools, setPool, season, seasons, setSeason, teams } = useLeague();
+  const { me, members: everyone, pool, pools, setPool, teams } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   // One chat per league, whichever tournament you're looking at: it lives on the league's first table.
@@ -565,7 +565,7 @@ function Chat() {
   return (
     <div className="card chat">
       <div className="chat-head">
-        {/* Which pool, and always which tournament it belongs to: two pools can share a name. */}
+        {/* Which league. One chat per league across every tournament, so no tournament picker here. */}
         <div className="chat-where">
           <label className={`chat-pool${pools.length > 1 ? "" : " one"}`}>
             <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
@@ -573,15 +573,6 @@ function Chat() {
               <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch league">
                 {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
-              </select>
-            </>}
-          </label>
-          <label className={`chat-season${seasons.length > 1 ? "" : " one"}`}>
-            <span>{season.name}</span>
-            {seasons.length > 1 && <>
-              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <select value={season.id} onChange={(e) => setSeason(e.target.value)} aria-label="Switch tournament">
-                {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_replay ? " (replay)" : ""}</option>)}
               </select>
             </>}
           </label>
