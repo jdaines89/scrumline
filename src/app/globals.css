@@ -1675,3 +1675,13 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 .adm-form, .adm-card { display: grid; gap: 12px; }
 .adm-form label, .adm-card label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 .adm-form input, .adm-form select, .adm-card textarea { width: 100%; }
+
+/* Everyone in the tournament: your place, then a slim table with a break where rows are skipped. */
+.everyone-head { margin: 0 0 10px; font-size: 15px; }
+.board.everyone li.gap { border-top: 1px dashed var(--line); margin-top: 0; padding-top: 22px; position: relative; }
+.board.everyone li.gap::before { content: "···"; position: absolute; top: 2px; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 12px; letter-spacing: 2px; }
+.board.everyone li, .board.resting li { cursor: default; }
+.seg button { white-space: nowrap; }
+
+.nowrap { white-space: nowrap; }
+.board-switch { margin: -4px 0 10px; }
