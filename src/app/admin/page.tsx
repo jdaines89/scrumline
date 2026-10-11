@@ -28,6 +28,7 @@ export default function AdminHome() {
           <Link href="/admin/schools/">Schools<span>Claims and payouts</span></Link>
           <Link href="/admin/projects/">School projects<span>List, settle and prove</span></Link>
           <Link href="/admin/sponsors/">Sponsors<span>Bookings and approvals</span></Link>
+          <Link href="/admin/rewards/">Sponsor rewards<span>Vouchers badges unlock</span></Link>
           <Link href="/admin/moderation/">Moderation<span>{held ? `${held} waiting for review` : "Nothing waiting"}</span></Link>
         </nav>
       </div>

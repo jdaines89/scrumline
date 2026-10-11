@@ -34,3 +34,15 @@ describe("achievements", () => {
     expect(by(split, "dead-on")).toMatchObject({ have: 2, earned: false });
   });
 });
+
+import { rewardTag, type MyReward } from "../src/lib/rewards";
+const rw = (o: Partial<MyReward> = {}): MyReward => ({ campaign_id: 1, title: "R100 voucher", sponsor_name: null, achievement_key: "sharpshooter", terms: null, ends_at: null, remaining: 5, earned: false, claimed: false, code: null, ...o });
+describe("rewardTag", () => {
+  it("says nothing without a reward", () => expect(rewardTag(undefined)).toBeNull());
+  it("walks from waiting to claim to claimed", () => {
+    expect(rewardTag(rw())).toBe("Reward waiting");
+    expect(rewardTag(rw({ earned: true }))).toBe("Claim your reward");
+    expect(rewardTag(rw({ earned: true, claimed: true, code: "X" }))).toBe("Reward claimed");
+    expect(rewardTag(rw({ earned: true, remaining: 0 }))).toBe("Rewards all claimed");
+  });
+});

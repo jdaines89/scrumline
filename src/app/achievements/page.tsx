@@ -5,6 +5,7 @@ import { AchBadge } from "@/components/achievement-badge";
 import { NeedsEntry, useLeague } from "@/components/league";
 import { achievements, type Achievement, type ScoredCall } from "@/lib/achievements";
 import { readCache, writeCache } from "@/lib/cache";
+import { rewardTag, type MyReward } from "@/lib/rewards";
 import { supabase } from "@/lib/supabase";
 
 // Earned badges this phone has already shown off, so each pops only the first time.
@@ -12,7 +13,19 @@ const SEEN_KEY = "sl:ach-seen";
 const seen = (): string[] => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]") as string[]; } catch { return []; } };
 
 function Achievements() {
-  const { entry, matches } = useLeague();
+  const { entry, matches, season } = useLeague();
+  const [rewards, setRewards] = useState<MyReward[]>([]);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const loadRewards = () => { supabase.rpc("my_rewards", { p_season: season.id }).then(({ data }) => setRewards((data ?? []) as MyReward[])); };
+  useEffect(loadRewards, [season.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rewardFor = (key: string) => rewards.find((r) => r.achievement_key === key);
+  async function claim(r: MyReward) {
+    setMsg(null);
+    const { error } = await supabase.rpc("claim_reward", { p_campaign: r.campaign_id });
+    if (error) setMsg(error.message);
+    loadRewards();
+  }
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
   const [open, setOpen] = useState<Achievement | null>(null);
   const [fresh, setFresh] = useState<string[]>([]);
@@ -44,6 +57,7 @@ function Achievements() {
             <AchBadge k={a.key} have={a.have} goal={a.goal} earned={a.earned} play={fresh.includes(a.key)} />
             <strong>{a.title}</strong>
             <span className="small muted">{a.earned ? "Unlocked" : a.goal > 1 ? `${a.have} of ${a.goal}` : "Locked"}</span>
+            {rewardTag(rewardFor(a.key)) && <span className="small ach-tag">{rewardTag(rewardFor(a.key))}</span>}
           </button>
         ))}
       </div>
@@ -54,6 +68,27 @@ function Achievements() {
             <h2>{open.title}</h2>
             <p>{open.rule}</p>
             <p className="small muted">{open.note}</p>
+            {(() => {
+              const r = rewardFor(open.key);
+              if (!r) return null;
+              return (
+                <div className="ach-reward">
+                  <strong>{r.title}</strong>
+                  {r.sponsor_name && <span className="small muted">From {r.sponsor_name}</span>}
+                  {r.claimed && r.code ? (
+                    <>
+                      <code className="ach-code">{r.code}</code>
+                      <button type="button" className="ghost" onClick={() => { navigator.clipboard?.writeText(r.code ?? "").then(() => setCopied(true), () => {}); }}>{copied ? "Copied" : "Copy code"}</button>
+                    </>
+                  ) : r.earned && r.remaining > 0 ? (
+                    <button type="button" className="btn" onClick={() => claim(r)}>Claim reward</button>
+                  ) : r.earned ? <span className="small muted">All of these have been claimed.</span>
+                    : <span className="small muted">Unlock this badge to claim it. {r.remaining} left.</span>}
+                  {r.terms && <span className="small muted">{r.terms}</span>}
+                  {msg && <span className="small" style={{ color: "var(--danger)" }}>{msg}</span>}
+                </div>
+              );
+            })()}
             <button type="button" className="ghost" onClick={() => setOpen(null)}>Close</button>
           </div>
         </div>
