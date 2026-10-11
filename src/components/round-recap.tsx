@@ -12,6 +12,7 @@ import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import type { LeaderRow } from "@/lib/types";
 import { roundName } from "@/lib/format";
 import { countsFrom } from "@/lib/rounds";
+import { drawTagline } from "@/lib/tagline";
 
 interface Scored {
   entry_id: number; round: number; match_id: string; total_pts: number; is_banker: boolean;
@@ -208,7 +209,7 @@ async function drawCard(sub: string, title: string, lines: Line[], table: { name
   g.fillStyle = "#1d6f4d"; g.fillRect(0, 0, W, 14);
   const font = (w: number, px: number) => `${w} ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
   g.fillStyle = "#e8f0ec"; g.font = font(800, 44); g.fillText("SCRUMLINE", pad, 120);
-  g.fillStyle = "#e0b23c"; g.font = font(700, 22); g.fillText("GET YOUR SCHOOL OVER THE LINE", pad, 158);
+  g.font = font(700, 22); drawTagline(g, pad, 158, "#e8f0ec", "#e0b23c");
   g.fillStyle = "#e8f0ec"; g.font = font(800, 72); g.fillText(title, pad, 290);
   g.fillStyle = "#8aa79a"; g.font = font(500, 32); g.fillText(sub, pad, 342);
 

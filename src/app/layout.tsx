@@ -6,13 +6,14 @@ import { AuthGate } from "@/components/auth-gate";
 import { LeagueProvider } from "@/components/league";
 import { Nav } from "@/components/nav";
 import { Brand } from "@/components/logo";
+import { Intro, introScript } from "@/components/intro";
 import { PwaSetup } from "@/components/pwa-setup";
 import { PreviewBar } from "@/components/preview-bar";
 
-const description = "Get your school over the line. A free rugby calling game that helps fund South African schools: call the scores and win prizes from local businesses, or sponsor a round and get seen every weekend. No betting.";
+const description = "Get our schools over the line. A free rugby calling game that helps fund South African schools: call the scores and win prizes from local businesses, or sponsor a round and get seen every weekend. No betting.";
 // Link previews (WhatsApp, iMessage, socials) need an absolute image address, or the app picks its own.
 const site = `${process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://jdaines89.github.io"}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-const card = { url: `${site}/share-card.png`, width: 1200, height: 630, alt: "Scrumline, get your school over the line" };
+const card = { url: `${site}/share-card.png`, width: 1200, height: 630, alt: "Scrumline, get our schools over the line" };
 
 export const metadata: Metadata = {
   title: "Scrumline",
@@ -35,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: "try{for(var k in localStorage)if(/^sb-.*-auth-token$/.test(k)){document.documentElement.setAttribute('data-signed-in','');break}}catch(e){}" }} />
         {/* Chrome fires "beforeinstallprompt" once, often before the app's code has loaded. */}
         <script dangerouslySetInnerHTML={{ __html: "addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__bip=e})" }} />
+        {/* The opening logo, once per app open (see intro.tsx). */}
+        <script dangerouslySetInnerHTML={{ __html: introScript }} />
+        <Intro />
         <PwaSetup />
         <header className="top">
           <div className="shell">
