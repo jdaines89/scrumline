@@ -4,7 +4,8 @@ import { useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { clampOffset, shownSize, sourceRect, type Offset, type Size } from "@/lib/avatar-crop";
 
 const FRAME = 220; // the round frame on screen
-const OUT = 256;   // the saved picture, square, in pixels
+const OUT = 768;   // the saved picture, square, in pixels: sharp when tapped open full screen
+const MAX_BYTES = 250_000; // the storage buckets take up to 256 KB
 
 /**
  * Choose a photo, drag it into place and slide to zoom: what's in the circle
@@ -60,14 +61,7 @@ export function PicturePicker({ label, preview, has, onSave, onRemove, onMessage
     if (!img) return;
     setBusy(true);
     try {
-      const r = sourceRect(img.size, FRAME, zoom, off);
-      const canvas = document.createElement("canvas");
-      canvas.width = OUT; canvas.height = OUT;
-      const ctx = canvas.getContext("2d")!;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(img.el, r.x, r.y, r.side, r.side, 0, 0, OUT, OUT);
-      const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.88));
-      if (!blob) throw new Error("Couldn't prepare the picture.");
+      const blob = await shrink(img.el, sourceRect(img.size, FRAME, zoom, off));
       await onSave(blob);
       close();
     } catch (e) {
@@ -115,4 +109,41 @@ export function PicturePicker({ label, preview, has, onSave, onRemove, onMessage
       )}
     </div>
   );
+}
+
+/**
+ * Crop to a square JPEG that stays under the bucket's size cap: start large and
+ * fine, then ease the quality, then the size, until it fits. Never shrinks a
+ * small photo up past its own pixels.
+ */
+async function shrink(el: HTMLImageElement, r: { x: number; y: number; side: number }): Promise<Blob> {
+  let last: Blob | null = null;
+  for (const size of [OUT, 640, 512]) {
+    const out = Math.min(size, Math.max(256, Math.round(r.side)));
+    const canvas = document.createElement("canvas");
+    canvas.width = out; canvas.height = out;
+    const ctx = canvas.getContext("2d")!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    // Halve in steps first: one big jump down from a phone photo blurs and shimmers.
+    let src: CanvasImageSource = el, sx = r.x, sy = r.y, side = r.side;
+    while (side / 2 >= out * 1.5) {
+      const half = document.createElement("canvas");
+      const n = Math.round(side / 2);
+      half.width = n; half.height = n;
+      const h = half.getContext("2d")!;
+      h.imageSmoothingQuality = "high";
+      h.drawImage(src, sx, sy, side, side, 0, 0, n, n);
+      src = half; sx = 0; sy = 0; side = n;
+    }
+    ctx.drawImage(src, sx, sy, side, side, 0, 0, out, out);
+    for (const q of [0.92, 0.86, 0.8, 0.72]) {
+      const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", q));
+      if (!blob) throw new Error("Couldn't prepare the picture.");
+      if (blob.size <= MAX_BYTES) return blob;
+      last = blob;
+    }
+  }
+  if (last && last.size <= 262_144) return last;
+  throw new Error("That photo is too detailed to save. Try another one.");
 }
