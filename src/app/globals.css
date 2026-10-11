@@ -1162,6 +1162,9 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .sch-players .who strong { font-weight: 600; overflow-wrap: anywhere; }
 .sch-pts { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; font-size: 14px; }
 .sch-pts.muted { font-weight: 400; }
+button.sch-prow, button.sch-prow:hover { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; cursor: pointer; color: var(--text); }
+button.sch-prow:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+.sch-chev { color: var(--muted); font-size: 18px; line-height: 1; margin-left: -4px; }
 .sch-more { width: 100%; margin-top: 10px; }
 .sch-projects { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 12px; }
 .sch-projects li { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
