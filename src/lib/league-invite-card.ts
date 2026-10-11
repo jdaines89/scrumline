@@ -4,6 +4,8 @@
  * along the foot. A league with no picture gets its name on that half instead
  * (never an invented crest). Drawn on the phone, so it costs nothing to serve.
  */
+import { DESCRIPTOR } from "@/lib/share-brand";
+
 const W = 1080, H = 1080, TOP = 840;
 const INK = "#0d1412", GREEN = "#053120", CHALK = "#e8f0ec", MUTED = "#8aa79a", GOLD = "#e0b23c";
 
@@ -105,7 +107,7 @@ export async function drawLeagueInvite(leagueName: string, joinCode: string | nu
     g.fillStyle = GOLD; g.font = font(800, 54); g.fillText(joinCode, W - pad, TOP + 124);
     g.textAlign = "left";
   }
-  g.fillStyle = MUTED; g.font = font(500, 26); g.fillText("Free rugby calling game. No betting.", pad, TOP + 186);
+  g.fillStyle = MUTED; g.font = font(500, 26); g.fillText(DESCRIPTOR, pad, TOP + 186);
 
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
 }
