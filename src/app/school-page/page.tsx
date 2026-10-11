@@ -15,6 +15,7 @@ import { projectPhotoUrl, STATE_LABEL, type ProjectState } from "@/lib/projects"
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
+import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
 interface Player {
   user_id: string; display_name: string; avatar_path: string | null; stage: "primary" | "high";
@@ -37,7 +38,7 @@ interface Page {
   players: Player[]; standing: Standing[]; given: Given | null; projects: Proj[]; partners: Partner[];
 }
 
-const MINIMUM = 10;
+const MINIMUM = SCHOOL_MINIMUM;
 const SHOW = 12;
 const fmt = (n: number) => n.toLocaleString("en-ZA");
 /** Learner numbers come from a government list that is a year or so old, so we only ever show a rough figure. */
@@ -179,13 +180,15 @@ function Standings({ standing, seasonName }: { standing: Standing[]; seasonName:
               {t.position !== null ? (
                 <>
                   <div><b>{ord(t.position)} of {t.of} {level}</b>
-                    <span className="small muted">{t.confirmed} confirmed {t.confirmed === 1 ? "player" : "players"}</span></div>
+                    <span className="small muted">{t.confirmed} {SCHOOL_TRIAL ? "" : "confirmed "}{t.confirmed === 1 ? "player" : "players"}</span></div>
                   <span className="sch-score">{Number(t.score).toFixed(1)}</span>
                 </>
               ) : (
                 <div><b>Not ranked yet among {level}</b>
                   <span className="small muted">
-                    {t.confirmed < MINIMUM
+                    {SCHOOL_TRIAL
+                      ? "Ranked once a player's call is scored"
+                      : t.confirmed < MINIMUM
                       ? `${t.confirmed} of the ${MINIMUM} confirmed players a school needs in one round`
                       : `${t.confirmed} confirmed players; ${MINIMUM} need to play in the same round`}
                   </span></div>
@@ -212,7 +215,7 @@ function Players({ players }: { players: Player[] }) {
   return (
     <div className="card narrow">
       <h2>Players</h2>
-      <p className="sub">Everyone on Scrumline who went here. Confirmed means two schoolmates have vouched for them.</p>
+      <p className="sub">Everyone on Scrumline who went here.{SCHOOL_TRIAL ? "" : " Confirmed means two schoolmates have vouched for them."}</p>
       <ol className="sch-players">
         {shown.map((x) => (
           <li key={`${x.user_id}:${x.stage}`} className={x.mine ? "me" : ""}>
@@ -221,7 +224,7 @@ function Players({ players }: { players: Player[] }) {
               <strong>{x.display_name}{x.mine ? " (you)" : ""}</strong>
               <span className="small muted">
                 {[x.last_year ? `Class of ${x.last_year}` : null, both ? (x.stage === "high" ? "high school" : "primary school") : null,
-                  x.verified ? "confirmed" : "not confirmed yet"].filter(Boolean).join(" · ")}
+                  SCHOOL_TRIAL ? null : x.verified ? "confirmed" : "not confirmed yet"].filter(Boolean).join(" · ")}
               </span>
             </div>
             <span className={`sch-pts${x.playing ? "" : " muted"}`}>{x.playing ? `${x.pts} pts` : "not playing"}</span>

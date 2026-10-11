@@ -7,7 +7,7 @@ import { Avatar } from "@/components/avatar";
 import { Crest, useCrests } from "@/components/crest";
 import { schoolHref } from "@/lib/crest";
 import { useLeague } from "@/components/league";
-import { ROLE_NAME } from "@/lib/school";
+import { ROLE_NAME, SCHOOL_TRIAL } from "@/lib/school";
 import { supabase } from "@/lib/supabase";
 import type { Member, School } from "@/lib/types";
 
@@ -149,7 +149,9 @@ function SchoolRow({ stage, me, saved, loading, crests, mates, members, given, o
               </span>
             </Link>
             <p className={`school-card-status small${mine?.verified ? " ok" : ""}`}>
-              {mine?.verified
+              {SCHOOL_TRIAL
+                ? "You count for the school."
+                : mine?.verified
                 ? (mine.vouches ? `Confirmed by ${mine.vouches} schoolmates. You count for the school.` : "Confirmed by your schoolmates. You count for the school.")
                 : `Needs ${NEEDED - (mine?.vouches ?? 0)} more schoolmate${NEEDED - (mine?.vouches ?? 0) === 1 ? "" : "s"} to confirm you before you count for the school.`}
             </p>

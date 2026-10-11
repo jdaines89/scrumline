@@ -7,6 +7,7 @@ import { useLeague } from "@/components/league";
 import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
 type Stage = "high" | "primary";
 interface SchoolRow {
@@ -14,7 +15,7 @@ interface SchoolRow {
   score: number | null; rounds_counted: number; best_turnout: number; mine: boolean;
 }
 const TEAM = 20;
-const MINIMUM = 10;
+const MINIMUM = SCHOOL_MINIMUM;
 
 /**
  * Schools against each other for this tournament. Each round a school scores
@@ -65,7 +66,7 @@ export function SchoolTable() {
                     <ListCrest emis={r.emis} crests={crests} size={30} />
                     <div className="who">
                       <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
-                      <span className="small muted">{[r.town, `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
+                      <span className="small muted">{[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`].filter(Boolean).join(" · ")}</span>
                     </div>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
                   </div>
@@ -84,7 +85,9 @@ export function SchoolTable() {
                     <div className="who">
                       <Link href={schoolHref(r.emis)} className="sch-link"><strong>{r.name}</strong></Link>
                       <span className="small muted">
-                        {r.confirmed < MINIMUM
+                        {SCHOOL_TRIAL
+                          ? `${r.members} in the league · ranked once a player's call is scored`
+                          : r.confirmed < MINIMUM
                           ? `${r.confirmed} of ${MINIMUM} confirmed players needed · ${r.members} in the league`
                           : `${r.confirmed} confirmed · needs ${MINIMUM} to play in the same round`}
                       </span>
@@ -98,10 +101,16 @@ export function SchoolTable() {
         </>
       )}
       <p className="small muted" style={{ marginTop: 12 }}>
+        {SCHOOL_TRIAL ? <>
+        Every round, a school scores the average of its best {TEAM} players who played that round. The table adds the
+        rounds up, so a school that turns up every week climbs. For now every player counts straight away; the
+        10-player minimum and schoolmate vouching are switched off while we try it out.
+        </> : <>
         Every round, a school scores the average of its best {TEAM} confirmed players who played that round. At least{" "}
         {MINIMUM} confirmed players have to play for the round to count; otherwise the school scores 0 for it. The table adds
         the rounds up, so a school that turns up every week climbs. Players are confirmed when two schoolmates vouch for
         them on their profiles.
+        </>}
       </p>
       <p className="small" style={{ marginTop: 8 }}><Link href="/giving/">See what sponsors have given each school</Link></p>
     </>

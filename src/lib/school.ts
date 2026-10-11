@@ -1,5 +1,15 @@
 import type { School } from "@/lib/types";
 
+/**
+ * Trial switch (temporary, 2026-10-11): while true, every schoolmate counts
+ * without two vouches and one player is enough for a school's round to count.
+ * Matches public.school_rules_relaxed() in the database; flip both back
+ * together to bring the 2-vouch and 10-player rules back.
+ */
+export const SCHOOL_TRIAL = true;
+/** Players a school needs in one round for that round to count. */
+export const SCHOOL_MINIMUM = SCHOOL_TRIAL ? 1 : 10;
+
 /** Who at a school looks after its account. */
 export const ROLES: [string, string][] = [
   ["principal", "Principal"],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { readCache, writeCache } from "@/lib/cache";
 import { useLeague } from "@/components/league";
 import { MatchesSwitch } from "@/components/matches-switch";
 import { Team, stripe } from "@/components/team";
@@ -10,11 +11,23 @@ import type { StandingRow } from "@/lib/types";
 
 export default function StandingsPage() {
   const { season, teams, competitions } = useLeague();
-  const [log, setLog] = useState<StandingRow[]>([]);
+  // Draw last time's log straight away, then swap in the fresh one quietly.
+  const key = `log:${season.id}`;
+  const [log, setLog] = useState<StandingRow[]>(() => readCache<StandingRow[]>(key) ?? []);
   useEffect(() => {
+    setLog(readCache<StandingRow[]>(key) ?? []);
+    let live = true;
     supabase.from("standings").select("*").eq("season", season.id).order("position")
-      .then(({ data }) => setLog((data ?? []) as StandingRow[]));
-  }, [season.id]);
+      .then(({ data, error }) => {
+        if (!live || error) return;
+        const rows = (data ?? []) as StandingRow[];
+        setLog(rows);
+        writeCache(key, rows);
+      });
+    return () => { live = false; };
+  }, [key, season.id]);
+  // Until the first load, hold the table's height with blank rows so nothing jumps.
+  const blanks = log.length ? 0 : 8;
   const pending = log.some((r) => !r.points_exact);
 
   return (
@@ -39,6 +52,9 @@ export default function StandingsPage() {
                 <td className="num hide-sm">{r.points_against}</td><td className="num">{signed(r.diff)}</td><td className="num">{r.bonus_points}{r.points_exact ? "" : "*"}</td>
                 <td className="num"><strong>{r.log_points}</strong></td>
               </tr>
+            ))}
+            {Array.from({ length: blanks }, (_, i) => (
+              <tr key={`b${i}`} aria-hidden="true"><td colSpan={11}>&nbsp;</td></tr>
             ))}
           </tbody>
         </table>
