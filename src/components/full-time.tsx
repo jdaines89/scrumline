@@ -37,7 +37,7 @@ export function FullTimeCard() {
             <strong className="ft-score">{m.home} {m.home_score}–{m.away_score} {m.away}</strong>
             <span className="small muted">
               You called {m.pred_home}–{m.pred_away}
-              {m.banker && <span className="pchip bank2">×2</span>}
+              {m.banker && <> · <span className="ft-bank">Banker ×2</span></>}
               {" · "}
               <span className={m.pts > 0 ? "ft-pts" : ""}>{m.exact ? `+${m.pts}, spot on` : m.pts > 0 ? `+${m.pts}` : "no points"}</span>
             </span>

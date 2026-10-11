@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLeague } from "@/components/league";
 import { Team, stripe } from "@/components/team";
-import { dayHeading, kickTime, roundName, roundText } from "@/lib/format";
+import { Avatar } from "@/components/avatar";
+import { dayHeading, kickTime, roundName } from "@/lib/format";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import type { StandingRow } from "@/lib/types";
@@ -59,18 +60,35 @@ export default function Home() {
     });
   }, [entry, matches]);
   const allCalled = called !== null && called >= next.length;
-  const nudge = nextRound === null || called === null ? null
-    : allCalled ? <>All {next.length} calls are in for {roundText(nextRound)}. <Link href="/predict/">See them</Link>.</>
-    : <>{called} of {next.length} called for {roundText(nextRound)}. <Link href="/predict/">Call the rest</Link>.</>;
 
   return (
     <>
-      <div className="card">
-        <h2>Hi {me.display_name}</h2>
-        {season.is_replay && <p className="sub">Replay: the season has been played, so each of you locks a round in and then sees how it scored.</p>}
-        {entry
-          ? <p style={{ margin: 0 }}>Your team is <strong>{entry.team_name}</strong>.{nudge && <> {nudge}</>}</p>
-          : <p style={{ margin: 0 }}><Link href="/predict/">Name your team</Link> to start playing.</p>}
+      <div className="card teamcard">
+        <div className="tc-head">
+          <Avatar member={me} size={52} />
+          <div className="tc-who">
+            <span className="tc-hi">Hi {me.display_name}</span>
+            {entry
+              ? <h2 className="tc-name">{entry.team_name}</h2>
+              : <h2 className="tc-name tc-none">No team yet</h2>}
+          </div>
+        </div>
+        {season.is_replay && <p className="sub tc-replay">Replay: the season has been played, so each of you locks a round in and then sees how it scored.</p>}
+        {!entry && <Link className="btn tc-go" href="/predict/">Name your team</Link>}
+        {entry && nextRound !== null && (
+          <div className="tc-round">
+            <div className="tc-round-line">
+              <span className="tc-round-name">{roundName(nextRound)}</span>
+              <span className="tc-count">{called === null ? "\u00a0" : allCalled ? `All ${next.length} called` : `${called} of ${next.length} called`}</span>
+            </div>
+            <div className="tc-bar" aria-hidden="true">
+              {next.map((m, i) => <span key={m.id} className={called !== null && i < called ? "on" : ""} />)}
+            </div>
+            <Link className={`btn tc-go${allCalled ? " done" : ""}`} href="/predict/">
+              {allCalled ? "See your calls" : called ? "Call the rest" : "Call your scores"}
+            </Link>
+          </div>
+        )}
         {streak && streak.rounds >= 2 && !season.is_replay && (
           <p className="small muted streak-line">
             {streak.rounds} rounds called in a row. {streak.forgiven ? "Your one free miss is used, so call every round to keep it." : "Miss one and it still holds."}
