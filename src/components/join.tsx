@@ -97,7 +97,7 @@ export function Join() {
       ) : (
         <>
           <h2>{info.inviter} invited you to Scrumline</h2>
-          <p className="sub">A free rugby calling game with your friends, your class and your school. Get your school over the line, win prizes from local businesses and help fund South African schools.</p>
+          <p className="sub">A free rugby calling game with your friends, your class and your school. Get our schools over the line, win prizes from local businesses and help fund South African schools.</p>
         </>
       )}
       <form onSubmit={submit} className="stack">
