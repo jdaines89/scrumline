@@ -10,7 +10,7 @@ import { logEvent } from "@/lib/events";
 import { joinLink } from "@/lib/join-link";
 import { supabase } from "@/lib/supabase";
 import type { Team } from "@/lib/types";
-import { drawTagline } from "@/lib/tagline";
+import { DESCRIPTOR, drawGround, drawMasthead, loadBrand } from "@/lib/share-brand";
 
 const hidden = (season: string) => `sl:bok-card:${season}`;
 
@@ -120,10 +120,8 @@ async function drawCard(seasonName: string, tests: BokTest[], teams: Map<string,
     let s = px; g.font = font(w, s);
     while (g.measureText(text).width > max && s > 24) { s -= 2; g.font = font(w, s); }
   };
-  g.fillStyle = "#0d1412"; g.fillRect(0, 0, W, H);
-  g.fillStyle = "#1d6f4d"; g.fillRect(0, 0, W, 14);
-  g.fillStyle = "#e8f0ec"; g.font = font(800, 44); g.fillText("SCRUMLINE", pad, 120);
-  g.font = font(700, 22); drawTagline(g, pad, 158, "#e8f0ec", "#e0b23c");
+  drawGround(g, W, H);
+  drawMasthead(g, await loadBrand(), pad, 56, 150);
   g.fillStyle = "#e8f0ec"; fit("Call the Boks' tests", 800, 80, W - pad * 2); g.fillText("Call the Boks' tests", pad, 300);
   g.fillText("with us", pad, 390);
   g.fillStyle = "#8aa79a"; fit(seasonName, 500, 34, W - pad * 2); g.fillText(seasonName, pad, 450);
@@ -154,6 +152,6 @@ async function drawCard(seasonName: string, tests: BokTest[], teams: Map<string,
   } else {
     g.fillStyle = "#e8f0ec"; g.font = font(800, 46); g.fillText("Join me on Scrumline", pad, H - foot + 110);
   }
-  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText("Free to play, no betting.", pad, H - foot + 178);
+  g.fillStyle = "#8aa79a"; g.font = font(500, 28); g.fillText(DESCRIPTOR, pad, H - foot + 178, W - pad * 2);
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/png"));
 }

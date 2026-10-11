@@ -4,6 +4,7 @@ import { PollCard, PollComposer, type PollVote } from "@/components/chat-poll";
 import { StickerMessage, StickerPicker, stickerLabel } from "@/components/stickers";
 import { LeaguePicture, leagueOf } from "@/components/league-picture";
 import { ChatList } from "@/components/chat-list";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
 import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
@@ -613,7 +614,11 @@ function Chat({ onBack }: { onBack?: () => void }) {
                 <span>Chats</span>
               </button>
             )}
-            <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
+            {/* The league's name opens its table, like a group's name in WhatsApp. */}
+            <Link href="/leaderboard/" className="chat-title" aria-label="Open this league's table">
+              <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
+              <svg className="chat-title-go" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </Link>
           </div>
         </div>
         <SponsorLine sponsor={sponsor} compact />
