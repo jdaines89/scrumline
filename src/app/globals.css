@@ -35,11 +35,12 @@ header.top {
 }
 header.top .shell { padding-top: 16px; padding-bottom: 0; }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand svg { flex: none; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)); }
+.brand .ballmark { flex: none; display: block; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)); }
 .wordmark {
   font-size: 23px; font-weight: 800; line-height: 1.1;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
+.wordmark span { color: var(--gold); }
 .subword {
   font-size: 11px; font-weight: 600; color: var(--gold);
   text-transform: uppercase; letter-spacing: 0.16em;
@@ -1497,3 +1498,53 @@ button.stickerbtn:focus-visible { outline: 2px solid var(--accent); outline-offs
 .lg-school-empty { padding: 14px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .lg-school-empty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
 .signin-biz .linkish { font-size: inherit; font-weight: inherit; color: var(--accent); }
+
+/* The opening logo (intro.tsx): about two seconds, once per app open, a tap skips it. */
+.intro { display: none; }
+html[data-intro] .intro {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 42%, #0e4a31 0%, #053120 55%, #021a11 100%);
+  animation: intro-out .35s ease-in 1.65s forwards; cursor: pointer;
+}
+html[data-intro="out"] .intro { animation: intro-out-fast .22s ease-in forwards; }
+html[data-intro="still"] .intro { animation: intro-out .3s ease-in .8s forwards; }
+html[data-intro="still"] .intro * { animation: none !important; }
+html[data-intro="still"] .intro-sweep, html[data-intro="still"] .intro-swoosh { display: none; }
+.intro-stage { display: flex; flex-direction: column; align-items: center; margin-top: -4vh; }
+.intro-shield { position: relative; width: min(46vw, 210px); animation: intro-land .7s cubic-bezier(.2,.9,.3,1.2) .1s both; }
+.intro-shield img { display: block; width: 100%; height: auto; animation: intro-glow 1.4s ease-out .35s both; }
+.intro-sweep {
+  position: absolute; inset: 0; mask-size: 100% 100%; -webkit-mask-size: 100% 100%;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,250,225,.75) 50%, transparent 65%) no-repeat;
+  background-size: 300% 100%; animation: intro-sweep .55s ease-in-out 1s both;
+}
+.intro-swoosh {
+  position: absolute; left: -40%; top: 46%; width: 180%; height: 5px; border-radius: 50%;
+  background: linear-gradient(90deg, transparent, #fabc11 60%, #fff8e0 85%, transparent);
+  transform-origin: center; animation: intro-swoosh .45s ease-out .32s both;
+}
+.intro-word { width: min(78vw, 360px); height: auto; margin-top: 22px; animation: intro-wipe .5s cubic-bezier(.3,.8,.3,1) .75s both; }
+.intro-rule { width: min(78vw, 360px); height: auto; margin-top: 6px; animation: intro-rule .4s ease-out 1.05s both; }
+@keyframes intro-land {
+  0% { opacity: 0; transform: scale(.55); filter: blur(10px); }
+  70% { opacity: 1; transform: scale(1.05); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes intro-glow {
+  0% { filter: drop-shadow(0 0 0 rgba(250,188,17,0)); }
+  45% { filter: drop-shadow(0 0 22px rgba(250,188,17,.6)); }
+  100% { filter: drop-shadow(0 0 8px rgba(250,188,17,.18)); }
+}
+@keyframes intro-swoosh {
+  0% { opacity: 0; transform: rotate(-28deg) translateX(-70%) scaleX(.3); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(-28deg) translateX(70%) scaleX(1); }
+}
+@keyframes intro-sweep { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@keyframes intro-wipe {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(-14px); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes intro-rule { 0% { opacity: 0; transform: scaleX(0); } 100% { opacity: 1; transform: scaleX(1); } }
+@keyframes intro-out { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(1.04); visibility: hidden; pointer-events: none; } }
+@keyframes intro-out-fast { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; pointer-events: none; } }

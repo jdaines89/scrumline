@@ -78,7 +78,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   const font = (w: number, px: number) => `${w} ${px}px ${family}`;
   const rand = seeded(`${m.kind}|${m.headline}`);
   const CHALK = "#f1efe6", GOLD = "#e0b23c", MUTED = "#a9b8ae";
-  const logo = await loadImage(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/icons/icon-192.png`);
+  const logo = await loadImage(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/brand/shield.png`);
   // Full names always: shrink the type until the line fits rather than cutting it.
   const fit = (text: string, w: number, px: number, min: number, room = W - pad * 2) => {
     let s = px; g.font = font(w, s);
@@ -117,7 +117,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   chalkLine(-20, 330, W + 20, 312, 10, .55);
 
   // The masthead: the shield and the name in chalk.
-  if (logo) g.drawImage(logo, pad, 120, 96, 96);
+  if (logo) g.drawImage(logo, pad + 5, 118, 88, 100);
   g.fillStyle = CHALK; g.font = font(900, 54); g.fillText("SCRUMLINE", pad + (logo ? 120 : 0), 176);
   g.fillStyle = GOLD; g.font = font(700, 22); g.letterSpacing = "4px";
   g.fillText("GET YOUR SCHOOL OVER THE LINE", pad + (logo ? 122 : 2), 210); g.letterSpacing = "0px";
