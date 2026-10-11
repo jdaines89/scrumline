@@ -166,7 +166,11 @@ function Loaded({ children }: { children: ReactNode }) {
       if (linked) {
         const { data: lp } = await supabase.from("pools").select("id, season").eq("id", linked).maybeSingle();
         if (lp) { remember("season", lp.season); remember(`pool:${lp.season}`, String(lp.id)); }
-        window.history.replaceState(null, "", window.location.pathname);
+        // Keep the rest of the link; on Chat, stay in that league's chat rather than the list.
+        const q = new URLSearchParams(window.location.search);
+        q.delete("pool");
+        if (window.location.pathname.endsWith("/chat/")) q.set("c", "1");
+        window.history.replaceState(null, "", window.location.pathname + (q.size ? `?${q}` : ""));
       }
       // A newcomer's first visit opens the tournament they called on the invite link.
       const saved = remember("season") ?? readPendingCalls()?.season ?? null;

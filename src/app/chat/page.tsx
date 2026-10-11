@@ -2,9 +2,11 @@
 
 import { PollCard, PollComposer, type PollVote } from "@/components/chat-poll";
 import { StickerMessage, StickerPicker, stickerLabel } from "@/components/stickers";
-import { LeaguePicture } from "@/components/league-picture";
+import { LeaguePicture, leagueOf } from "@/components/league-picture";
+import { ChatList } from "@/components/chat-list";
+import { useSearchParams } from "next/navigation";
 import { SponsorLine, usePoolSponsor } from "@/components/sponsor-line";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { Avatar } from "@/components/avatar";
 import { NeedsPool, useLeague } from "@/components/league";
 import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
@@ -16,7 +18,7 @@ import { PrizeChat } from "@/components/prize-chat";
 import { usePoolPrizes, type PoolPrize } from "@/lib/prizes";
 import type { PoolSponsor } from "@/lib/sponsor";
 import { readCache, writeCache } from "@/lib/cache";
-import { PoolName, poolLabel } from "@/components/pool-name";
+import { PoolName } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
 import { roundName } from "@/lib/format";
 import { MatchDay } from "@/components/match-reveal";
@@ -35,11 +37,39 @@ const asNotices = (rs: RevealRow[]): Notice[] => groupReveals(rs).map((d) =>
 const byTime = (xs: Notice[]) => [...xs].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
 export default function ChatPage() {
-  return <NeedsPool><Chat /></NeedsPool>;
+  return <NeedsPool><Suspense fallback={null}><Chats /></Suspense></NeedsPool>;
 }
 
-function Chat() {
-  const { me, members: everyone, pool, pools, setPool, teams } = useLeague();
+/** The Chat tab opens on a list of your leagues' chats; tap one to open it. One league goes straight in. */
+function Chats() {
+  const { pools, pool, setPool } = useLeague();
+  const params = useSearchParams();
+  // One row per league: a league has a table per tournament but a single chat.
+  const leagues = useMemo(() => {
+    const seen = new Set<number>();
+    return pools.filter((p) => !seen.has(leagueOf(p)) && !!seen.add(leagueOf(p)));
+  }, [pools]);
+  const linked = Number(params.get("pool"));
+  useEffect(() => { if (linked && pools.some((p) => p.id === linked) && pool?.id !== linked) setPool(linked); }, [linked, pools, pool, setPool]);
+  // Opened from the list (?c=1) or a link straight to a league's chat (?pool=4).
+  const open = leagues.length < 2 || params.has("c") || !!linked;
+  const pushed = useRef(false);
+  if (!open) {
+    return <ChatList pools={leagues} onOpen={(p) => {
+      setPool(p.id);
+      pushed.current = true;
+      window.history.pushState(null, "", "?c=1");
+      window.scrollTo(0, 0);
+    }} />;
+  }
+  return <Chat onBack={leagues.length < 2 ? undefined : () => {
+    if (pushed.current) { pushed.current = false; window.history.back(); }
+    else window.history.replaceState(null, "", window.location.pathname);
+  }} />;
+}
+
+function Chat({ onBack }: { onBack?: () => void }) {
+  const { me, members: everyone, pool, teams } = useLeague();
   const sponsor = usePoolSponsor();
   const poolId = pool!.id;
   // One chat per league, whichever tournament you're looking at: it lives on the league's first table.
@@ -567,15 +597,15 @@ function Chat() {
       <div className="chat-head">
         {/* Which league. One chat per league across every tournament, so no tournament picker here. */}
         <div className="chat-where">
-          <label className={`chat-pool${pools.length > 1 ? "" : " one"}`}>
+          <div className="chat-pool one">
+            {onBack && (
+              <button type="button" className="chat-back" onClick={onBack} aria-label="All chats">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span>Chats</span>
+              </button>
+            )}
             <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
-            {pools.length > 1 && <>
-              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <select value={pool!.id} onChange={(e) => setPool(Number(e.target.value))} aria-label="Switch league">
-                {pools.map((p) => <option key={p.id} value={p.id}>{poolLabel(p)}</option>)}
-              </select>
-            </>}
-          </label>
+          </div>
         </div>
         <SponsorLine sponsor={sponsor} compact />
       </div>
