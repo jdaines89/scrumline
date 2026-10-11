@@ -118,3 +118,11 @@ export function LeaguePicturePicker({ onMessage }: { onMessage: (ok: boolean, te
       has={!!old} onSave={save} onRemove={remove} onMessage={onMessage} />
   );
 }
+
+/** A link to the league's picture, or null when it has none (school leagues show crests, not pictures). */
+export async function leaguePictureLink(pool: Pool): Promise<string | null> {
+  if (pool.school_emis) return null;
+  const league = leagueOf(pool);
+  const path = league === pool.id ? pool.picture_path ?? null : await leaguePath(league);
+  return path ? signedLink(BUCKET, path) : null;
+}
