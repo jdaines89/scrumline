@@ -41,16 +41,11 @@ header.top .shell { padding-top: 16px; padding-bottom: 0; }
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .wordmark span { color: var(--gold); }
-/* As on the logo: OUR in gold, underlined. */
-.subword b { color: var(--gold); font-weight: 800; text-decoration: underline 1.5px; text-underline-offset: 2px; }
-.subword {
-  font-size: 11px; font-weight: 600; color: #e8eee9;
-  text-transform: uppercase; letter-spacing: 0.16em;
-}
+.subword { display: block; width: auto; height: 20px; margin-top: 3px; }
 /* The tagline must fit whole beside the mark and your picture, down to 320px phones. */
 header.top .shell:has(.melink) .brand { padding-right: 52px; }
-@media (max-width: 400px) { .subword { font-size: 10.5px; letter-spacing: 0.06em; } }
-@media (max-width: 340px) { .subword { font-size: 9.5px; letter-spacing: 0.04em; } }
+
+@media (max-width: 340px) { .subword { height: 18px; } }
 
 nav.tabs { display: flex; gap: 4px; margin-top: 16px; flex-wrap: wrap; }
 html[data-signed-in] nav.tabs:empty { min-height: 38px; }
