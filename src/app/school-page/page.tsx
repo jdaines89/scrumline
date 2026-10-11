@@ -8,6 +8,7 @@ import { ChatButton } from "@/components/chat-button";
 import { ClassTable } from "@/components/class-table";
 import { Crest, CrestUpload } from "@/components/crest";
 import { useLeague } from "@/components/league";
+import { PlayerCard } from "@/components/player-card";
 import { readCache, writeCache } from "@/lib/cache";
 import { provinceName, schoolHref, schoolKind } from "@/lib/crest";
 import { ord } from "@/lib/growth";
@@ -212,7 +213,9 @@ function Standings({ standing, seasonName }: { standing: Standing[]; seasonName:
 }
 
 function Players({ players }: { players: Player[] }) {
+  const { members } = useLeague();
   const [all, setAll] = useState(false);
+  const [open, setOpen] = useState<Member | null>(null);
   if (players.length === 0) return (
     <div className="card narrow">
       <h2>Players</h2>
@@ -228,6 +231,8 @@ function Players({ players }: { players: Player[] }) {
       <ol className="sch-players">
         {shown.map((x) => (
           <li key={`${x.user_id}:${x.stage}`} className={x.mine ? "me" : ""}>
+            <button type="button" className="sch-prow" onClick={() => setOpen(members.find((m) => m.user_id === x.user_id)
+              ?? ({ user_id: x.user_id, display_name: x.display_name, avatar_path: x.avatar_path } as Member))}>
             <Avatar member={{ display_name: x.display_name, avatar_path: x.avatar_path } as Member} size={36} />
             <div className="who">
               <strong>{x.display_name}{x.mine ? " (you)" : ""}</strong>
@@ -237,6 +242,8 @@ function Players({ players }: { players: Player[] }) {
               </span>
             </div>
             <span className={`sch-pts${x.playing ? "" : " muted"}`}>{x.playing ? `${x.pts} pts` : "not playing"}</span>
+            <span className="sch-chev" aria-hidden="true">›</span>
+            </button>
           </li>
         ))}
       </ol>
@@ -245,6 +252,7 @@ function Players({ players }: { players: Player[] }) {
           {all ? "Show fewer" : `Show all ${players.length} players`}
         </button>
       )}
+      {open && <PlayerCard member={open} onClose={() => setOpen(null)} />}
     </div>
   );
 }
