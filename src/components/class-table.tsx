@@ -55,7 +55,7 @@ export function ClassTable(src: Source) {
                   <strong>Class of {r.school_year}</strong>
                   <span className="small muted">{r.players} player{r.players === 1 ? "" : "s"}</span>
                 </div>
-                <span className="btotal">{Number(r.average).toFixed(1)}</span>
+                <span className="btotal">{Math.round(Number(r.average))}</span>
               </div>
             </li>
           ))}

@@ -197,7 +197,7 @@ function Standings({ standing, seasonName, emis, season, how }: {
                   <>
                     <div><b>{ord(t.position)} of {t.of} {level}</b>
                       <span className="small muted">{t.confirmed} {SCHOOL_TRIAL ? "" : "confirmed "}{t.confirmed === 1 ? "player" : "players"}</span></div>
-                    <span className="sch-score">{Number(t.score).toFixed(1)}</span>
+                    <span className="sch-score">{Math.round(Number(t.score))}</span>
                   </>
                 ) : (
                   <div><b>Not ranked yet among {level}</b>
@@ -253,7 +253,11 @@ function Breakdown({ emis, stage, season, total }: { emis: string; stage: "prima
         <div className="skeleton" style={{ height: 120 }} aria-busy="true" />
       ) : (
         <ol className="sch-how-list">
-          {rows.map((r) => {
+          {rows.map((r, i) => {
+            // Whole points: each round adds the step between rounded running
+            // totals, so the rounds still sum exactly to the total shown.
+            const upTo = (n: number) => Math.round(Math.round(rows.slice(0, n).reduce((a, x) => a + Number(x.adds), 0) * 10) / 10);
+            const adds = upTo(i + 1) - upTo(i);
             const shown = r.players.slice(0, NAMED);
             const more = r.players.length - shown.length;
             return (
@@ -264,13 +268,13 @@ function Breakdown({ emis, stage, season, total }: { emis: string; stage: "prima
                     {shown.map((x) => `${x.name} ${x.pts}`).join(" · ")}{more > 0 ? ` · ${more} more` : ""}
                   </span>
                 </div>
-                <div className="sch-how-nums"><b>{Number(r.adds).toFixed(1)}</b></div>
+                <div className="sch-how-nums"><b>{adds}</b></div>
               </li>
             );
           })}
           <li className="sch-how-total">
             <b>Total</b>
-            <div className="sch-how-nums"><b>{total.toFixed(1)}</b></div>
+            <div className="sch-how-nums"><b>{Math.round(total)}</b></div>
           </li>
         </ol>
       )}

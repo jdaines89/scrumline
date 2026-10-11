@@ -65,7 +65,7 @@ export function SchoolTable() {
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
                     <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
                     <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
-                    <Link href={`${schoolHref(r.emis)}&how=${stage}`} className="btotal" aria-label={`${r.name}: points by round`}>{Number(r.score).toFixed(1)}</Link>
+                    <Link href={`${schoolHref(r.emis)}&how=${stage}`} className="btotal" aria-label={`${r.name}: points by round`}>{Math.round(Number(r.score))}</Link>
                     <Meta parts={[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`]} />
                   </div>
                 </li>
