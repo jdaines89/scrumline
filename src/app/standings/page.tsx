@@ -29,13 +29,15 @@ export default function StandingsPage() {
   // Until the first load, hold the table's height with blank rows so nothing jumps.
   const blanks = log.length ? 0 : 8;
   const pending = log.some((r) => !r.points_exact);
+  // The European cups play in pools; the log ranks every team together.
+  const cup = season.competition_id === "4550" || season.competition_id === "5418";
 
   return (
     <>
       <MatchesSwitch />
       <div className="card scroll-x">
         <h2>{competitions.get(season.competition_id)?.short_name ?? "The"} log</h2>
-        <p className="sub">{season.name}. Updated after every result.</p>
+        <p className="sub">{season.name}.{cup ? " Every pool together." : ""} Updated after every result.</p>
         <table>
           <thead><tr>
             <th>#</th><th>Team</th><th className="num">P</th><th className="num">W</th><th className="num">D</th>

@@ -36,7 +36,9 @@ export function pts(n: number): string {
 
 // TheSportsDB numbers knockout rounds 125 (quarter-finals), 150 (semi-finals),
 // 160 (third-place play-off) and 200 (final); league rounds are 1, 2, 3...
+// The cups' round of 16 is stored as 116 (see 20261011000600_european_cups.sql).
 const KNOCKOUT: Record<number, [string, string, string]> = {
+  116: ["Round of 16", "the round of 16", "R16"],
   125: ["Quarter-finals", "the quarter-finals", "QF"],
   150: ["Semi-finals", "the semi-finals", "SF"],
   160: ["Third-place play-off", "the third-place play-off", "3rd"],
