@@ -1645,3 +1645,16 @@ button.chat-back:hover { color: var(--text); }
 @media (min-width: 761px) { .btn.tc-go { display: inline-block; width: auto; min-width: 220px; } }
 /* Your banker on the full-time card: quiet gold words, clear of the score. */
 .ft-bank { color: var(--gold); font-weight: 600; white-space: nowrap; }
+
+/* Achievements */
+.ach-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.ach { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.ach p { margin: 0; }
+.ach-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ach-stamp { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); border-radius: 6px; padding: 2px 8px; }
+.ach.earned { border-color: var(--gold); }
+.ach.earned .gate-bar span { background: var(--gold); }
+.ach-reward { font-size: 12px; }
+.ach-link { display: flex; align-items: center; justify-content: space-between; color: var(--text); font-weight: 600; }
+.ach-link span { font-weight: 400; color: var(--muted); font-size: 13px; }
+.ach-link:hover { text-decoration: none; border-color: var(--accent); }

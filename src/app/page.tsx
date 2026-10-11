@@ -97,6 +97,7 @@ export default function Home() {
         <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
       </div>
       {!season.is_replay && <FullTimeCard />}
+      <Link className="card ach-link" href="/achievements/">Achievements<span>What to aim for</span></Link>
       <SeasonAhead />
       <AlsoOn />
       {!season.is_replay && <BokTests />}
