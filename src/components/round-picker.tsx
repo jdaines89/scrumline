@@ -11,6 +11,7 @@ export function RoundPicker({ rounds, round, onPick, locked, matches }: {
   rounds: number[]; round: number; onPick: (r: number) => void; locked?: Set<number>; matches: Match[];
 }) {
   const i = rounds.indexOf(round);
+  const live = round === liveRound(matches);
   const dates = (r: number) => {
     const ks = matches.filter((m) => m.round === r).map((m) => m.kickoff_at).sort();
     if (!ks.length) return "";
@@ -20,7 +21,7 @@ export function RoundPicker({ rounds, round, onPick, locked, matches }: {
   return (
     <div className="stepper">
       <button type="button" className="ghost arrow" aria-label="Previous round" disabled={i <= 0} onClick={() => onPick(rounds[i - 1])}>‹</button>
-      <label className="which">
+      <label className={live ? "which live" : "which"} title={live ? "This round is on now" : undefined}>
         <select value={round} onChange={(e) => onPick(Number(e.target.value))} aria-label="Round">
           {rounds.map((r) => <option key={r} value={r}>{roundName(r)}{locked?.has(r) ? " ✓" : ""} · {dates(r)}</option>)}
         </select>
@@ -32,9 +33,13 @@ export function RoundPicker({ rounds, round, onPick, locked, matches }: {
   );
 }
 
+/** The round still being played (next match not yet done), or null once every match is in. */
+export function liveRound(matches: Match[]): number | null {
+  const now = Date.now();
+  return matches.find((m) => m.home_score === null && new Date(m.kickoff_at).getTime() > now - 3 * 3600_000)?.round ?? null;
+}
+
 /** The round with the next match still to be played, else the last round. */
 export function currentRound(rounds: number[], matches: Match[]): number {
-  const now = Date.now();
-  const next = matches.find((m) => m.home_score === null && new Date(m.kickoff_at).getTime() > now - 3 * 3600_000);
-  return next?.round ?? rounds[rounds.length - 1] ?? 1;
+  return liveRound(matches) ?? rounds[rounds.length - 1] ?? 1;
 }
