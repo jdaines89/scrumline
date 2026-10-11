@@ -1062,7 +1062,6 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .lg-made p { margin: 4px 0 12px; }
 .lg-made .row { flex-wrap: wrap; gap: 8px; }
 .lg-code { letter-spacing: .12em; }
-.streak-line { margin: 8px 0 0; }
 .code-input { font-size: 24px; letter-spacing: .3em; text-align: center; font-variant-numeric: tabular-nums; }
 .welcome-card { display: flex; flex-direction: column; gap: 6px; border-color: var(--accent-dim); }
 .welcome-card button { align-self: flex-start; margin-top: 4px; padding: 6px 14px; font-size: 14px; }
