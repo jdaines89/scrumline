@@ -8,7 +8,7 @@ import { isBusinessSession, isSchoolSession } from "@/lib/account";
 import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { pageKind, track } from "@/lib/track";
-import type { Member } from "@/lib/types";
+import { MEMBER_COLS, type Member } from "@/lib/types";
 import { usePreview } from "@/lib/preview";
 
 const TABS = [
@@ -83,8 +83,8 @@ function useMe(uid: string | null): Member | undefined {
     if (!uid) { setMe(undefined); return; }
     const cached = readCache<{ me: Member }>("base")?.me;
     if (cached?.user_id === uid) setMe(cached);
-    supabase.from("members").select("*").eq("user_id", uid).maybeSingle()
-      .then(({ data }) => { if (data) setMe(data as Member); });
+    supabase.from("members").select(MEMBER_COLS).eq("user_id", uid).maybeSingle()
+      .then(({ data }) => { if (data) setMe({ ...(data as Omit<Member, "email">), email: cached?.email ?? "" }); });
   }, [uid]);
   return me;
 }

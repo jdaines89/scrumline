@@ -1697,3 +1697,8 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 
 .nowrap { white-space: nowrap; }
 .board-switch { margin: -4px 0 10px; }
+
+/* Profile footer: privacy link and the quiet delete link. */
+.me-privacy { margin: 14px 0 0; }
+.me-privacy .linkish.delete-account { font-size: inherit; color: var(--muted); }
+.me-privacy .linkish.delete-account:hover { color: var(--danger); }

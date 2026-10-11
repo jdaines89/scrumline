@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { BlockedPeople } from "@/components/blocked-people";
+import { DeleteAccount } from "@/components/delete-account";
 import { MySchools } from "@/components/my-schools";
 import { reportProblem } from "@/components/report-problem";
 import { NotifySettings } from "@/components/notify-settings";
@@ -126,6 +127,7 @@ export default function MePage() {
               <div className="row"><button type="button" className="ghost" onClick={() => reportProblem()}>Report a problem</button></div>
             </div>
             <button type="button" className="ghost" style={{ marginTop: 6 }} onClick={() => signOut()}>Sign out</button>
+            <p className="small muted me-privacy"><Link href="/privacy/">Privacy</Link>{!me.is_admin && <> · <DeleteAccount /></>}</p>
           </div>
           {me.is_admin && (
             <div className="card">

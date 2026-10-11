@@ -81,6 +81,7 @@ export default function Rules() {
         <ul>
           <li>People in your leagues see your name, team name, calls once they lock, and chat messages. Nobody outside your leagues does.</li>
           <li>Scrumline uses your email only for your account, reminders you can switch off, and prizes you win.</li>
+          <li>The full details, and how to delete your account, are on the <Link href="/privacy/">privacy page</Link>.</li>
         </ul>
       </section>
 
