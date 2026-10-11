@@ -121,11 +121,6 @@ export default function MePage() {
               <div className="row"><Link className="btn ghostlink" href="/schools/">Claim your school</Link></div>
             </div>
             <div className="me-biz">
-              <strong>Achievements</strong>
-              <span className="small muted">Exact scores, clean sweeps and more. See what to aim for.</span>
-              <div className="row"><Link className="btn ghostlink" href="/achievements/">See achievements</Link></div>
-            </div>
-            <div className="me-biz">
               <strong>Something not working?</strong>
               <span className="small muted">Tell us what went wrong and we&apos;ll fix it.</span>
               <div className="row"><button type="button" className="ghost" onClick={() => reportProblem()}>Report a problem</button></div>
