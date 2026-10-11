@@ -7,7 +7,7 @@ export const introScript =
   "try{if(!sessionStorage.getItem('sl-intro')){sessionStorage.setItem('sl-intro','1');document.documentElement.setAttribute('data-intro',matchMedia('(prefers-reduced-motion: reduce)').matches?'still':'play')}}catch(e){}";
 
 /**
- * The opening: the shield lands, a ball streaks across, the name wipes in and light runs over the badge,
+ * The opening: the shield lands, a ball streaks across, the name wipes in, light runs over the badge and the tagline lands,
  * then it fades into the app. Pure CSS, so it starts with the first paint while the app loads underneath.
  * A tap skips it.
  */
@@ -28,6 +28,7 @@ export function Intro() {
         </div>
         <img className="intro-word" src={`${base}/brand/wordmark.png`} width={723} height={90} alt="" />
         <img className="intro-rule" src={`${base}/brand/rule.png`} width={723} height={45} alt="" />
+        <img className="intro-tag" src={`${base}/brand/tagline.png`} width={545} height={70} alt="" />
       </div>
     </div>
   );

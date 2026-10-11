@@ -7,6 +7,7 @@ import { logEvent } from "@/lib/events";
 import { joinLink } from "@/lib/join-link";
 import { bestMoment, type Moment, type Moments } from "@/lib/share-moments";
 import { supabase } from "@/lib/supabase";
+import { drawTagline } from "@/lib/tagline";
 
 /** Your moments, from last visit's copy first so the card doesn't jump. */
 export function useShareMoment(): Moment | null {
@@ -119,8 +120,8 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   // The masthead: the shield and the name in chalk.
   if (logo) g.drawImage(logo, pad + 5, 118, 88, 100);
   g.fillStyle = CHALK; g.font = font(900, 54); g.fillText("SCRUMLINE", pad + (logo ? 120 : 0), 176);
-  g.fillStyle = GOLD; g.font = font(700, 22); g.letterSpacing = "4px";
-  g.fillText("GET OUR SCHOOLS OVER THE LINE", pad + (logo ? 122 : 2), 210); g.letterSpacing = "0px";
+  g.font = font(700, 22); g.letterSpacing = "4px";
+  drawTagline(g, pad + (logo ? 122 : 2), 210, CHALK, GOLD); g.letterSpacing = "0px";
 
   // The stamp: one big word, set at an angle in a ruled box, worn where the ink missed.
   const word = (m.stamp ?? m.kicker).toUpperCase();

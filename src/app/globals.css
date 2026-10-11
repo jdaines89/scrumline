@@ -41,8 +41,10 @@ header.top .shell { padding-top: 16px; padding-bottom: 0; }
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .wordmark span { color: var(--gold); }
+/* As on the logo: OUR in gold, underlined. */
+.subword b { color: var(--gold); font-weight: 800; text-decoration: underline 1.5px; text-underline-offset: 2px; }
 .subword {
-  font-size: 11px; font-weight: 600; color: var(--gold);
+  font-size: 11px; font-weight: 600; color: #e8eee9;
   text-transform: uppercase; letter-spacing: 0.16em;
 }
 /* The tagline must fit whole beside the mark and your picture, down to 320px phones. */
@@ -1499,12 +1501,12 @@ button.stickerbtn:focus-visible { outline: 2px solid var(--accent); outline-offs
 .lg-school-empty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
 .signin-biz .linkish { font-size: inherit; font-weight: inherit; color: var(--accent); }
 
-/* The opening logo (intro.tsx): about two seconds, once per app open, a tap skips it. */
+/* The opening logo (intro.tsx): just over two seconds, once per app open, a tap skips it. */
 .intro { display: none; }
 html[data-intro] .intro {
   position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
   background: radial-gradient(ellipse at 50% 42%, #0e4a31 0%, #053120 55%, #021a11 100%);
-  animation: intro-out .35s ease-in 1.65s forwards; cursor: pointer;
+  animation: intro-out .35s ease-in 1.9s forwards; cursor: pointer;
 }
 html[data-intro="out"] .intro { animation: intro-out-fast .22s ease-in forwards; }
 html[data-intro="still"] .intro { animation: intro-out .3s ease-in .8s forwards; }
@@ -1525,6 +1527,8 @@ html[data-intro="still"] .intro-sweep, html[data-intro="still"] .intro-swoosh { 
 }
 .intro-word { width: min(78vw, 360px); height: auto; margin-top: 22px; animation: intro-wipe .5s cubic-bezier(.3,.8,.3,1) .75s both; }
 .intro-rule { width: min(78vw, 360px); height: auto; margin-top: 6px; animation: intro-rule .4s ease-out 1.05s both; }
+.intro-tag { width: min(70vw, 320px); height: auto; margin-top: 12px; animation: intro-tag .35s cubic-bezier(.2,.9,.3,1.2) 1.2s both; }
+@keyframes intro-tag { 0% { opacity: 0; transform: translateY(10px) scale(.96); } 100% { opacity: 1; transform: none; } }
 @keyframes intro-land {
   0% { opacity: 0; transform: scale(.55); filter: blur(10px); }
   70% { opacity: 1; transform: scale(1.05); filter: blur(0); }
