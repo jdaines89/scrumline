@@ -1,13 +1,11 @@
 -- Players choose who can open their profile from the Everyone table:
 -- just the people in their leagues (the default, as before), or everyone.
--- everyone_table now hands back a row's user id only when you may open it:
--- your own row, a league mate's, or a player who chose Everyone.
+-- everyone_board is everyone_table plus a row's user id, handed back only
+-- when you may open it: your own row, a league mate's, or a player who chose
+-- Everyone. everyone_table stays as it was for app copies not yet refreshed.
 alter table public.members add column if not exists open_profile boolean not null default false;
 grant update (open_profile) on public.members to authenticated;
-
--- The result gains a column, so the function is replaced (no data lives in it).
-drop function if exists public.everyone_table(text);
-create function public.everyone_table(p_season text)
+create function public.everyone_board(p_season text)
 returns table (user_id uuid, pos int, place int, team_name text, points int, mine boolean, players int, resting_players int)
 language sql stable
 security definer
@@ -66,5 +64,5 @@ as $$
   from board b
   where b.user_id = auth.uid() and b.resting
 $$;
-revoke execute on function public.everyone_table(text) from public, anon;
-grant execute on function public.everyone_table(text) to authenticated;
+revoke execute on function public.everyone_board(text) from public, anon;
+grant execute on function public.everyone_board(text) to authenticated;

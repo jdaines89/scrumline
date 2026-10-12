@@ -24,7 +24,7 @@ export function EveryoneTable() {
 
   useEffect(() => {
     setRows(readCache<EveryoneRow[]>(key) ?? null);
-    supabase.rpc("everyone_table", { p_season: season.id })
+    supabase.rpc("everyone_board", { p_season: season.id })
       .then(({ data, error }) => { if (error) return; const r = (data ?? []) as EveryoneRow[]; writeCache(key, r); setRows(r); });
   }, [key, season.id]);
 
