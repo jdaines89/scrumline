@@ -12,3 +12,19 @@ export function isRugbyScore(n: number): boolean {
 export function scoreInput(raw: string): string {
   return raw.replace(/\D/g, "").slice(0, 2).replace(/^0(\d)/, "$1");
 }
+
+/**
+ * Calls open this many days before kickoff: real fans wait for team news.
+ * Mirrors call_window_days() in the database, which has the final say.
+ */
+export const CALL_WINDOW_DAYS = 14;
+
+/** When a match opens for calls. */
+export function callsOpenAt(kickoffIso: string): Date {
+  return new Date(new Date(kickoffIso).getTime() - CALL_WINDOW_DAYS * 86_400_000);
+}
+
+/** Whether a match can be called yet. */
+export function callsOpen(kickoffIso: string, now = Date.now()): boolean {
+  return callsOpenAt(kickoffIso).getTime() <= now;
+}

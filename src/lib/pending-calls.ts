@@ -1,4 +1,4 @@
-import { isRugbyScore } from "./rugby";
+import { callsOpen, isRugbyScore } from "./rugby";
 
 /**
  * Calls made on an invite link before signing up. They wait on this device
@@ -24,10 +24,10 @@ export function writePendingCalls(p: PendingCalls | null): void {
   } catch { /* storage blocked: the calls just aren't kept */ }
 }
 
-/** The calls still worth saving for a tournament: real rugby scores for games that haven't started. */
+/** The calls still worth saving for a tournament: real rugby scores for games that are open and haven't started. */
 export function callsToSave(p: PendingCalls | null, season: string, now = Date.now()): { match_id: string; home_score: number; away_score: number }[] {
   if (!p || p.season !== season) return [];
   return Object.entries(p.calls)
-    .filter(([id, [h, a]]) => isRugbyScore(h) && isRugbyScore(a) && new Date(p.kickoffs[id] ?? 0).getTime() > now)
+    .filter(([id, [h, a]]) => isRugbyScore(h) && isRugbyScore(a) && new Date(p.kickoffs[id] ?? 0).getTime() > now && callsOpen(p.kickoffs[id], now))
     .map(([match_id, [home_score, away_score]]) => ({ match_id, home_score, away_score }));
 }

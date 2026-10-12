@@ -18,8 +18,8 @@ import { useSeasonSponsors } from "@/lib/tournament-sponsor";
 import { Form } from "@/components/form";
 import { buildDigest } from "@/lib/digest";
 import { Crest } from "@/components/team";
-import { kickoff, roundName, roundText } from "@/lib/format";
-import { isRugbyScore, scoreInput } from "@/lib/rugby";
+import { dayHeading, kickoff, roundName, roundText } from "@/lib/format";
+import { CALL_WINDOW_DAYS, callsOpen, callsOpenAt, isRugbyScore, scoreInput } from "@/lib/rugby";
 import { useScoreTyping } from "@/lib/score-typing";
 import { firstOpenRound, lockRound, useRoundLocks } from "@/lib/rounds";
 import { readCache, writeCache } from "@/lib/cache";
@@ -243,7 +243,7 @@ function Predict() {
     }
     const after = rounds[rounds.indexOf(round) + 1];
     const nextMs = matches.filter((m) => m.round === after);
-    if (after !== undefined && nextMs.length && !nextMs.some((m) => matchStarted(m))) {
+    if (after !== undefined && nextMs.length && !nextMs.some((m) => matchStarted(m)) && nextMs.some((m) => callsOpen(m.kickoff_at))) {
       steps.push({
         title: `Get ${roundText(after)} in early`,
         detail: `${nextMs.length} games, first on ${kickoff(nextMs.map((m) => m.kickoff_at).sort()[0])}`,
@@ -352,7 +352,9 @@ function Predict() {
           const d = draft[m.id] ?? ["", ""];
           const p = preds.get(m.id);
           const started = matchStarted(m);
-          const shut = done || started || myLocks.has(m.id);
+          // Calls open two weeks before kickoff; a call made before that rule stays as it was.
+          const notYet = !callsOpen(m.kickoff_at);
+          const shut = done || started || myLocks.has(m.id) || notYet;
           // Full time: the real score takes the middle of the card; your call moves to the points row.
           const final = shut && m.home_score !== null && (done || !season.is_replay);
           const bankerShut = ms.some((x) => preds.get(x.id)?.is_banker && (matchStarted(x) || myLocks.has(x.id)));
@@ -380,6 +382,11 @@ function Predict() {
                   <div className="pfinal" aria-label={`Full time: ${h.display_name} ${m.home_score}, ${a.display_name} ${m.away_score}`}>
                     <span className="pfinal-k">Full time</span>
                     <span className="pfinal-s">{m.home_score}<span className="muted">–</span>{m.away_score}</span>
+                  </div>
+                ) : notYet && !p ? (
+                  <div className="pfinal popen" title={`Calls open ${CALL_WINDOW_DAYS} days before kickoff, once there's team news`}>
+                    <span className="pfinal-k">Calls open</span>
+                    <span className="popen-s">{dayHeading(callsOpenAt(m.kickoff_at).toISOString())}</span>
                   </div>
                 ) : <>
                 <input className={`pbox${wrong(`${m.id}:h`, d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
