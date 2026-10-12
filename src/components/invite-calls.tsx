@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Crest } from "@/components/team";
 import { dayHeading, kickTime, roundName } from "@/lib/format";
 import { readPendingCalls, writePendingCalls } from "@/lib/pending-calls";
-import { isRugbyScore, scoreInput } from "@/lib/rugby";
+import { callsOpen, callsOpenAt, isRugbyScore, scoreInput } from "@/lib/rugby";
 import { useScoreTyping } from "@/lib/score-typing";
 import { supabase } from "@/lib/supabase";
 import type { Team } from "@/lib/types";
@@ -86,12 +86,14 @@ export function InviteCalls({ league, onCount }: { league: string; onCount: (n: 
             {(i === 0 || dayHeading(r.kickoff_at) !== dayHeading(rows[i - 1].kickoff_at)) && <div className="fx-day">{dayHeading(r.kickoff_at)}</div>}
             <div className="icall">
               <span className="icall-team"><Crest team={h} size={26} /><span>{h.display_name}</span></span>
-              <span className="icall-boxes">
+              {!callsOpen(r.kickoff_at) ? (
+                <span className="icall-boxes icall-opens muted small">Opens {dayHeading(callsOpenAt(r.kickoff_at).toISOString())}</span>
+              ) : <span className="icall-boxes">
                 <input className={`pbox${wrong(`${r.match_id}:h`, d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[0]}
                   aria-label={`${h.display_name} score`} onChange={(e) => { typed(`${r.match_id}:h`); set(r.match_id, e.target.value, d[1]); }} onBlur={() => left(`${r.match_id}:h`)} />
                 <input className={`pbox${wrong(`${r.match_id}:a`, d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[1]}
                   aria-label={`${a.display_name} score`} onChange={(e) => { typed(`${r.match_id}:a`); set(r.match_id, d[0], e.target.value); }} onBlur={() => left(`${r.match_id}:a`)} />
-              </span>
+              </span>}
               <span className="icall-team away"><Crest team={a} size={26} /><span>{a.display_name}</span></span>
             </div>
             <div className="icall-when muted">{kickTime(r.kickoff_at)}</div>

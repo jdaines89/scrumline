@@ -19,4 +19,8 @@ describe("callsToSave", () => {
     expect(callsToSave(p, "nations-2026", now)).toEqual([]);
     expect(callsToSave(null, "urc-2026-27", now)).toEqual([]);
   });
+  it("leaves out games more than two weeks away", () => {
+    const far = { ...p, calls: { e: [24, 17] } as Record<string, [number, number]>, kickoffs: { e: "2026-11-06T17:00:00Z" } };
+    expect(callsToSave(far, "urc-2026-27", now)).toEqual([]);
+  });
 });

@@ -1235,6 +1235,9 @@ a.sch-link:hover { text-decoration: underline; }
 .pfinal-k { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .pfinal-s { display: flex; align-items: baseline; gap: 8px; font-size: 32px; font-weight: 750; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .pfinal-s .muted { font-weight: 400; font-size: 22px; }
+/* Further out than the call window: when calls open, in the boxes' own space so nothing moves */
+.popen { width: 104px; min-height: 50px; align-content: center; text-align: center; }
+.popen-s { font-size: 15px; font-weight: 650; white-space: nowrap; }
 .presult.final { flex-direction: column; justify-content: center; gap: 6px; text-align: center; padding: 10px 12px; }
 .presult.final .breakdown { justify-content: center; }
 .presult-call { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -1349,6 +1352,7 @@ button.icalls-open { width: 100%; }
 .icall-team { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; font-weight: 600; font-size: 14px; line-height: 1.25; text-align: center; overflow-wrap: break-word; }
 .icall-boxes { display: flex; gap: 6px; }
 .icall-boxes .pbox { width: 46px !important; height: 42px; font-size: 18px; }
+.icall-opens { width: 98px; height: 42px; align-items: center; justify-content: center; white-space: nowrap; }
 .icall-when { text-align: center; font-size: 12px; padding-bottom: 6px; }
 .icall-warn { padding: 0 0 6px; text-align: center; }
 
