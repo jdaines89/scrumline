@@ -6,6 +6,7 @@ import { EveryoneTable } from "@/components/everyone-table";
 import { useLeague } from "@/components/league";
 import { ProvinceTable } from "@/components/province-table";
 import { SchoolTable } from "@/components/school-table";
+import { Tabs } from "@/components/tabs";
 
 type View = "everyone" | "schools" | "provinces";
 
@@ -22,11 +23,7 @@ export default function RankingsPage() {
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       <h2>Rankings</h2>
       <p className="sub">Everyone playing {season.name}, whether or not you share a league.</p>
-      <div className="scope-tabs" role="tablist">
-        {([["schools", "Schools"], ["provinces", "Provinces"], ["everyone", "Everyone"]] as const).map(([v, label]) => (
-          <button key={v} type="button" role="tab" aria-selected={view === v} className={view === v ? "on" : ""} onClick={() => setView(v)}>{label}</button>
-        ))}
-      </div>
+      <Tabs label="Rankings" items={[["schools", "Schools"], ["provinces", "Provinces"], ["everyone", "Everyone"]] as const} value={view} onPick={setView} />
       <div className="view-area">
         {view === "schools" ? <SchoolTable /> : view === "provinces" ? <ProvinceTable /> : <EveryoneTable />}
       </div>

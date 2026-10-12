@@ -5,6 +5,7 @@ import { canInstall, install, isInstalled, onInstallChange, pushState, turnOff, 
 import { installHow, type InstallHow } from "@/lib/install";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
+import { Tabs } from "@/components/tabs";
 
 /**
  * Notifications on this phone, what they're for, and getting the app onto
@@ -72,31 +73,21 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
             <strong>Kickoff reminders</strong>
             <span className="small muted">An hour before kickoff, if you haven&apos;t called a score</span>
           </div>
-          <div className="seg sm">
-            {([["off", "Off"], ["push", "Push"], ["email", "Email"]] as const).map(([v, l]) => (
-              <button key={v} type="button" className={shownRemind === v ? "on" : ""} disabled={v === "push" && !pushOn} onClick={() => saveRemind(v)}>{l}</button>
-            ))}
-          </div>
+          <Tabs size="sub" label="Kickoff reminders" items={[["off", "Off"], ["push", "Push", !pushOn], ["email", "Email"]] as const} value={shownRemind} onPick={saveRemind} />
         </div>
         <div className="pref">
           <div className="pref-text">
             <strong>Tagged in chat</strong>
             <span className="small muted">When someone tags you in a league&apos;s chat</span>
           </div>
-          <div className="seg sm">
-            <button type="button" className={!tags || !pushOn ? "on" : ""} onClick={() => save("push_mentions", false, setTags)}>Off</button>
-            <button type="button" className={tags && pushOn ? "on" : ""} disabled={!pushOn} onClick={() => save("push_mentions", true, setTags)}>Push</button>
-          </div>
+          <Tabs size="sub" items={[["off", "Off"], ["push", "Push", !pushOn]] as const} value={tags && pushOn ? "push" : "off"} onPick={(v) => save("push_mentions", v === "push", setTags)} />
         </div>
         <div className="pref">
           <div className="pref-text">
             <strong>Full time</strong>
             <span className="small muted">After a game you called: your points and where you stand</span>
           </div>
-          <div className="seg sm">
-            <button type="button" className={!results || !pushOn ? "on" : ""} onClick={() => save("push_results", false, setResults)}>Off</button>
-            <button type="button" className={results && pushOn ? "on" : ""} disabled={!pushOn} onClick={() => save("push_results", true, setResults)}>Push</button>
-          </div>
+          <Tabs size="sub" items={[["off", "Off"], ["push", "Push", !pushOn]] as const} value={results && pushOn ? "push" : "off"} onPick={(v) => save("push_results", v === "push", setResults)} />
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { RoundPicker, currentRound } from "@/components/round-picker";
 import { CombinedCalendar } from "@/components/combined-calendar";
 import { FixtureCard, fixtureDay as day } from "@/components/fixture-card";
 import type { Match } from "@/lib/types";
+import { Tabs } from "@/components/tabs";
 
 export default function FixturesPage() {
   const { season, rounds, matches, teams } = useLeague();
@@ -45,9 +46,7 @@ export default function FixturesPage() {
 /** One tournament's rounds, or every tournament together by date. */
 function Scope({ all, onPick }: { all: boolean; onPick: (v: boolean) => void }) {
   return (
-    <div className="seg sm wide" role="tablist" aria-label="Which tournaments">
-      <button type="button" role="tab" aria-selected={!all} className={all ? "" : "on"} onClick={() => onPick(false)}>This tournament</button>
-      <button type="button" role="tab" aria-selected={all} className={all ? "on" : ""} onClick={() => onPick(true)}>All tournaments</button>
-    </div>
+    <Tabs size="sub" label="Which tournaments" items={[["one", "This tournament"], ["all", "All tournaments"]] as const}
+      value={all ? "all" : "one"} onPick={(v) => onPick(v === "all")} />
   );
 }
