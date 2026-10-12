@@ -1,4 +1,4 @@
-export interface Competition { id: string; name: string; short_name: string }
+export interface Competition { id: string; name: string; short_name: string; badge_url?: string | null }
 export interface Season {
   id: string; name: string; is_replay: boolean; competition_id: string; starts_on: string | null;
   /** Last day of play, when known; open-ended otherwise. */
