@@ -66,6 +66,7 @@ function Predict() {
   const { entry, season, matches, rounds, teams, me, members, pools, pool, reloadPools } = useLeague();
   // Just arrived from a league invite (/join sends ?welcome=1): say where they are and what to do.
   const [welcome, setWelcome] = useState(false);
+  const [tellOpen, setTellOpen] = useState(false);
   useEffect(() => { setWelcome(new URLSearchParams(window.location.search).get("welcome") === "1"); }, []);
   const [code, setCode] = useState("");
   const [remind, setRemind] = useState(me.email_reminders);
@@ -207,6 +208,8 @@ function Predict() {
   // Every call in: say when it starts and offer the few things worth doing meanwhile.
   const allIn = !done && !season.is_replay && ms.length > 0 && filled === ms.length && ready === `predict:${entry!.id}:${round}`;
   const steps: NextStep[] = [];
+  let tellLine = "";
+  let tellLeagues: typeof pools = [];
   if (allIn) {
     const openIds = ms.filter((m) => !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
     if (openIds.length) steps.push({
@@ -214,17 +217,22 @@ function Predict() {
       detail: "You'll see what everyone who's locked the same games called. A lock can't be undone.",
       onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after.`)) lockMatches(openIds); },
     });
-    const talk = pool ?? pools[0] ?? null;
+    // Every league you're in, the one on screen first; with more than one you choose where to say it.
+    const leagues = [...pools].sort((a, b) => Number(b.id === pool?.id) - Number(a.id === pool?.id));
+    const talk = leagues[0] ?? null;
     if (talk) {
       const bm = ms.find((m) => preds.get(m.id)?.is_banker);
       const bp = bm && preds.get(bm.id)!;
       const line = bm && bp
         ? `My Banker for ${roundText(round)}: ${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}. Who's going against it?`
         : `My calls are in for ${roundText(round)}. Who's going against me?`;
+      tellLine = line;
+      tellLeagues = leagues;
+      const many = leagues.length > 1;
       steps.push({
-        title: bm ? `Tell ${talk.name} your Banker` : `Tell ${talk.name} you're in`,
-        detail: bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the league chat",
-        href: `/chat/?pool=${talk.id}&say=${encodeURIComponent(line)}`,
+        title: many ? "Select your league" : bm ? `Tell ${poolTitle(talk)} your Banker` : `Tell ${poolTitle(talk)} you're in`,
+        detail: many ? (bm ? "Choose where to tell them your Banker" : "Choose where to tell them you're in") : bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the league chat",
+        ...(many ? { onClick: () => setTellOpen(true) } : { href: `/chat/?pool=${talk.id}&say=${encodeURIComponent(line)}` }),
       });
     }
     const after = rounds[rounds.indexOf(round) + 1];
@@ -416,6 +424,21 @@ function Predict() {
           );
         })}
         {allIn && <AllSet round={round} firstKick={firstKick} steps={steps} />}
+        {tellOpen && allIn && (
+          <div className="wip-dim" onClick={() => setTellOpen(false)}>
+            <div className="wip-sheet" role="dialog" aria-modal="true" aria-label="Select your league" onClick={(e) => e.stopPropagation()}>
+              <h2>Select your league</h2>
+              <div className="nextsteps">
+                {tellLeagues.map((l) => (
+                  <Link key={l.id} className="nextstep" href={`/chat/?pool=${l.id}&say=${encodeURIComponent(tellLine)}`}>
+                    <span><strong>{poolTitle(l)}</strong></span><span className="chev" aria-hidden>›</span>
+                  </Link>
+                ))}
+              </div>
+              <button type="button" className="ghost" onClick={() => setTellOpen(false)}>Close</button>
+            </div>
+          </div>
+        )}
         {scores.size > 0 && (
           <dl className="legend">
             {PARTS.map((p) => <div key={p.code}><dt><span className="pchip on">{p.code}</span></dt><dd>{p.what}, +{p.max}</dd></div>)}
