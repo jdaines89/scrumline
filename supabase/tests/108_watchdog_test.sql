@@ -15,6 +15,8 @@ insert into backup.snapshots (slot, tbl, taken_at, row_count, rows)
   values (0, 'wd-test', '2026-10-10 23:15+00', 0, '[]')
   on conflict (slot, tbl) do update set taken_at = excluded.taken_at;
 delete from backup.snapshots where tbl <> 'wd-test';
+insert into backup.offsite (sent_at, request_id, bytes, tables) values ('2026-10-12 00:00+00', null, 1, 1);
+update backup.offsite set sent_at = '2026-10-12 00:00+00';
 
 select pg_temp.check(not exists (select 1 from notify.problems('2026-10-10 15:00+00')),
                      'no alarm 3 hours after kickoff: results lag');
