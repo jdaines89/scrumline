@@ -14,6 +14,7 @@ import { callsToSave, readPendingCalls, writePendingCalls } from "@/lib/pending-
 import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
 import { defaultSeason, pickerGroups, seasonLine } from "@/lib/seasons";
+import { TournamentLogo } from "@/components/tournament-logo";
 
 interface League {
   seasons: Season[];
@@ -272,7 +273,8 @@ const POOL_SCREENS: string[] = [];
 
 /** Which tournament you're looking at, and on pool screens which pool. */
 function Switcher() {
-  const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
+  const { seasons, season, setSeason, pools, pool, setPool, competitions } = useLeague();
+  const logo = <TournamentLogo competition={competitions.get(season.competition_id)} size={30} />;
   const path = usePathname() ?? "";
   const [picking, setPicking] = useState(false);
   if (isSponsorPath(path)) return <SponsorTabs />;
@@ -286,7 +288,7 @@ function Switcher() {
           <button type="button" className="season-pick" onClick={() => setPicking(true)} aria-haspopup="dialog">
             <span className="season-pick-kicker">Tournament</span>
             <span className="season-pick-box">
-              <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+              <span className="season-pick-title">{logo}<span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span></span>
               <span className="season-pick-change" aria-hidden="true">
                 Change
                 <svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -298,7 +300,7 @@ function Switcher() {
       ) : (
         <div className="season-pick">
           <span className="season-pick-kicker">Tournament</span>
-          <span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+          <span className="season-pick-title">{logo}<span className="season-pick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span></span>
         </div>
       )}
       {showPool && <label>
@@ -318,7 +320,7 @@ function Switcher() {
  * finished and practice, each with one line saying when it runs.
  */
 function TournamentSheet({ onClose }: { onClose: () => void }) {
-  const { seasons, season, setSeason } = useLeague();
+  const { seasons, season, setSeason, competitions } = useLeague();
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
@@ -339,9 +341,12 @@ function TournamentSheet({ onClose }: { onClose: () => void }) {
               return (
                 <button key={s.id} type="button" className={on ? "tsheet-row on" : "tsheet-row"} aria-current={on ? "true" : undefined}
                   onClick={() => { if (!on) setSeason(s.id); onClose(); }}>
-                  <span className="tsheet-text">
-                    <span className="tsheet-name">{s.name}</span>
-                    {seasonLine(s) && <span className="tsheet-when">{seasonLine(s)}</span>}
+                  <span className="tsheet-lead">
+                    <TournamentLogo competition={competitions.get(s.competition_id)} size={36} />
+                    <span className="tsheet-text">
+                      <span className="tsheet-name">{s.name}</span>
+                      {seasonLine(s) && <span className="tsheet-when">{seasonLine(s)}</span>}
+                    </span>
                   </span>
                   {on && <svg className="tsheet-tick" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 </button>
