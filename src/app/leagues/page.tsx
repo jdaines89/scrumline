@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLeague } from "@/components/league";
 import { InviteCard } from "@/components/invite-card";
+import { RankingsCard } from "@/components/rankings-card";
 import { InviteSheet, WaitingInvites } from "@/components/league-invites";
 import { runsLeague } from "@/components/league-admin";
 import { latestWin } from "@/components/prize-line";
@@ -320,7 +321,6 @@ export default function PoolsPage() {
         <div className="lg-head">
           <h2>Your leagues</h2>
           <p className="sub">Your calls count in every league you&apos;re in.</p>
-          <p className="small"><Link href="/rankings/">Rankings: schools, provinces and everyone ›</Link></p>
         </div>
         <WaitingInvites onJoined={async (id) => { await reloadPools(); setPool(id); }} />
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code someone sent you.</p>}
@@ -355,6 +355,8 @@ export default function PoolsPage() {
             <button type="button" onClick={() => setAddingSchool(true)}>Add your school</button>
           </div>
         </>}
+        <div className="lg-sect">Rankings</div>
+        <RankingsCard stage={pools.some((p) => p.school_emis && p.school_stage === "high") ? "high" : pools.some((p) => p.school_emis && p.school_stage === "primary") ? "primary" : null} />
         <div className="lg-actions">
           <button type="button" className="lg-start" onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
           <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>

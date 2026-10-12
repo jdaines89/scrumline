@@ -2091,3 +2091,12 @@ td { padding: 7px 8px; }
 /* The small tabs share the full width too (This tournament / All tournaments, High / Primary). */
 .stage-tabs button, .stage-tabs button:hover { flex: 1 1 0; white-space: nowrap; }
 .notify .pref .stage-tabs button { flex: 0 0 auto; }
+
+/* Rankings on the Leagues page: the same cards as your leagues, linking into each table. */
+a.lgc-main { display: flex; align-items: center; gap: 12px; flex: 1 1 100%; min-width: 0; box-sizing: border-box; padding: 12px 14px; color: inherit; text-decoration: none; }
+a.lgc-main:hover { background: rgba(255, 255, 255, 0.03); }
+a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rk-icon { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: #d9b75a; background: rgba(217, 183, 90, 0.12); box-shadow: inset 0 0 0 1px rgba(217, 183, 90, 0.35); }
+.rk .lgc-rank.big { font-size: 15px; }
+.rk .rk-top .lgc-rank { color: #f0cf6a; background: rgba(217, 183, 90, 0.14); box-shadow: inset 0 0 0 1px rgba(217, 183, 90, 0.4); }
+.rk-wait { display: inline-block; width: 11em; max-width: 100%; border-radius: 6px; background: rgba(167, 192, 180, 0.12); }
