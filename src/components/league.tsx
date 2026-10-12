@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { SponsorTabs } from "@/components/sponsor-tabs";
 import { isBusinessSession, isPublicPath, isSchoolPath, isSchoolSession, isSponsorPath } from "@/lib/account";
 import { supabase } from "@/lib/supabase";
-import type { Competition, Entry, Match, Member, Pool, Season, Team } from "@/lib/types";
+import { MEMBER_COLUMNS, type Competition, type Entry, type Match, type Member, type Pool, type Season, type Team } from "@/lib/types";
 import { poolLabel } from "@/components/pool-name";
 import { WhoIsPlaying } from "@/components/who-is-playing";
 import { callsToSave, readPendingCalls, writePendingCalls } from "@/lib/pending-calls";
@@ -145,15 +145,17 @@ function Loaded({ children }: { children: ReactNode }) {
       const uid = sess.session?.user.id;
       if (isBusinessSession(sess.session)) { setBusiness(true); return; }
       if (isSchoolSession(sess.session)) { setSchoolOnly(true); return; }
-      const [seasons, comps, teams, members, schools] = await Promise.all([
+      const [seasons, comps, teams, members, mine, schools] = await Promise.all([
         supabase.from("seasons").select("*").order("starts_on", { ascending: false, nullsFirst: false }),
         supabase.from("competitions").select("*"),
         supabase.from("teams").select("id, display_name, short_name, stadium, colour, colour_ink, badge_url"),
-        supabase.from("members").select("*").order("display_name"),
+        supabase.from("members").select(MEMBER_COLUMNS).order("display_name"),
+        supabase.rpc("my_member").maybeSingle(),
         supabase.from("member_schools").select("stage").eq("user_id", uid ?? ""),
       ]);
-      const everyone = (members.data ?? []) as Member[];
-      const me = everyone.find((m) => m.user_id === uid);
+      const me = mine.data ? (mine.data as Member) : undefined;
+      // Other players come without email or settings (hidden by the database); only "me" has them.
+      const everyone = ((members.data ?? []) as unknown as Member[]).map((m) => (m.user_id === me?.user_id ? me : m));
       const ss = (seasons.data ?? []) as Season[];
       if (!me) { setError("Your account isn't a member of this league. Ask Justin for an invite."); return; }
       if (!ss.length) { setError("No season has been loaded yet."); return; }
