@@ -15,6 +15,7 @@ import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
 import { defaultSeason, pickerGroups, seasonLine, seasonStatus } from "@/lib/seasons";
 import { TournamentLogo } from "@/components/tournament-logo";
+import { TournamentAbout } from "@/components/tournament-about";
 
 interface League {
   seasons: Season[];
@@ -276,26 +277,28 @@ function Switcher() {
   const { seasons, season, setSeason, pools, pool, setPool, competitions } = useLeague();
   const path = usePathname() ?? "";
   const [picking, setPicking] = useState(false);
+  const [about, setAbout] = useState(false);
   if (isSponsorPath(path)) return <SponsorTabs />;
   // Chat picks its pool in its own header, so the conversation gets the screen.
   if (isSchoolPath(path) || path.startsWith("/admin") || path.startsWith("/chat")) return null;
   const showPool = POOL_SCREENS.some((p) => path.startsWith(p));
   return (
     <div className="switcher">
-      {seasons.length > 1 ? (
-        <>
-          <button type="button" className="tpick" onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={`Tournament: ${season.name}. Change tournament`}>
-            <TournamentLogo competition={competitions.get(season.competition_id)} size={40} />
+      <div className="tpick">
+        <button type="button" className="tpick-logo" onClick={() => setAbout(true)} aria-haspopup="dialog" aria-label={`About ${season.name}`}>
+          <TournamentLogo competition={competitions.get(season.competition_id)} size={40} />
+        </button>
+        {seasons.length > 1 ? (
+          <button type="button" className="tpick-main" onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={`Tournament: ${season.name}. Change tournament`}>
             <TournamentFace season={season} />
             <span className="tpick-btn" aria-hidden="true">
               <svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
           </button>
-          {picking && <TournamentSheet onClose={() => setPicking(false)} />}
-        </>
-      ) : (
-        <div className="tpick solo"><TournamentLogo competition={competitions.get(season.competition_id)} size={40} /><TournamentFace season={season} /></div>
-      )}
+        ) : <TournamentFace season={season} />}
+      </div>
+      {picking && <TournamentSheet onClose={() => setPicking(false)} />}
+      {about && <TournamentAbout season={season} competition={competitions.get(season.competition_id)} onClose={() => setAbout(false)} />}
       {showPool && <label>
         <span>League</span>
         {pools.length ? (
@@ -316,7 +319,7 @@ function TournamentFace({ season }: { season: Season }) {
     : status === "Practice" ? "Practice · a finished season to replay" : when ?? status;
   return (
     <span className="tpick-text">
-      <span className="tpick-name">{season.name}{season.is_replay ? " (replay)" : ""}</span>
+      <span className="tpick-name"><NameNoSplit name={season.name} />{season.is_replay ? " (replay)" : ""}</span>
       <span className="tpick-line">
         <i className={status === "On now" ? "tdot on" : "tdot"} aria-hidden="true" />
         {line}
@@ -325,23 +328,35 @@ function TournamentFace({ season }: { season: Season }) {
   );
 }
 
+/** "Challenge Cup 2026-27": the year never breaks away onto a line of its own. */
+function NameNoSplit({ name }: { name: string }) {
+  const m = /^(.*\S)\s+(\d{4}(?:-\d{2,4})?)$/.exec(name);
+  if (!m) return <>{name}</>;
+  return <>{m[1]} <span className="nowrap">{m[2]}</span></>;
+}
+
 /**
  * Picking a tournament: a calm sheet grouped into what's on now, coming up,
  * finished and practice, each with one line saying when it runs.
  */
 function TournamentSheet({ onClose }: { onClose: () => void }) {
   const { seasons, season, setSeason, competitions } = useLeague();
+  const [about, setAbout] = useState<Season | null>(null);
   useEffect(() => {
+    if (about) return; // the About sheet on top handles Escape first
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
     return () => window.removeEventListener("keydown", esc);
-  }, [onClose]);
-  return (
+  }, [onClose, about]);
+  return (<>
     <div className="wip-dim" onClick={onClose}>
       <div className="wip-sheet tsheet" role="dialog" aria-modal="true" aria-labelledby="tsheet-title" onClick={(e) => e.stopPropagation()}>
         <div className="tsheet-grip" aria-hidden="true" />
         <div className="tsheet-head">
-          <h2 id="tsheet-title">Tournaments</h2>
+          <div>
+            <h2 id="tsheet-title">Tournaments</h2>
+            <p className="tsheet-hint">Tap a logo to read about it.</p>
+          </div>
           <button type="button" className="ghost tsheet-done" onClick={onClose}>Done</button>
         </div>
         {pickerGroups(seasons, season.id).map((g) => (
@@ -351,17 +366,21 @@ function TournamentSheet({ onClose }: { onClose: () => void }) {
               {g.seasons.map((s) => {
                 const on = s.id === season.id;
                 return (
-                  <button key={s.id} type="button" className={on ? "tsheet-row on" : "tsheet-row"} aria-current={on ? "true" : undefined}
-                    onClick={() => { if (!on) setSeason(s.id); onClose(); }}>
-                    <TournamentLogo competition={competitions.get(s.competition_id)} size={36} />
-                    <span className="tsheet-text">
-                      <span className="tsheet-name">{s.name}</span>
-                      {seasonLine(s) && <span className="tsheet-when">{g.label === "On now" && <i className="tdot on" aria-hidden="true" />}{seasonLine(s)}</span>}
-                    </span>
-                    <span className={on ? "tsheet-radio on" : "tsheet-radio"} aria-hidden="true">
-                      {on && <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3.5 8.5l3 3L12.5 5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                    </span>
-                  </button>
+                  <div key={s.id} className={on ? "tsheet-row on" : "tsheet-row"}>
+                    <button type="button" className="tpick-logo" onClick={() => setAbout(s)} aria-haspopup="dialog" aria-label={`About ${s.name}`}>
+                      <TournamentLogo competition={competitions.get(s.competition_id)} size={36} />
+                    </button>
+                    <button type="button" className="tsheet-pick" aria-current={on ? "true" : undefined}
+                      onClick={() => { if (!on) setSeason(s.id); onClose(); }}>
+                      <span className="tsheet-text">
+                        <span className="tsheet-name">{s.name}</span>
+                        {seasonLine(s) && <span className="tsheet-when">{g.label === "On now" && <i className="tdot on" aria-hidden="true" />}{seasonLine(s)}</span>}
+                      </span>
+                      <span className={on ? "tsheet-radio on" : "tsheet-radio"} aria-hidden="true">
+                        {on && <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3.5 8.5l3 3L12.5 5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      </span>
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -369,7 +388,8 @@ function TournamentSheet({ onClose }: { onClose: () => void }) {
         ))}
       </div>
     </div>
-  );
+    {about && <TournamentAbout season={about} competition={competitions.get(about.competition_id)} onClose={() => setAbout(null)} />}
+  </>);
 }
 
 /** Screens that need a pool: points the way to one when you have none. */
