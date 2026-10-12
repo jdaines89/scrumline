@@ -1949,3 +1949,63 @@ button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 
 .schools-table li.me.p1, .schools-table li.me.p2, .schools-table li.me.p3 { background-color: #16302455; }
 .schools-table li.p1 .sname { font-size: 17px; }
 .schools-table li.p1 .btotal { color: var(--gold); font-size: 20px !important; }
+
+/* Size scale: one set of tokens for type, card padding and buttons, so the
+   app reads like a calm phone app rather than a blown-up web page. Phones get
+   a tighter step; tap targets stay at 44px and body text never drops below 14px. */
+:root {
+  --fs-body: 15px; --fs-small: 13px; --fs-h2: 18px; --fs-title: 22px;
+  --pad-card: 18px; --gap-card: 14px; --tap: 44px;
+}
+@media (max-width: 560px) {
+  :root { --fs-body: 14px; --fs-small: 12.5px; --fs-h2: 16.5px; --fs-title: 20px; --pad-card: 14px; --gap-card: 12px; }
+}
+body { font-size: var(--fs-body); line-height: 1.45; }
+.card { padding: var(--pad-card); margin-bottom: var(--gap-card); }
+.card h2 { font-size: var(--fs-h2); line-height: 1.3; }
+.card .sub { font-size: var(--fs-small); margin-bottom: 12px; }
+.small { font-size: var(--fs-small); }
+.btn.tc-go, .lgpage .lg-actions button { min-height: var(--tap); padding: 10px 14px; font-size: 15px; }
+
+/* Home */
+.card.teamcard { padding: var(--pad-card); }
+.card .tc-name { font-size: var(--fs-title); }
+.card .tc-name.tc-none { font-size: var(--fs-h2); }
+.tc-round-name { font-size: 14px; }
+.tc-count { font-size: 13px; }
+.also-row p { font-size: var(--fs-body); line-height: 1.45; }
+.also-row button { padding: 7px 14px; min-height: 36px; }
+.smeter-name { font-size: 15px; }
+.smeter-line { font-size: var(--fs-small); }
+/* "Play it" stays beside the words on phones too, rather than on a line of its own. */
+.also-on p { font-size: var(--fs-body); line-height: 1.45; }
+.also-on button { padding: 7px 14px; min-height: 36px; }
+@media (max-width: 560px) {
+  .also-row { gap: 10px; }
+  .also-on { flex-direction: row; align-items: center; gap: 12px; }
+}
+
+/* Leagues */
+.lg-head h2 { font-size: var(--fs-title); }
+.lg-head .sub { font-size: var(--fs-small); }
+.lgpage .lg-sect { margin-top: 20px; }
+button.lgc-main { padding: 12px 14px; gap: 12px; }
+.lgc-rank { width: 46px; padding: 5px 0; border-radius: 12px; font-size: 19px; }
+.lgc-text strong { font-size: 15.5px; }
+.lgc-chev { font-size: 22px; }
+button.lgc-invite, button.lgc-invite:hover { padding: 11px 14px; }
+
+/* Predict */
+.stepper .which strong { font-size: 16px; }
+.stepper .arrow { width: 44px; font-size: 22px; }
+.mhead { padding: 10px 12px 0; }
+.pred { padding: 12px 6px 14px; }
+.pname { font-size: 13.5px; }
+
+/* Chat list and tables */
+.chatlist h2 { font-size: var(--fs-h2); }
+.chatrow-pic { width: 42px; height: 42px; }
+.chatrow-main { min-height: 60px; padding: 10px 0; }
+.school-card { padding: 14px; gap: 10px; }
+.school-card-name { font-size: 16px; }
+td { padding: 7px 8px; }
