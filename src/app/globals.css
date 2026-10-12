@@ -1803,22 +1803,23 @@ button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 
 .mhead { padding: 10px 14px 0; font-size: 12px; align-items: center; }
 .mwhen strong { color: var(--text); font-weight: 650; letter-spacing: .01em; }
 .mvenue { color: var(--muted); }
-.pred { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; padding: 14px 12px 16px; }
+.pred { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 4px; padding: 14px 8px 16px; }
 .pside { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; text-align: center; }
 .pside .ha { width: auto; margin: 0; font-size: 10px; }
 /* No circle: the shadow follows each badge's own outline, and wide or tall badges fit a 56×46 box. */
 .pcrest { display: grid; place-items: center; width: 56px; height: 46px; line-height: 0; }
 .pcrest img.crest { width: 56px !important; height: 46px !important; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45)); }
 .pcrest .crest.disc { box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); }
-.pname { font-size: 14px; font-weight: 650; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -0.005em; }
-.pmid { display: flex; align-items: center; gap: 8px; }
-.pmid > .muted { font-size: 22px; font-weight: 300; }
-.pbox { width: 56px !important; height: 62px; border-radius: 14px; font-size: 30px; font-weight: 750; font-variant-numeric: tabular-nums;
+/* Names break only between words, never mid-word ("Edinbur / gh"). */
+.pname { font-size: 14px; font-weight: 650; line-height: 1.2; overflow-wrap: normal; word-break: normal; letter-spacing: -0.005em; }
+.pmid { display: flex; align-items: center; gap: 5px; }
+.pmid > .muted { font-size: 18px; font-weight: 300; }
+.pbox { width: 44px !important; height: 50px; border-radius: 12px; font-size: 24px; font-weight: 750; font-variant-numeric: tabular-nums;
   background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(167, 192, 180, 0.22); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) inset; }
 .pbox:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px rgba(224, 178, 60, 0.22); }
 .pbox:disabled { opacity: .85; }
 .pbox.bad { border-color: var(--danger); }
-.match .pfinal-s { font-size: 36px; }
+.match .pfinal-s { font-size: 30px; }
 .match.banker { box-shadow: 0 0 0 1px #8a6f25, 0 10px 28px rgba(0, 0, 0, 0.28); }
 .mwhen { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .mvenue { display: block; font-size: 11.5px; }
