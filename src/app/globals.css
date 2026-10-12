@@ -1206,7 +1206,7 @@ a.sch-link { color: inherit; text-decoration: none; }
 a.sch-link:hover { text-decoration: underline; }
 /* Every school row the same shape: rank, crest, name and score on top, details underneath. */
 .schools-table li { padding: 12px; }
-.srow { display: grid; grid-template-columns: 28px 36px minmax(0, 1fr) 3.6em; grid-template-rows: auto auto auto; column-gap: 10px; row-gap: 2px; align-items: center; }
+.srow { display: grid; grid-template-columns: 28px 36px minmax(0, 1fr) 4em; grid-template-rows: auto auto auto; column-gap: 10px; row-gap: 2px; align-items: center; }
 .srow .rank { grid-column: 1; grid-row: 1 / 4; }
 .srow .school-mark { grid-column: 2; grid-row: 1 / 4; }
 .srow .rank.blank { visibility: hidden; }
@@ -1882,3 +1882,27 @@ button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 
 .tabout-facts { display: grid; gap: 14px; margin: 0; padding-top: 14px; border-top: 1px solid var(--line); }
 .tabout-facts dt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); margin-bottom: 4px; }
 .tabout-facts dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text); }
+
+/* Rankings with some pride: your school up top with who it is chasing, and the podium picked out in gold, silver and bronze. */
+.pride { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; padding: 14px; border-radius: var(--radius); position: relative; overflow: hidden;
+  border: 1px solid var(--line); border-top: 2px solid var(--gold);
+  background: linear-gradient(180deg, rgba(28, 54, 44, 0) 0%, var(--panel) 95%), repeating-linear-gradient(90deg, #21402f 0 44px, #1b3529 44px 88px); }
+.pride .school-mark { width: 52px; height: 52px; border-radius: 10px; }
+.pride-text { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.pride-kicker { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #d9b75a; }
+.pride-name { font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.pride-line { font-size: 14px; line-height: 1.35; color: var(--muted); }
+.pride-line b { color: var(--text); font-weight: 700; }
+.pride-place { color: var(--gold); font-weight: 800; font-size: 16px; }
+.pride.lead { border-top-width: 3px; box-shadow: 0 0 0 1px rgba(217, 183, 90, .25), 0 10px 28px -14px rgba(217, 183, 90, .35); }
+/* Big stamped rank numbers; the podium gets its metal. */
+.schools-table:not(.waiting) .srow .rank { width: 28px; height: auto; border: 0; background: none; border-radius: 0; font-size: 24px; font-weight: 900; font-style: italic; letter-spacing: -.04em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.schools-table:not(.waiting) li.p1 .rank { color: var(--gold); text-shadow: 0 0 14px rgba(217, 183, 90, .35); }
+.schools-table:not(.waiting) li.p2 .rank { color: #c9d1d6; }
+.schools-table:not(.waiting) li.p3 .rank { color: #c98a52; }
+.schools-table li.p1 { box-shadow: inset 3px 0 0 var(--gold); background: linear-gradient(90deg, rgba(217, 183, 90, .12), transparent 55%); }
+.schools-table li.p2 { box-shadow: inset 3px 0 0 #c9d1d6; }
+.schools-table li.p3 { box-shadow: inset 3px 0 0 #c98a52; }
+.schools-table li.me.p1, .schools-table li.me.p2, .schools-table li.me.p3 { background-color: #16302455; }
+.schools-table li.p1 .sname { font-size: 17px; }
+.schools-table li.p1 .btotal { color: var(--gold); font-size: 20px !important; }

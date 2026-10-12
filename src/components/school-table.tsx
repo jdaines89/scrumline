@@ -43,6 +43,10 @@ export function SchoolTable() {
   const waiting = (rows ?? []).filter((r) => r.score === null)
     .sort((a, b) => b.confirmed - a.confirmed || b.members - a.members || a.name.localeCompare(b.name));
 
+  const place = (r: SchoolRow) => 1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length;
+  const mineRow = [...ranked, ...waiting].find((r) => r.mine);
+  const stageWord = stage === "high" ? "high" : "primary";
+
   return (
     <>
       <div className="seg sm wide" role="tablist" aria-label="School stage">
@@ -60,13 +64,14 @@ export function SchoolTable() {
         <p className="muted">No one has added a {stage} school yet. Add yours on your profile.</p>
       ) : (
         <>
+          {mineRow && <PrideCard row={mineRow} ranked={ranked} place={place} stage={stageWord} crest={crests.get(mineRow.emis)} />}
           {ranked.length > 1 && <SchoolRace season={season.id} stage={stage} />}
           {ranked.length > 0 && (
             <ol className="board schools-table">
               {ranked.map((r) => (
-                <li key={r.emis} className={r.mine ? "me" : ""}>
+                <li key={r.emis} className={`${r.mine ? "me" : ""} p${Math.min(place(r), 4)}`}>
                   <div className="srow">
-                    <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
+                    <span className="rank">{place(r)}</span>
                     <Crest emis={r.emis} path={crests.get(r.emis)} size={36} />
                     <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
@@ -118,6 +123,29 @@ export function SchoolTable() {
       </p>
       <p className="small" style={{ marginTop: 8 }}><Link href="/giving/">See what sponsors have given each school</Link></p>
     </>
+  );
+}
+
+/** Your school, up top: where it stands and who it is chasing (or holding off). The pride bit. */
+function PrideCard({ row, ranked, place, stage, crest }: { row: SchoolRow; ranked: SchoolRow[]; place: (r: SchoolRow) => number; stage: string; crest?: string | null }) {
+  const ranks = row.score !== null;
+  const at = ranks ? place(row) : 0;
+  const above = ranks && at > 1 ? ranked.filter((x) => Number(x.score) > Number(row.score)).sort((a, b) => Number(a.score) - Number(b.score))[0] : null;
+  const below = ranks ? ranked.filter((x) => x.emis !== row.emis && Number(x.score) < Number(row.score)).sort((a, b) => Number(b.score) - Number(a.score))[0] : null;
+  const ord = (n: number) => `${n}${["th", "st", "nd", "rd"][(n % 100 >= 11 && n % 100 <= 13) ? 0 : Math.min(n % 10, 4) % 4] ?? "th"}`;
+  const line = !ranks ? "Your first scored call puts your school on the table."
+    : above ? <>Catch <b>{above.name}</b>: <b>{(Number(above.score) - Number(row.score)).toFixed(1)}</b> points to find.</>
+    : below ? <>Top of the table. <b>{below.name}</b> is <b>{(Number(row.score) - Number(below.score)).toFixed(1)}</b> behind. Hold the line.</>
+    : "Top of the table. Hold the line.";
+  return (
+    <div className={`pride${at === 1 ? " lead" : ""}`}>
+      <Crest emis={row.emis} path={crest} size={52} />
+      <div className="pride-text">
+        <span className="pride-kicker">Your school</span>
+        <span className="pride-name">{row.name}</span>
+        <span className="pride-line">{ranks ? <><strong className="pride-place">{ord(at)}</strong> of {ranked.length} {stage} schools. </> : null}{line}</span>
+      </div>
+    </div>
   );
 }
 
