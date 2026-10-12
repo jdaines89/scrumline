@@ -27,6 +27,8 @@ export function RoundTable({ rows }: { rows: LeaderRow[] }) {
   const from = countsFrom(pool);
   const played = useMemo(() => [...new Set(matches.filter((m) => m.home_score !== null && m.round >= from).map((m) => m.round))].sort((a, b) => a - b), [matches, from]);
   const [round, setRound] = useState<number | null>(null);
+  const [roundOf, setRoundOf] = useState(season.id);
+  if (roundOf !== season.id) { setRoundOf(season.id); setRound(null); }
   const shown = round ?? played[played.length - 1] ?? null;
 
   useEffect(() => {

@@ -9,9 +9,12 @@ import { FixtureCard, fixtureDay as day } from "@/components/fixture-card";
 import type { Match } from "@/lib/types";
 
 export default function FixturesPage() {
-  const { rounds, matches, teams } = useLeague();
+  const { season, rounds, matches, teams } = useLeague();
   const [round, setRound] = useState(() => currentRound(rounds, matches));
   const [all, setAll] = useState(false);
+  // Switching tournament starts on that tournament's own current round, not the same number.
+  const [roundOf, setRoundOf] = useState(season.id);
+  if (roundOf !== season.id) { setRoundOf(season.id); setRound(currentRound(rounds, matches)); }
   const ms = matches.filter((m) => m.round === round);
   const days = new Map<string, Match[]>();
   for (const m of ms) days.set(day(m.kickoff_at), [...(days.get(day(m.kickoff_at)) ?? []), m]);

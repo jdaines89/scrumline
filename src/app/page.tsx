@@ -52,7 +52,7 @@ export default function Home() {
     <>
       <div className="card teamcard">
         <div className="tc-head">
-          <Avatar member={me} size={52} />
+          <Avatar member={me} size={42} />
           <div className="tc-who">
             <span className="tc-hi">Hi {me.display_name}</span>
             {entry
