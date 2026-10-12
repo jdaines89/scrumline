@@ -29,9 +29,10 @@ function useUnread(uid: string | null): Unread {
   const [u, setU] = useState<Unread>({ count: 0, tagged: false });
   const refresh = useCallback(async () => {
     if (!uid) return;
-    const { data } = await supabase.from("chat_unread").select("unread, tagged");
-    const rows = (data ?? []) as { unread: number; tagged: number }[];
-    setU({ count: rows.reduce((n, r) => n + r.unread, 0), tagged: rows.some((r) => r.tagged > 0) });
+    // Muted leagues stay out of the Chat tab's badge; "tags only" leagues add just their tags.
+    const { data } = await supabase.from("chat_unread").select("unread, tagged, tags_only").eq("muted", false);
+    const rows = (data ?? []) as { unread: number; tagged: number; tags_only: boolean }[];
+    setU({ count: rows.reduce((n, r) => n + (r.tags_only ? r.tagged : r.unread), 0), tagged: rows.some((r) => r.tagged > 0) });
   }, [uid]);
 
   useEffect(() => {
