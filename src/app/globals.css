@@ -256,17 +256,22 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 
 /* Where a prediction's points came from */
 .presult { align-items: center; gap: 10px; }
-.breakdown { display: flex; flex-wrap: wrap; gap: 4px; }
+.breakdown { display: flex; flex-wrap: wrap; gap: 5px; }
+/* One badge shape everywhere (RES/MAR/CLS/EXA and the gold ×2): same height, centred text. */
 .pchip {
-  display: inline-block; padding: 1px 6px; border-radius: 5px; font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  height: 20px; min-width: 36px; padding: 0 6px; border-radius: 5px; font-size: 11px; font-weight: 700; line-height: 1;
+  white-space: nowrap; vertical-align: middle;
   letter-spacing: .03em; border: 1px solid var(--line); color: #4d6358; font-variant-numeric: tabular-nums;
 }
+/* On a scored match and in the key below it, every badge is the same width so they line up. */
+.breakdown .pchip, .legend .pchip { width: 52px; padding: 0; }
 .pchip.on { color: var(--accent); border-color: var(--accent-dim); background: #1f4a3678; }
 .pchip.bank2 { color: #1a1407; background: var(--gold); border-color: var(--gold); }
 .legend { display: grid; gap: 6px; margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
-.legend div { display: flex; gap: 10px; align-items: baseline; }
-.legend dt { flex: 0 0 44px; }
-.legend dd { margin: 0; }
+.legend div { display: flex; gap: 10px; align-items: flex-start; }
+.legend dt { flex: 0 0 52px; }
+.legend dd { margin: 0; line-height: 20px; }
 
 /* Tournament and pool switcher */
 .switcher { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
