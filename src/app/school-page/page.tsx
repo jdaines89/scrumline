@@ -310,8 +310,9 @@ function GivenCard({ p }: { p: Page }) {
           <span className="small muted">{s.no_fee ? (p.partners.length === 1 ? "Partner school" : "Partner schools") : "Partner school"}</span>
           {p.partners.map((o) => (
             <Link key={o.emis} href={schoolHref(o.emis)} className="sch-partner-row">
-                            <span className="sch-partner-text"><b>{o.name}</b>
+              <span className="sch-partner-text"><b>{o.name}</b>
                 {(o.town || o.distance_km !== null) && <span className="small muted">{[o.town, o.distance_km !== null ? `${Math.round(o.distance_km)} km away` : null].filter(Boolean).join(" · ")}</span>}</span>
+              <span className="sch-chev" aria-hidden="true">›</span>
             </Link>
           ))}
           <span className="small muted">
