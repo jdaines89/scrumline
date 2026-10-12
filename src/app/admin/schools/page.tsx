@@ -8,6 +8,7 @@ import { LANGUAGES, ROLES } from "@/lib/school";
 import { money } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import type { School } from "@/lib/types";
+import { Tabs } from "@/components/tabs";
 
 interface Owed { emis: string; school: string; town: string | null; district: string | null; province: string | null; no_fee: boolean;
   owed_minor: number; since: string; players: number; introduced_by: string | null }
@@ -215,10 +216,7 @@ function LookAfter({ onDone }: { onDone: (text: string) => void }) {
             </select>
           </div>
           <input required inputMode="tel" pattern="\+?[0-9 ]{9,16}" placeholder="Phone or WhatsApp, like +27 82 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          <div className="seg">
-            <button type="button" className={mode === "goods" ? "on" : ""} onClick={() => setMode("goods")}>Goods</button>
-            <button type="button" className={mode === "transfer" ? "on" : ""} onClick={() => setMode("transfer")}>EFT</button>
-          </div>
+          <Tabs size="sub" label="How the school is paid" items={[["goods", "Goods"], ["transfer", "EFT"]] as const} value={mode} onPick={setMode} />
           {mode === "transfer" && <>
             {banks === false && <p className="notice small" style={{ margin: 0 }}>EFT opens when payments switch on. Record the school for goods for now.</p>}
             <select required value={bank} onChange={(e) => setBank(e.target.value)} disabled={!banks}>

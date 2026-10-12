@@ -5,6 +5,7 @@ import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { ord } from "@/lib/growth";
 import { supabase } from "@/lib/supabase";
+import { GroundRules } from "@/components/ground-rules";
 
 interface EveryoneRow { pos: number | null; place: number | null; team_name: string; points: number; mine: boolean; players: number; resting_players: number }
 
@@ -60,10 +61,11 @@ export function EveryoneTable() {
       {me && me.place === null && (
         <ol className="board resting"><li className="me"><div className="brow"><span className="rank">–</span><div className="who"><strong>{me.team_name}</strong></div><span className="btotal">{me.points}</span></div></li></ol>
       )}
-      <p className="small muted" style={{ marginTop: 12 }}>
-        Everyone playing this tournament, in every league. Only team names show here.
-        {resting > 0 && ` ${resting.toLocaleString("en-ZA")} taking a break ${resting === 1 ? "isn't" : "aren't"} counted until their next call.`}
-      </p>
+      <GroundRules title="Every caller, every league" lines={[
+        ["One table for the whole tournament.", "Everyone who calls, whatever league they play in."],
+        ["Team names only.", "No one sees who you are, just how you call."],
+        ...(resting > 0 ? [["Taking a break?", `${resting.toLocaleString("en-ZA")} ${resting === 1 ? "player is" : "players are"} back on the table with their next call.`] as [string, string]] : []),
+      ]} />
     </>
   );
 }

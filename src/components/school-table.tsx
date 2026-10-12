@@ -10,6 +10,8 @@ import { supabase } from "@/lib/supabase";
 import { SchoolRace } from "@/components/school-race";
 import { SchoolBreakdown } from "@/components/school-breakdown";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
+import { Tabs } from "@/components/tabs";
+import { GroundRules } from "@/components/ground-rules";
 
 type Stage = "high" | "primary";
 interface SchoolRow {
@@ -49,13 +51,7 @@ export function SchoolTable() {
 
   return (
     <>
-      <div className="stage-tabs" role="tablist" aria-label="School stage">
-        {(["high", "primary"] as const).map((s) => (
-          <button key={s} type="button" role="tab" aria-selected={stage === s} className={stage === s ? "on" : ""} onClick={() => setStage(s)}>
-            {s === "high" ? "High schools" : "Primary schools"}
-          </button>
-        ))}
-      </div>
+      <Tabs size="sub" label="School stage" items={[["high", "High schools"], ["primary", "Primary schools"]] as const} value={stage} onPick={setStage} />
       {rows === null ? (
         <ol className="board" aria-busy="true" aria-label="Loading the table">
           {[0, 1].map((i) => <li key={i} className="skeleton" style={{ height: 66 }} />)}
@@ -109,19 +105,16 @@ export function SchoolTable() {
           )}
         </>
       )}
-      <p className="small muted" style={{ marginTop: 12 }}>
-        {SCHOOL_TRIAL ? <>
-        Every round, a school scores the average of its best {TEAM} players who played that round. The table adds the
-        rounds up, so a school that turns up every week climbs. For now every player counts straight away; the
-        10-player minimum and schoolmate vouching are switched off while we try it out.
-        </> : <>
-        Every round, a school scores the average of its best {TEAM} confirmed players who played that round. At least{" "}
-        {MINIMUM} confirmed players have to play for the round to count; otherwise the school scores 0 for it. The table adds
-        the rounds up, so a school that turns up every week climbs. Players are confirmed when two schoolmates vouch for
-        them on their profiles.
-        </>}
-      </p>
-      <p className="small" style={{ marginTop: 8 }}><Link href="/giving/">See what sponsors have given each school</Link></p>
+      <GroundRules title="How schools climb" lines={SCHOOL_TRIAL ? [
+        [`Your best ${TEAM} carry the school.`, "Every round, the school scores what its top callers average."],
+        ["Turn up every week.", "Every round adds to the total, so the schools that keep calling climb."],
+        ["Everyone counts right now.", "Vouching and the 10-player minimum are off while we try it out."],
+      ] : [
+        [`Your best ${TEAM} carry the school.`, "Every round, the school scores what its top confirmed callers average."],
+        ["Turn up every week.", `At least ${MINIMUM} have to play for a round to count. Miss it and the school scores 0.`],
+        ["Vouch for your schoolmates.", "Two vouches confirm a player and put them in the team."],
+      ]} />
+      <p className="small gr-link"><Link href="/giving/">See what sponsors have given each school</Link></p>
     </>
   );
 }

@@ -10,6 +10,7 @@ import { SAMPLE_GIVING, usePreview } from "@/lib/preview";
 import { money } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
+import { Tabs } from "@/components/tabs";
 
 interface Totals { committed_minor: number; paid_minor: number; confirmed_minor: number; schools: number; sponsors: number }
 interface SchoolRow { emis: string | null; name: string; town: string | null; no_fee: boolean; committed_minor: number; paid_minor: number | null; confirmed_minor: number | null; sponsors: string[] }
@@ -68,13 +69,7 @@ export default function GivingPage() {
       </div>
 
       <div className="card narrow">
-        <div className="seg sm" role="tablist" aria-label="Show">
-          {(["schools", "sponsors"] as const).map((v) => (
-            <button key={v} type="button" role="tab" aria-selected={view === v} className={view === v ? "on" : ""} onClick={() => setView(v)}>
-              {v === "schools" ? `Schools${t ? ` (${t.schools})` : ""}` : `Sponsors${t ? ` (${t.sponsors})` : ""}`}
-            </button>
-          ))}
-        </div>
+        <Tabs size="sub" label="Show" items={[["schools", `Schools${t ? ` (${t.schools})` : ""}`], ["sponsors", `Sponsors${t ? ` (${t.sponsors})` : ""}`]] as const} value={view} onPick={setView} />
         {g === null ? <div className="skeleton" style={{ height: 120 }} /> :
           (view === "schools" ? g.schools.length : g.sponsors.length) === 0 ? (
             <p className="muted" style={{ marginBottom: 0 }}>Nothing yet. When a business backs a school, every rand shows up here.</p>

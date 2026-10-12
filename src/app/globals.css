@@ -2069,3 +2069,17 @@ td { padding: 7px 8px; }
 .stage-tabs { gap: 8px; }
 .stage-tabs button, .stage-tabs button:hover { flex: 0 0 auto; padding: 4px 12px; font-size: 13px; border-bottom-width: 2px; }
 @media (max-width: 380px) { .scope-tabs button, .scope-tabs button:hover { font-size: 13px; padding-left: 3px; padding-right: 3px; } }
+/* Settings rows use the small tabs as a compact switch beside the label. */
+.notify .pref .stage-tabs { flex: none; margin: 0; }
+.stage-tabs button:disabled { opacity: .4; }
+/* How to climb a ranking: a stamped heading like a kit-bag label, then chalk-dash lines. */
+.ground-rules { margin: 18px 0 4px; padding: 14px 14px 6px; border-radius: var(--radius); border: 1px solid var(--line); border-left: 3px solid var(--gold);
+  background: linear-gradient(180deg, rgba(17, 36, 29, .2), rgba(17, 36, 29, .55)), repeating-linear-gradient(90deg, #1f3c2f 0 44px, #1a3428 44px 88px); }
+.gr-stamp { display: inline-block; margin: 0 0 10px; padding: 3px 9px 2px; font-size: 13px; font-weight: 900; font-style: italic; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--gold); border: 2px solid rgba(217, 183, 90, .75); border-radius: 3px; transform: rotate(-1.5deg); text-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+.ground-rules ul { list-style: none; margin: 0; padding: 0; }
+.ground-rules li { position: relative; padding: 0 0 9px 20px; font-size: 14px; line-height: 1.4; color: var(--muted); }
+.ground-rules li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 10px; height: 3px; border-radius: 2px; background: #e9efe9; opacity: .75; transform: rotate(-8deg); }
+.ground-rules li b { color: var(--text); font-weight: 800; }
+.ground-rules + .gr-link { margin-top: 10px; }
+.pride .pscene { width: 64px; height: 44px; object-fit: cover; border-radius: 8px; flex: none; }

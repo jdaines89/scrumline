@@ -7,6 +7,8 @@ import { ProvinceScene } from "@/components/province-scene";
 import { provinceName, schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { Tabs } from "@/components/tabs";
+import { GroundRules } from "@/components/ground-rules";
 
 type Stage = "high" | "primary";
 interface ProvinceRow {
@@ -39,23 +41,19 @@ export function ProvinceTable() {
   const ranked = (rows ?? []).slice()
     .sort((a, b) => Number(b.score) - Number(a.score) || b.schools - a.schools || provinceName(a.province).localeCompare(provinceName(b.province)));
   const have = new Set(ranked.map((r) => r.province));
+  const mine = ranked.find((r) => r.mine);
   const waiting = ALL.filter((p) => !have.has(p)).sort((a, b) => provinceName(a).localeCompare(provinceName(b)));
 
   return (
     <>
-      <div className="stage-tabs" role="tablist" aria-label="School stage">
-        {(["high", "primary"] as const).map((s) => (
-          <button key={s} type="button" role="tab" aria-selected={stage === s} className={stage === s ? "on" : ""} onClick={() => setStage(s)}>
-            {s === "high" ? "High schools" : "Primary schools"}
-          </button>
-        ))}
-      </div>
+      <Tabs size="sub" label="School stage" items={[["high", "High schools"], ["primary", "Primary schools"]] as const} value={stage} onPick={setStage} />
       {rows === null ? (
         <ol className="board" aria-busy="true" aria-label="Loading the table">
           {[0, 1, 2].map((i) => <li key={i} className="skeleton" style={{ height: 66 }} />)}
         </ol>
       ) : (
         <>
+          {mine && <ProvincePride row={mine} ranked={ranked} stage={stage} />}
           {ranked.length > 0 && (
             <ol className="board schools-table provinces">
               {ranked.map((r) => {
@@ -110,11 +108,11 @@ export function ProvinceTable() {
           )}
         </>
       )}
-      <p className="small muted" style={{ marginTop: 12 }}>
-        Every school scores what it does on the Schools table. A province scores the average of its best {TEAM} schools,
-        so a province with more schools isn&apos;t ahead just for being big. A school counts once one of its players has
-        scored. Tap a province for its top schools.
-      </p>
+      <GroundRules title="How provinces climb" lines={[
+        ["Every school pulls its weight.", "Each school's score on the Schools table feeds its province."],
+        [`The best ${TEAM} schools carry it.`, "So a big province isn't ahead just for being big."],
+        ["Get your school on the board.", "One scored call and it counts. Tap a province for its top schools."],
+      ]} />
     </>
   );
 }
@@ -124,5 +122,28 @@ function Meta({ parts }: { parts: string[] }) {
     <span className="smeta small muted">
       {parts.map((p, i) => <Fragment key={i}>{i > 0 && " · "}<span>{p}</span></Fragment>)}
     </span>
+  );
+}
+
+/** Your province, up top: where it stands and who it is chasing (or holding off). */
+function ProvincePride({ row, ranked, stage }: { row: ProvinceRow; ranked: ProvinceRow[]; stage: Stage }) {
+  const score = Number(row.score);
+  const at = 1 + ranked.filter((x) => Number(x.score) > score).length;
+  const above = ranked.filter((x) => Number(x.score) > score).sort((a, b) => Number(a.score) - Number(b.score))[0];
+  const below = ranked.filter((x) => x.province !== row.province && Number(x.score) < score).sort((a, b) => Number(b.score) - Number(a.score))[0];
+  const gap = (n: number) => n.toFixed(1);
+  const ord = (n: number) => `${n}${["th", "st", "nd", "rd"][(n % 100 >= 11 && n % 100 <= 13) ? 0 : Math.min(n % 10, 4) % 4] ?? "th"}`;
+  const line = above ? <>Chasing <b>{provinceName(above.province)}</b>: <b>{gap(Number(above.score) - score)}</b> points to find.</>
+    : below ? <>Out in front. <b>{provinceName(below.province)}</b> is <b>{gap(score - Number(below.score))}</b> behind. Hold the line.</>
+    : <>Out in front. Hold the line.</>;
+  return (
+    <div className={`pride${at === 1 ? " lead" : ""}`}>
+      <ProvinceScene code={row.province} />
+      <div className="pride-text">
+        <span className="pride-kicker">Your province · {stage === "high" ? "high" : "primary"} schools</span>
+        <span className="pride-name">{provinceName(row.province)}</span>
+        <span className="pride-line"><strong className="pride-place">{ord(at)}</strong> of {ranked.length}. {line}</span>
+      </div>
+    </div>
   );
 }

@@ -31,6 +31,7 @@ import { RemovedPlayers, RemovePlayer, runsLeague } from "@/components/league-ad
 import { fullName, useSchoolLabels } from "@/lib/names";
 import { ord } from "@/lib/growth";
 import { roundText } from "@/lib/format";
+import { Tabs } from "@/components/tabs";
 
 const PARTS = [
   ["res_pts", "RES"], ["mar_pts", "MAR"], ["cls_pts", "CLS"], ["exa_pts", "EXA"], ["banker_pts", "BNK"],
@@ -142,12 +143,8 @@ function Leaderboard() {
       {sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
-      <div className="scope-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
-        <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
-        <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
-        <button type="button" role="tab" aria-selected={view === "provinces"} className={view === "provinces" ? "on" : ""} onClick={() => setView("provinces")}>Provinces</button>
-      </div>
+      <Tabs label="Who you're compared with" items={[["overall", "This league"], ["everyone", "Everyone"], ["schools", "Schools"], ["provinces", "Provinces"]] as const}
+        value={view === "round" ? "overall" : view as "overall" | "everyone" | "schools" | "provinces"} onPick={setView} />
       {view !== "schools" && view !== "provinces" && view !== "everyone" && <CountsFrom />}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && !pool!.school_emis && pool!.created_by === me.user_id && (
