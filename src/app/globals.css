@@ -2083,3 +2083,6 @@ td { padding: 7px 8px; }
 .ground-rules li b { color: var(--text); font-weight: 800; }
 .ground-rules + .gr-link { margin-top: 10px; }
 .pride .pscene { width: 64px; height: 44px; object-fit: cover; border-radius: 8px; flex: none; }
+/* The small tabs share the full width too (This tournament / All tournaments, High / Primary). */
+.stage-tabs button, .stage-tabs button:hover { flex: 1 1 0; white-space: nowrap; }
+.notify .pref .stage-tabs button { flex: 0 0 auto; }
