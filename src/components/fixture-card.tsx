@@ -15,11 +15,13 @@ export function FixtureCard({ m, teams, competition, round }: { m: Match; teams:
   return (
     <div className="fixture">
       <div className="fmeta">
-        <strong>{time(m.kickoff_at)}</strong>
-        {m.venue && <span>{m.venue}</span>}
-        {m.status === "POSTP" && <span className="badge loss">postponed</span>}
-        {m.status === "INTR" && <span className="badge draw">interrupted, score stood</span>}
-        {competition && <span className="fcomp"><TournamentLogo competition={competition} size={16} />{competition.short_name}{round ? ` · ${round}` : ""}</span>}
+        <div className="frow">
+          <strong>{time(m.kickoff_at)}</strong>
+          {m.venue && <span className="fvenue">{m.venue}</span>}
+          {m.status === "POSTP" && <span className="badge loss">postponed</span>}
+          {m.status === "INTR" && <span className="badge draw">interrupted, score stood</span>}
+        </div>
+        {competition && <div className="fcomp"><TournamentLogo competition={competition} size={16} /><span>{competition.short_name}{round ? ` · ${round}` : ""}</span></div>}
       </div>
       <div className="fside">
         <span className="ha home">Home</span>
