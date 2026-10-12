@@ -9,6 +9,8 @@ import type { School } from "@/lib/types";
 export const SCHOOL_TRIAL = true;
 /** Players a school needs in one round for that round to count. */
 export const SCHOOL_MINIMUM = SCHOOL_TRIAL ? 1 : 10;
+/** Players a class year needs before it is ranked against the other years. Matches public.class_ranked_minimum(). */
+export const CLASS_MINIMUM = SCHOOL_TRIAL ? 1 : 3;
 
 /** Who at a school looks after its account. */
 export const ROLES: [string, string][] = [

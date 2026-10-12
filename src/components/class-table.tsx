@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { readCache, writeCache } from "@/lib/cache";
 import { ShareMomentButton } from "@/components/share-moment";
 import { supabase } from "@/lib/supabase";
+import { CLASS_MINIMUM } from "@/lib/school";
 
 interface ClassRow { school_year: number; players: number; points: number | null; average: number | null; mine: boolean }
-
-const RANKED_AT = 3;
 
 /** The school a table is for: a whole-school league, or a school page's school, stage and tournament. */
 type Source = { poolId: number } | { emis: string; stage: "primary" | "high"; season: string; school: string };
@@ -63,7 +62,9 @@ export function ClassTable(src: Source) {
       )}
       {waiting.length > 0 && (
         <p className="small muted classes-waiting">
-          Not ranked yet: {waiting.map((r) => `${r.mine ? "your class, " : ""}${r.school_year} (${r.players} of ${RANKED_AT})`).join(", ")}.
+          {CLASS_MINIMUM === 1
+            ? <>Not playing yet: {waiting.map((r) => `${r.mine ? "your class, " : ""}${r.school_year}`).join(", ")}.</>
+            : <>Not ranked yet: {waiting.map((r) => `${r.mine ? "your class, " : ""}${r.school_year} (${r.players} of ${CLASS_MINIMUM})`).join(", ")}.</>}
         </p>
       )}
       <p className="small muted">Each class counts its best 5 callers this tournament. An empty place counts as 0.</p>
