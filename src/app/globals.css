@@ -1883,6 +1883,30 @@ button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 
 .tabout-facts dt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); margin-bottom: 4px; }
 .tabout-facts dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text); }
 
+/* Combined calendar: which tournament a match belongs to, on the match's own line. */
+.fmeta .fcomp { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.fmeta { flex-wrap: wrap; }
+
+/* Month view: tap a day with matches; dots show which tournaments play on it. */
+.cal { padding: 14px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.cal-head h2 { margin: 0; font-size: 17px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-dow { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-bottom: 4px; }
+.cal-day { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; aspect-ratio: 1 / 1.05; border-radius: 10px; color: var(--muted); font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent; }
+.cal-day.has { cursor: pointer; color: var(--text); background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07); font-weight: 650; }
+.cal-day.has:hover { background: rgba(255, 255, 255, .09); }
+.cal-day.today .cal-n { color: var(--accent); }
+.cal-day.today:not(.has) { box-shadow: inset 0 0 0 1px var(--accent-dim); }
+.cal-day.on { background: var(--accent); color: #07140e; box-shadow: none; }
+.cal-day.on .cal-n { color: #07140e; }
+.cal-day:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cal-n { font-size: 15px; line-height: 1; }
+.cal-dots { display: flex; gap: 3px; height: 6px; }
+.cal-dots i, .cal-key i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
+.cal-day.on .cal-dots i { background: #07140e !important; }
+.cal-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 12px 0 0; color: var(--muted); }
+.cal-key span { display: inline-flex; align-items: center; gap: 6px; }
 /* Rankings with some pride: your school up top with who it is chasing, and the podium picked out in gold, silver and bronze. */
 .pride { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; padding: 14px; border-radius: var(--radius); position: relative; overflow: hidden;
   border: 1px solid var(--line); border-top: 2px solid var(--gold);
