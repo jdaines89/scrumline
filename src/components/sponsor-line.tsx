@@ -37,8 +37,8 @@ export function usePoolSponsor(): PoolSponsor | null {
 
 /**
  * One quiet line under the pool name. Nothing at all when the pool has no
- * sponsor. Compact (the chat header) is just the logo and name, sitting beside
- * the pool name; a tap opens the offer and profile.
+ * sponsor. Compact (the chat header) is just the logo, so the league's full
+ * name keeps the room; a tap opens who it is, the offer and profile.
  */
 export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null; compact?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -50,10 +50,11 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
       <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
         aria-label={`Sponsored by ${sponsor.display_name}`}>
         <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
-        <span><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b>{isTrial(sponsor.booking_id) && <TrialTag />}</span>
       </button>
       {open && (
         <div className="sp-pop">
+          <div><small>{sponsor.round ? `${roundName(sponsor.round)} sponsored by` : "Sponsored by"}</small>{" "}
+            <b>{sponsor.display_name}</b>{isTrial(sponsor.booking_id) && <TrialTag />}</div>
           {sponsor.offer && (sponsor.link
             ? <a href={sponsor.link} target="_blank" rel="noopener sponsored" onClick={() => sponsorEvent(sponsor.booking_id, "tap")}>{sponsor.offer} ›</a>
             : <div>{sponsor.offer}</div>)}
