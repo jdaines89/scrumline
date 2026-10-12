@@ -2040,3 +2040,32 @@ td { padding: 7px 8px; }
   font-size: 19px; font-variant-numeric: tabular-nums; text-shadow: none;
 }
 .provinces li.p1 .srow .btotal { color: var(--gold); }
+/* "Top schools" stays readable once tapped: a phone keeps :hover after a tap,
+   and the green hover would put dark text on the dark chip. */
+.sch-how-btn:hover, .provinces .srow .srow-how:hover { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+.provinces .srow .srow-how:hover { background: rgba(17, 36, 29, 0.85); }
+.sch-how-btn[aria-expanded="true"] { border-color: var(--accent-dim); color: var(--accent); }
+/* Switching tables keeps the page's height, so the scroll position doesn't jump. */
+.view-area { min-height: 70vh; }
+/* High / Primary: quiet underlined tabs under the scope bar, so the top of the
+   table reads as one bar and a choice inside it, not two stacked pill bars. */
+.stage-tabs { display: flex; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+.stage-tabs button, .stage-tabs button:hover {
+  flex: 1; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; margin-bottom: -1px;
+  padding: 6px 0 10px; font-size: 14px; font-weight: 600; color: var(--muted);
+}
+.stage-tabs button:hover { color: var(--text); }
+.stage-tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+/* Who you're compared with: plain underlined tabs, the same family as High / Primary
+   but a step bigger, instead of a pill box. */
+.scope-tabs { display: flex; gap: 2px; margin: 4px 0 12px; border-bottom: 1px solid var(--line); }
+.scope-tabs button, .scope-tabs button:hover {
+  flex: 1 1 auto; background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; margin-bottom: -1px;
+  padding: 8px 6px 11px; font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap;
+}
+.scope-tabs button:hover { color: var(--text); }
+.scope-tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+.scope-tabs + .stage-tabs, .scope-tabs ~ .view-area .stage-tabs { border-bottom-color: transparent; }
+.stage-tabs { gap: 8px; }
+.stage-tabs button, .stage-tabs button:hover { flex: 0 0 auto; padding: 4px 12px; font-size: 13px; border-bottom-width: 2px; }
+@media (max-width: 380px) { .scope-tabs button, .scope-tabs button:hover { font-size: 13px; padding-left: 3px; padding-right: 3px; } }
