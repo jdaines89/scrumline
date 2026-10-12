@@ -1718,3 +1718,6 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 
 .srow .srow-how { grid-column: 3 / 5; grid-row: 3; justify-self: start; margin-top: 6px; }
 .sch-more { background: none; border: 0; padding: 0; font: inherit; color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
+.racekey { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+.racekey li.mine { font-weight: 700; }
+.racekey li span { display: inline-block; min-width: 1.6em; color: var(--muted); }

@@ -9,26 +9,16 @@ import { roundShort, roundText } from "@/lib/format";
 import { countsFrom } from "@/lib/rounds";
 
 interface Scored { entry_id: number; round: number; total_pts: number }
-interface Line { user_id: string; name: string; mine: boolean; pts: number[] }
+export interface Line { user_id: string; name: string; mine: boolean; pts: number[] }
 
 const FEW = 6;
 const H = 200, PAD = { l: 30, r: 96, t: 10, b: 24 };
+const PAD_RANK = { l: 30, r: 56, t: 10, b: 24 };
 
 /** Running totals round by round: your line in colour, everyone else's quiet behind it. */
 export function PoolRace({ rows }: { rows: LeaderRow[] }) {
   const { pool, season, matches, me } = useLeague();
   const [scored, setScored] = useState<Scored[]>(() => readCache<Scored[]>(`race:${pool!.id}`) ?? []);
-  const [at, setAt] = useState<number | null>(null);
-  // Drawn at the box's real width, so text stays the same size on a phone and a laptop.
-  const box = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(340);
-  useEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [rows.length, matches.length]);
   const entries = rows.filter((r) => r.entry_id !== null);
   const ids = entries.map((r) => r.entry_id!).join(",");
   // A league that counts from a later round starts its race there.
@@ -50,10 +40,27 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
     const pts = [0, ...rounds.map((rd) => (run += scored.filter((s) => s.entry_id === r.entry_id && s.round === rd).reduce((a, s) => a + s.total_pts, 0)))];
     return { user_id: r.user_id, name: r.manager, mine: r.user_id === me.user_id, pts };
   });
+  return <RaceChart lines={lines} rounds={rounds} what="players" />;
+}
+
+/** The drawing: a line per player or school, with the leader and the people around you named. */
+export function RaceChart({ lines, rounds, what, byRank }: { lines: Line[]; rounds: number[]; what: string; byRank?: boolean }) {
+  const [at, setAt] = useState<number | null>(null);
+  // Drawn at the box's real width, so text stays the same size on a phone and a laptop.
+  const box = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(340);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [lines.length, rounds.length]);
+  const PADS = byRank ? PAD_RANK : PAD;
   const top = niceMax(Math.max(10, ...lines.flatMap((l) => l.pts)));
   const n = rounds.length;
-  const x = (i: number) => PAD.l + (i / n) * (W - PAD.l - PAD.r);
-  const y = (v: number) => H - PAD.b - (v / top) * (H - PAD.t - PAD.b);
+  const x = (i: number) => PADS.l + (i / n) * (W - PADS.l - PADS.r);
+  const y = (v: number) => H - PADS.b - (v / top) * (H - PADS.t - PADS.b);
   const ticks = [0, top / 2, top];
   // Yours drawn last so it sits on top.
   const ordered = [...lines].sort((a, b) => Number(a.mine) - Number(b.mine));
@@ -62,8 +69,8 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
   const many = lines.length > FEW;
   const standing = [...lines].sort((a, b) => b.pts[n] - a.pts[n] || a.name.localeCompare(b.name));
   const myAt = standing.findIndex((l) => l.mine);
-  const named = many ? new Set([standing[0], standing[myAt - 1], standing[myAt], standing[myAt + 1]].filter(Boolean).map((l) => l!.user_id)) : null;
-  const labels = spread(lines.filter((l) => !named || named.has(l.user_id)).map((l) => ({ l, y: y(l.pts[n]) })), 15, PAD.t, H - PAD.b);
+  const named = many && !byRank ? new Set([standing[0], standing[myAt - 1], standing[myAt], standing[myAt + 1]].filter(Boolean).map((l) => l!.user_id)) : null;
+  const labels = spread(lines.filter((l) => !named || named.has(l.user_id)).map((l) => ({ l, y: y(l.pts[n]) })), 15, PADS.t, H - PADS.b);
   const rankOf = (l: Line) => 1 + lines.filter((o) => o.pts[n] > l.pts[n]).length;
   const col = at ?? null;
   const atAll = col === null ? [] : [...lines].sort((a, b) => b.pts[col] - a.pts[col] || a.name.localeCompare(b.name));
@@ -78,18 +85,18 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
         Points race, round by round{many && myAt >= 0 ? ` · you're ${ordinal(rankOf(standing[myAt]))} of ${lines.length}` : ""}
       </figcaption>
       <div className="racebox" ref={box}>
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Running points for ${lines.length} players over ${n} round${n === 1 ? "" : "s"}`}
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Running points for ${lines.length} ${what} over ${n} round${n === 1 ? "" : "s"}`}
           onMouseLeave={() => setAt(null)}>
           {ticks.map((t) => (
             <g key={t}>
-              <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} className="grid" />
-              <text x={PAD.l - 6} y={y(t) + 4} textAnchor="end" className="tick">{Math.round(t)}</text>
+              <line x1={PADS.l} x2={W - PADS.r} y1={y(t)} y2={y(t)} className="grid" />
+              <text x={PADS.l - 6} y={y(t) + 4} textAnchor="end" className="tick">{Math.round(t)}</text>
             </g>
           ))}
           {[0, ...rounds].map((rd, i) => (
             <text key={i} x={x(i)} y={H - 6} textAnchor="middle" className="tick">{i === 0 ? "Start" : roundShort(rd)}</text>
           ))}
-          {col !== null && <line x1={x(col)} x2={x(col)} y1={PAD.t} y2={H - PAD.b} className="cross" />}
+          {col !== null && <line x1={x(col)} x2={x(col)} y1={PADS.t} y2={H - PADS.b} className="cross" />}
           {ordered.map((l) => (
             <g key={l.user_id} className={`rl${l.mine ? " mine" : ""}${many ? " many" : ""}`}>
               <polyline points={l.pts.map((v, i) => `${x(i)},${y(v)}`).join(" ")} />
@@ -98,12 +105,12 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
           ))}
           {labels.map(({ l, y: ly }) => (
             <text key={l.user_id} x={x(n) + 10} y={ly + 4} className={l.mine ? "rlabel mine" : "rlabel"}>
-              {many && !l.mine ? `${rankOf(l)}. ` : ""}{l.mine ? "You" : l.name} {l.pts[n]}
+              {byRank ? `${rankOf(l)}. ` : many && !l.mine ? `${rankOf(l)}. ` : ""}{byRank ? "" : l.mine ? "You" : l.name} {l.pts[n]}
             </text>
           ))}
           {/* Wide invisible columns: hover or tap a round to see where everyone stood. */}
           {[0, ...rounds].map((_, i) => (
-            <rect key={i} x={x(i) - (W - PAD.l - PAD.r) / n / 2} y={0} width={(W - PAD.l - PAD.r) / n} height={H}
+            <rect key={i} x={x(i) - (W - PADS.l - PADS.r) / n / 2} y={0} width={(W - PADS.l - PADS.r) / n} height={H}
               fill="transparent" onMouseEnter={() => setAt(i)} onClick={() => setAt(at === i ? null : i)} />
           ))}
         </svg>
@@ -112,12 +119,17 @@ export function PoolRace({ rows }: { rows: LeaderRow[] }) {
             <strong>{col === 0 ? "Start" : `After ${roundText(rounds[col - 1])}`}</strong>
             {atRows.map(({ l, rank }) => (
               <div key={l.user_id} className={l.mine ? "mine" : ""}>
-                <span>{many ? `${rank}. ` : ""}{l.mine ? "You" : l.name}</span><span>{l.pts[col]}</span>
+                <span>{many || byRank ? `${rank}. ` : ""}{l.mine && !byRank ? "You" : l.name}</span><span>{l.pts[col]}</span>
               </div>
             ))}
           </div>
         )}
       </div>
+      {byRank && (
+        <ol className="racekey small">
+          {standing.map((l) => <li key={l.user_id} className={l.mine ? "mine" : ""}><span>{rankOf(l)}.</span> {l.name}</li>)}
+        </ol>
+      )}
     </figure>
   );
 }

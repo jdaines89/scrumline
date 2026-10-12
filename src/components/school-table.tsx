@@ -7,6 +7,7 @@ import { useLeague } from "@/components/league";
 import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { SchoolRace } from "@/components/school-race";
 import { SchoolBreakdown } from "@/components/school-breakdown";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
@@ -59,6 +60,7 @@ export function SchoolTable() {
         <p className="muted">No one has added a {stage} school yet. Add yours on your profile.</p>
       ) : (
         <>
+          {ranked.length > 1 && <SchoolRace season={season.id} stage={stage} />}
           {ranked.length > 0 && (
             <ol className="board schools-table">
               {ranked.map((r) => (
