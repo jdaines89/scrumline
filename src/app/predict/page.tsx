@@ -230,8 +230,8 @@ function Predict() {
       tellLeagues = leagues;
       const many = leagues.length > 1;
       steps.push({
-        title: many ? (bm ? "Tell your leagues your Banker" : "Tell your leagues you're in") : bm ? `Tell ${poolTitle(talk)} your Banker` : `Tell ${poolTitle(talk)} you're in`,
-        detail: many ? "Choose which league to tell" : bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the league chat",
+        title: many ? "Select your league" : bm ? `Tell ${poolTitle(talk)} your Banker` : `Tell ${poolTitle(talk)} you're in`,
+        detail: many ? (bm ? "Choose where to tell them your Banker" : "Choose where to tell them you're in") : bm && bp ? `${teams.get(bm.home_team_id)?.display_name} ${bp.home_score}–${bp.away_score} ${teams.get(bm.away_team_id)?.display_name}, counting double` : "A message is ready to send in the league chat",
         ...(many ? { onClick: () => setTellOpen(true) } : { href: `/chat/?pool=${talk.id}&say=${encodeURIComponent(line)}` }),
       });
     }
@@ -426,8 +426,8 @@ function Predict() {
         {allIn && <AllSet round={round} firstKick={firstKick} steps={steps} />}
         {tellOpen && allIn && (
           <div className="wip-dim" onClick={() => setTellOpen(false)}>
-            <div className="wip-sheet" role="dialog" aria-modal="true" aria-label="Choose a league" onClick={(e) => e.stopPropagation()}>
-              <h2>Tell which league?</h2>
+            <div className="wip-sheet" role="dialog" aria-modal="true" aria-label="Select your league" onClick={(e) => e.stopPropagation()}>
+              <h2>Select your league</h2>
               <div className="nextsteps">
                 {tellLeagues.map((l) => (
                   <Link key={l.id} className="nextstep" href={`/chat/?pool=${l.id}&say=${encodeURIComponent(tellLine)}`}>
