@@ -7,7 +7,7 @@ import { achievements, type Achievement, type ScoredCall } from "@/lib/achieveme
 import { readCache, writeCache } from "@/lib/cache";
 import { rewardTag, type MyReward } from "@/lib/rewards";
 import { supabase } from "@/lib/supabase";
-import { TrialTag } from "@/components/sponsor-tile";
+import { SponsorAbout, SponsorTile, TrialTag } from "@/components/sponsor-tile";
 import { trialRewards, usePreview } from "@/lib/preview";
 
 // Earned badges this phone has already shown off, so each pops only the first time.
@@ -21,6 +21,7 @@ function Achievements() {
   const [trialClaimed, setTrialClaimed] = useState<string[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [biz, setBiz] = useState(false);
   const loadRewards = () => { supabase.rpc("my_rewards", { p_season: season.id }).then(({ data }) => setRewards((data ?? []) as MyReward[])); };
   useEffect(loadRewards, [season.id]); // eslint-disable-line react-hooks/exhaustive-deps
   async function claim(r: MyReward) {
@@ -61,7 +62,7 @@ function Achievements() {
       <h2>{calls ? `${list.filter((a) => a.earned).length} of ${list.length} unlocked` : " "}</h2>
       <div className="achgrid">
         {list.map((a) => (
-          <button key={a.key} type="button" className="achtile" onClick={() => setOpen(a)} aria-label={`${a.title}: ${a.earned ? "unlocked" : a.note}`}>
+          <button key={a.key} type="button" className="achtile" onClick={() => { setOpen(a); setBiz(false); }} aria-label={`${a.title}: ${a.earned ? "unlocked" : a.note}`}>
             <AchBadge k={a.key} have={a.have} goal={a.goal} earned={a.earned} play={fresh.includes(a.key)} />
             <strong>{a.title}</strong>
             <span className="small muted">{a.earned ? "Unlocked" : a.goal > 1 ? `${a.have} of ${a.goal}` : "Locked"}</span>
@@ -82,7 +83,14 @@ function Achievements() {
               return (
                 <div className="ach-reward">
                   <strong>{r.title}</strong>
-                  {r.sponsor_name && <span className="small muted">From {r.sponsor_name}{r.campaign_id < 0 && <TrialTag />}</span>}
+                  {r.sponsor_name && (
+                    <button type="button" className="ach-biz" aria-expanded={biz} onClick={() => setBiz(!biz)}>
+                      <SponsorTile name={r.sponsor_name} logo={r.sponsor_logo ?? null} />
+                      <span><small>From</small><b>{r.sponsor_name}{r.campaign_id < 0 && <TrialTag />}</b></span>
+                      {(r.sponsor_about || r.sponsor_website) && <span className="ach-biz-go" aria-hidden="true">›</span>}
+                    </button>
+                  )}
+                  {biz && <SponsorAbout about={r.sponsor_about ?? null} website={r.sponsor_website ?? null} />}
                   {r.claimed && r.code ? (
                     <>
                       <code className="ach-code">{r.code}</code>

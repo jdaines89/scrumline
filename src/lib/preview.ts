@@ -131,11 +131,14 @@ export const TRIAL_PROJECT = { id: -1, title: "15 match balls and a kit bag", st
 export function trialRewards(earned: (key: string) => boolean, claimed: string[]): MyReward[] {
   const terms = "Trial reward: the business and code are made up, so there is nothing to collect.";
   return [
-    { campaign_id: -1, title: "Free coffee", sponsor_name: "Touchline Coffee", achievement_key: "sharpshooter", code: "TRIAL-COFFEE" },
-    { campaign_id: -2, title: "R200 off a service", sponsor_name: "Front Row Motors", achievement_key: "clean-sweep", code: "TRIAL-SERVICE" },
-    { campaign_id: -3, title: "Free eye test", sponsor_name: "Scrumcap Optometrists", achievement_key: "banker-bang", code: "TRIAL-EYES" },
+    { campaign_id: -1, title: "Free coffee", sponsor_name: "Touchline Coffee", achievement_key: "sharpshooter", code: "TRIAL-COFFEE",
+      sponsor_about: "A made-up coffee shop for the Scrumline trial. Flat whites, rusks and the game on the big screen." },
+    { campaign_id: -2, title: "R200 off a service", sponsor_name: "Front Row Motors", achievement_key: "clean-sweep", code: "TRIAL-SERVICE",
+      sponsor_about: ABOUT },
+    { campaign_id: -3, title: "Free eye test", sponsor_name: "Scrumcap Optometrists", achievement_key: "banker-bang", code: "TRIAL-EYES",
+      sponsor_about: "Made-up optometrists for the Scrumline trial. Eye tests, frames and contact lenses." },
   ].map((r) => {
     const done = claimed.includes(r.achievement_key);
-    return { ...r, terms, ends_at: null, remaining: 25, earned: earned(r.achievement_key), claimed: done, code: done ? r.code : null };
+    return { ...r, sponsor_logo: null, sponsor_website: null, terms, ends_at: null, remaining: 25, earned: earned(r.achievement_key), claimed: done, code: done ? r.code : null };
   });
 }

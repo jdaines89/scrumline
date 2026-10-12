@@ -1774,6 +1774,15 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 @media (prefers-reduced-motion: reduce) { .achbadge.play, .achbadge.play .ab-glint { animation: none; } }
 .ach-tag { color: var(--gold); font-weight: 600; }
 .ach-reward { display: grid; justify-items: center; gap: 6px; margin-top: 4px; padding: 12px; width: 100%; border: 1px solid var(--gold); border-radius: 10px; }
+/* The business behind a badge reward: logo and name, tap for who they are */
+.ach-biz { display: flex; align-items: center; gap: 10px; width: 100%; margin: 2px 0; padding: 8px 10px; text-align: left;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: inherit; cursor: pointer; }
+.ach-biz > span:not(.ach-biz-go) { display: grid; min-width: 0; flex: 1; }
+.ach-biz small { font-size: 12px; color: var(--muted); }
+.ach-biz b { font-size: 15px; font-weight: 600; }
+.ach-biz-go { flex: none; color: var(--muted); font-size: 18px; transition: transform .15s; }
+.ach-biz[aria-expanded="true"] .ach-biz-go { transform: rotate(90deg); }
+.ach-reward .sp-about { width: 100%; text-align: left; }
 .ach-code { font-size: 20px; font-weight: 800; letter-spacing: .12em; color: var(--gold); }
 .adm-form, .adm-card { display: grid; gap: 12px; }
 .adm-form label, .adm-card label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }

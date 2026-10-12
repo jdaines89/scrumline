@@ -2,6 +2,8 @@
 export interface MyReward {
   campaign_id: number; title: string; sponsor_name: string | null; achievement_key: string; terms: string | null;
   ends_at: string | null; remaining: number; earned: boolean; claimed: boolean; code: string | null;
+  /** Who the business is, when known: shown under the reward with its logo. */
+  sponsor_logo?: string | null; sponsor_about?: string | null; sponsor_website?: string | null;
 }
 
 /** What the tile under a badge says about its reward, or null when there isn't one. */
