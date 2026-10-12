@@ -2017,3 +2017,19 @@ button.lgc-invite, button.lgc-invite:hover { padding: 11px 14px; }
 .school-card { padding: 14px; gap: 10px; }
 .school-card-name { font-size: 16px; }
 td { padding: 7px 8px; }
+/* Each province's row carries its own picture, fading in from the right
+   behind the score, so the table reads like a collage of the country. */
+.provinces li { position: relative; }
+.provinces .srow { position: relative; isolation: isolate; }
+.provinces .srow > :not(.pscene) { position: relative; z-index: 1; }
+.provinces .pscene {
+  position: absolute; z-index: 0; top: -11px; bottom: -11px; right: -12px; width: min(82%, 420px); height: calc(100% + 22px); max-width: none;
+  object-fit: cover; object-position: center 60%; opacity: 0.9; pointer-events: none;
+  filter: brightness(0.55) saturate(1.1);
+  -webkit-mask-image: linear-gradient(90deg, transparent 15%, rgba(0, 0, 0, 0.55) 50%, #000 85%);
+  mask-image: linear-gradient(90deg, transparent 15%, rgba(0, 0, 0, 0.55) 50%, #000 85%);
+}
+.provinces.waiting .pscene { opacity: 0.7; }
+.provinces .srow .srow-how { background: rgba(17, 36, 29, 0.85); }
+.provinces .srow .btotal, .provinces .srow .sname { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.6); }
+.provinces .srow .smeta { color: #dce8e2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
