@@ -7,6 +7,7 @@ import { SchoolSearch } from "@/components/school-search";
 import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
 import { pickedSchool, rememberPickedSchool, ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
 import { money } from "@/lib/sponsor";
+import { schoolHref } from "@/lib/crest";
 import { supabase } from "@/lib/supabase";
 import { logEvent } from "@/lib/events";
 import type { School } from "@/lib/types";
@@ -30,6 +31,7 @@ export default function SchoolPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [holder, setHolder] = useState<Holder | null>(null);
   const [crest, setCrest] = useState<string | null>(null);
+  const [partner, setPartner] = useState<{ emis: string; name: string; town: string | null } | null>(null);
 
   const load = useCallback(async () => {
     const acct = await supabase.from("school_accounts").select("emis").maybeSingle();
@@ -45,6 +47,8 @@ export default function SchoolPage() {
     setCrest((c.data?.image_path as string | undefined) ?? null);
     const h = await supabase.rpc("school_claim_holder", { p_emis: acct.data.emis });
     setHolder(((h.data ?? []) as Holder[])[0] ?? null);
+    const pt = await supabase.rpc("school_partner", { p_emis: acct.data.emis });
+    setPartner(((pt.data ?? []) as { emis: string; name: string; town: string | null }[])[0] ?? null);
     setPayouts((p.data ?? []) as Payout[]);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -133,6 +137,13 @@ export default function SchoolPage() {
               ? `Every sponsor of ${d.name} also gives 20% to ${d.partner_name}, a no-fee school${d.partner_town ? ` in ${d.partner_town}` : " nearby"}.`
               : `Every sponsor of ${d.name} also gives 20% to a no-fee school nearby. We're still pairing yours.`}
         </p>
+        {!preview && !d.no_fee && partner && (
+          <Link href={schoolHref(partner.emis)} className="sch-partner-row" style={{ marginTop: 12 }}>
+            <span className="sch-partner-text"><b>{partner.name}</b>
+              {partner.town && <span className="small muted">{partner.town}</span>}</span>
+            <span className="sch-chev" aria-hidden="true">›</span>
+          </Link>
+        )}
         {claimed && d.account_last4 && <p className="small muted" style={{ marginBottom: 0 }}>Paid into {d.bank_name} ··{d.account_last4}, {d.account_name}. To change it, email us.</p>}
       </div>
     </>
