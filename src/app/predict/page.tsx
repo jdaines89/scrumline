@@ -353,7 +353,7 @@ function Predict() {
           return (
             <div key={m.id} className={p?.is_banker ? "match banker" : "match"} style={{ "--hc": h.colour ?? "transparent", "--ac": a.colour ?? "transparent" } as React.CSSProperties}>
               <div className="mhead">
-                <span>{kickoff(m.kickoff_at)} · {m.venue}</span>
+                <span className="mwhen"><strong>{kickoff(m.kickoff_at)}</strong>{m.venue && <span className="mvenue">{m.venue}</span>}</span>
                 <span className="mactions">
                   {p?.is_banker ? <span className="bank on">Banker ×2</span>
                     : !shut && !bankerShut && p ? <button type="button" className="bank" onClick={() => back(m.id)}>Make Banker</button> : null}
@@ -363,7 +363,13 @@ function Predict() {
                 </span>
               </div>
               <div className="pred">
-                <span className="pteam"><span className="ha home">Home</span><Crest team={h} size={30} /></span>
+                <span className="pside">
+                  <span className="ha home">Home</span>
+                  <span className="pcrest home"><Crest team={h} size={46} /></span>
+                  <strong className="pname">{h.display_name}</strong>
+                  <Form f={form.get(h.id)} align="center" />
+                </span>
+                <div className="pmid">
                 {final ? (
                   <div className="pfinal" aria-label={`Full time: ${h.display_name} ${m.home_score}, ${a.display_name} ${m.away_score}`}>
                     <span className="pfinal-k">Full time</span>
@@ -376,11 +382,13 @@ function Predict() {
                 <input className={`pbox${bad(d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[1]}
                   aria-label={`${a.display_name} score`} onChange={(e) => save(m.id, d[0], e.target.value)} onBlur={() => saver.current!.flush(m.id)} />
                 </>}
-                <span className="pteam away"><span className="ha">Away</span><Crest team={a} size={30} /></span>
-              </div>
-              <div className="pnames">
-                <span><strong>{h.display_name}</strong><Form f={form.get(h.id)} /></span>
-                <span className="away"><strong>{a.display_name}</strong><Form f={form.get(a.id)} align="right" /></span>
+                </div>
+                <span className="pside">
+                  <span className="ha">Away</span>
+                  <span className="pcrest away"><Crest team={a} size={46} /></span>
+                  <strong className="pname">{a.display_name}</strong>
+                  <Form f={form.get(a.id)} align="center" />
+                </span>
               </div>
               {!shut && saveState[m.id] && !(bad(d[0]) || bad(d[1])) && (
                 saveState[m.id].s === "failed"

@@ -316,17 +316,18 @@ export default function PoolsPage() {
 
   return (
     <>
-      <div className="card">
-        <h2>Your leagues</h2>
-        <p className="sub">Your calls count in every league you&apos;re in.</p>
+      <div className="lgpage">
+        <div className="lg-head">
+          <h2>Your leagues</h2>
+          <p className="sub">Your calls count in every league you&apos;re in.</p>
+        </div>
         <WaitingInvites onJoined={async (id) => { await reloadPools(); setPool(id); }} />
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code someone sent you.</p>}
         {mateLeagues.length > 0 && <>
-          <div className="lg-sect">Your leagues</div>
           <div className="lg">{mateLeagues.map((p) => card(p))}</div>
         </>}
         {(schoolLeagues.length > 0 || looseClasses.length > 0) && <>
-          <div className="lg-sect">Schools</div>
+          <div className="lg-sect">Your schools</div>
           <div className="lg">
             {schoolLeagues.map((p) => {
               const c = classOf(p);
@@ -347,14 +348,14 @@ export default function PoolsPage() {
           </div>
         </>}
         {noSchool && schoolLeagues.length === 0 && looseClasses.length === 0 && <>
-          <div className="lg-sect">Schools</div>
+          <div className="lg-sect">Your schools</div>
           <div className="lg-panel lg-school-empty">
             <p>Add the school you went to and you&apos;ll join its league and your class&apos;s league, playing for your school against old schoolmates.</p>
             <button type="button" onClick={() => setAddingSchool(true)}>Add your school</button>
           </div>
         </>}
         <div className="lg-actions">
-          <button type="button" className={open === "start" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
+          <button type="button" className="lg-start" onClick={() => { setMsg(null); setOpen(open === "start" ? null : "start"); }}>Start a league</button>
           <button type="button" className={open === "join" ? "" : "ghost"} onClick={() => { setMsg(null); setOpen(open === "join" ? null : "join"); }}>Join with a code</button>
         </div>
         {made && (

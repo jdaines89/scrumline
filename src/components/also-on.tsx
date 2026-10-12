@@ -25,15 +25,31 @@ export function AlsoOn() {
 
   const now = Date.now();
   const mine = matches.find((m) => new Date(m.kickoff_at).getTime() > now)?.kickoff_at ?? null;
-  if (!worthSwitching(mine, other, now)) return null;
-  const target = seasons.find((s) => s.id === other!.season);
-  if (!target) return null;
+  const shown = worthSwitching(mine, other, now) ? seasons.find((s) => s.id === other!.season) ?? null : null;
+  // Tournaments starting within two weeks get a line from their start date, so a cup shows the day it's loaded
+  // rather than only once it kicks off before the next game here. Worked out from the seasons, so it never pops in.
+  const today = new Date(now).toISOString().slice(0, 10);
+  const fortnight = new Date(now + 14 * 864e5).toISOString().slice(0, 10);
+  const soon = seasons.filter((s) => !s.is_replay && s.id !== season.id && s.id !== shown?.id
+    && s.starts_on && s.starts_on > today && s.starts_on <= fortnight);
+  const soonCard = soon.length > 0 && (
+    <div className="card also-soon">
+      {soon.map((s) => (
+        <div className="also-row" key={s.id}>
+          <p><strong>{s.name}</strong> starts {new Date(`${s.starts_on}T12:00:00Z`).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "numeric", month: "long" })}. Your leagues are in it already.</p>
+          <button type="button" onClick={() => setSeason(s.id)}>Open</button>
+        </div>
+      ))}
+    </div>
+  );
+  if (!shown) return soonCard || null;
+  const target = shown;
   // "the URC", but "the Nations Championship" rather than "the Nations".
   const comp = competitions.get(season.competition_id);
   const here = comp ? (/^[A-Z]+$/.test(comp.short_name) ? comp.short_name : comp.name) : season.name;
   // Only a tournament that has already kicked off can be resting; one still to come simply starts later.
   const started = matches.some((m) => new Date(m.kickoff_at).getTime() <= now);
-  return (
+  return (<>
     <div className="card also-on">
       <p>
         {started
@@ -42,5 +58,6 @@ export function AlsoOn() {
       </p>
       <button type="button" onClick={() => setSeason(target.id)}>Play it</button>
     </div>
-  );
+    {soonCard}
+  </>);
 }

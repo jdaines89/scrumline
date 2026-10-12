@@ -1744,13 +1744,80 @@ body {
 }
 .card h2 { font-size: 19px; font-weight: 700; }
 .season-pick-kicker, .lg-sect, .dkicker, .chatlist-sect, .tc-hi, .how-h, .fx-day, .prize-label, .tsheet-group h3 { color: #d9b75a; }
-/* Each match carries its two teams' jersey colours: a split band on top and
-   a faint wash from each side, so a round reads like a fixture list, not a form. */
+/* Each match carries its two teams' jersey colours: a gradient line on top and
+   the faintest wash from each side, so a round reads like a fixture list, not a form. */
 .match {
   border-color: transparent;
   background:
-    linear-gradient(90deg, var(--hc) 0 50%, var(--ac) 50% 100%) top / 100% 3px no-repeat,
-    linear-gradient(90deg, color-mix(in srgb, var(--hc) 16%, transparent) 0%, transparent 38%, transparent 62%, color-mix(in srgb, var(--ac) 16%, transparent) 100%),
+    linear-gradient(90deg, var(--hc), var(--ac)) top / 100% 3px no-repeat,
+    linear-gradient(90deg, color-mix(in srgb, var(--hc) 7%, transparent) 0%, transparent 30%, transparent 70%, color-mix(in srgb, var(--ac) 7%, transparent) 100%),
     var(--panel-2);
 }
 .match .mhead { background: transparent; }
+.also-soon { display: grid; gap: 12px; }
+.also-row { display: flex; gap: 14px; align-items: center; justify-content: space-between; }
+.also-row p { margin: 0; }
+.also-row button { flex: none; padding: 8px 14px; font-size: 14px; }
+@media (max-width: 560px) { .also-row { flex-direction: column; align-items: stretch; } .also-row button { align-self: flex-end; } }
+
+/* Leagues: one flat card per league (no boxes inside a big box), a rank badge, and the invite as a footer strip. */
+.lgpage { margin-bottom: 16px; }
+.lg-head { margin: 0 2px 14px; }
+.lg-head h2 { margin: 0 0 2px; font-size: 24px; font-weight: 750; letter-spacing: -0.02em; }
+.lg-head .sub { margin: 0; color: var(--muted); font-size: 14px; }
+.lgpage .lg-sect { margin: 26px 2px 10px; font-size: 12px; font-weight: 600; }
+.lgpage .lg { gap: 12px; }
+.lgc, .lg-panel {
+  border: 0; border-radius: 16px; overflow: hidden;
+  background: linear-gradient(180deg, #213e33 0%, var(--panel) 130px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+.lgc { padding: 0; gap: 0; }
+.lgc.on { box-shadow: 0 0 0 1px var(--accent-dim), 0 10px 28px rgba(0, 0, 0, 0.28); }
+.lg-panel .lgc { background: none; box-shadow: none; border-radius: 0; }
+.lg-panel .lgc + .lgc { border-top: 1px solid rgba(167, 192, 180, 0.13); }
+.lg-panel-head { padding: 14px 16px 4px; font-size: 14px; }
+.lg-panel-name { font-weight: 650; }
+button.lgc-main { padding: 14px 16px; flex: 1 1 100%; gap: 14px; box-sizing: border-box; }
+.lgc-rank { flex: none; width: 52px; padding: 7px 0; border-radius: 14px; background: rgba(0, 0, 0, 0.2); font-size: 21px; }
+.lgc-rank small { font-size: 10px; letter-spacing: .02em; }
+.lgc-text strong { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.lgc-chev { font-size: 26px; opacity: .6; }
+button.lgc-invite, button.lgc-invite:hover { flex: 1 1 100%; width: 100%; margin: 0; border: 0; border-top: 1px solid rgba(167, 192, 180, 0.13);
+  border-radius: 0; padding: 12px 16px; background: rgba(53, 201, 138, .09); }
+button.lgc-invite:hover { background: rgba(53, 201, 138, .16); }
+@media (max-width: 560px) { button.lgc-invite { margin: 0; width: 100%; } }
+.lgc-waiting, .lgc-organiser { padding: 10px 16px; border-top: 1px solid rgba(167, 192, 180, 0.13); }
+button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 1px solid rgba(167, 192, 180, 0.13); border-radius: 0; background: rgba(224, 178, 60, .07); box-sizing: border-box; }
+@media (max-width: 560px) { button.lgc-recruit { margin: 0; } }
+.lgc-classneed { padding: 10px 16px 14px; border-top: 1px solid rgba(167, 192, 180, 0.13); }
+.lg-school-empty { padding: 16px; }
+.lgpage .lg-actions { margin-top: 20px; }
+.lgpage .lg-actions button { flex: 1; padding: 13px 16px; font-size: 15px; font-weight: 650; border-radius: 12px; }
+.lgpage .lg-form, .lgpage .lg-made { margin-top: 12px; padding: 16px; border: 0; border-radius: 16px; background: var(--panel); }
+
+/* Predict match card as a scoreboard: both sides as big crests with a glow in their jersey colour,
+   the score boxes large and dead centre, names in full under the crests. */
+.form.center { align-self: center; }
+.match { border-radius: 18px; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 28px rgba(0, 0, 0, 0.28); }
+.mhead { padding: 10px 14px 0; font-size: 12px; align-items: center; }
+.mwhen strong { color: var(--text); font-weight: 650; letter-spacing: .01em; }
+.mvenue { color: var(--muted); }
+.pred { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; padding: 14px 12px 16px; }
+.pside { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; text-align: center; }
+.pside .ha { width: auto; margin: 0; font-size: 10px; }
+.pcrest { display: block; line-height: 0; border-radius: 50%; }
+.pcrest.home { box-shadow: 0 0 30px 2px color-mix(in srgb, var(--hc) 55%, transparent); }
+.pcrest.away { box-shadow: 0 0 30px 2px color-mix(in srgb, var(--ac) 55%, transparent); }
+.pname { font-size: 14px; font-weight: 650; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -0.005em; }
+.pmid { display: flex; align-items: center; gap: 8px; }
+.pmid > .muted { font-size: 22px; font-weight: 300; }
+.pbox { width: 56px !important; height: 62px; border-radius: 14px; font-size: 30px; font-weight: 750; font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(167, 192, 180, 0.22); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) inset; }
+.pbox:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px rgba(224, 178, 60, 0.22); }
+.pbox:disabled { opacity: .85; }
+.pbox.bad { border-color: var(--danger); }
+.match .pfinal-s { font-size: 36px; }
+.match.banker { box-shadow: 0 0 0 1px #8a6f25, 0 10px 28px rgba(0, 0, 0, 0.28); }
+.mwhen { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mvenue { display: block; font-size: 11.5px; }
