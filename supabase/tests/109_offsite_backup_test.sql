@@ -14,7 +14,7 @@ insert into vault.decrypted_secrets (name, decrypted_secret) values ('backup_pas
 select (select body from backup.offsite_payload()) as body \gset
 select pg_temp.check(:'body' <> '' and :'body' not like '%matches%' and :'body' !~ E'\\s', 'the file is encrypted base64 with no readable table names');
 select pg_temp.check((select (pgp_sym_decrypt(decode(:'body', 'base64'), 'a-long-test-passphrase-1234')::jsonb) ? 'matches'), 'the passphrase opens it');
-select pg_temp.check((select tables > 10 and total_rows > 0 and file_name like 'scrumline-backup-%.pgp' from backup.offsite_payload()), 'named by date, with counts');
+select pg_temp.check((select tables > 10 and total_rows > 0 and file_name like 'scrumline-backup-%.pgp.txt' from backup.offsite_payload()), 'named by date, with counts');
 select pg_temp.check(not has_function_privilege('authenticated', 'backup.send_offsite()', 'execute'), 'players cannot send it');
 
 -- the alarm
