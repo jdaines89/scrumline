@@ -19,7 +19,7 @@ import { PrizeChat } from "@/components/prize-chat";
 import { usePoolPrizes, type PoolPrize } from "@/lib/prizes";
 import type { PoolSponsor } from "@/lib/sponsor";
 import { readCache, writeCache } from "@/lib/cache";
-import { PoolName } from "@/components/pool-name";
+import { PoolName, poolTitle } from "@/components/pool-name";
 import { PlayerCard } from "@/components/player-card";
 import { roundName } from "@/lib/format";
 import { MatchDay } from "@/components/match-reveal";
@@ -616,7 +616,7 @@ function Chat({ onBack }: { onBack?: () => void }) {
             )}
             {/* The league's name opens its table, like a group's name in WhatsApp. */}
             <Link href="/leaderboard/" className="chat-title" aria-label="Open this league's table">
-              <h2><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
+              <h2 className={poolTitle(pool!).length > 22 ? "long" : undefined}><LeaguePicture pool={pool!} size={28} /> <PoolName pool={pool!} /></h2>
               <svg className="chat-title-go" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </Link>
           </div>
