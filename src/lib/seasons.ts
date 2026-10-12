@@ -70,3 +70,12 @@ export function seasonLine(s: Season, now = new Date()): string | null {
   if (s.starts_on && s.starts_on > today) return `Starts ${longDate(s.starts_on)}`;
   return s.ends_on ? `Until ${longDate(s.ends_on)}` : null;
 }
+
+/** Where a tournament stands today, for the line under its name in the header. */
+export function seasonStatus(s: Season, now = new Date()): "On now" | "Coming up" | "Finished" | "Practice" {
+  const today = now.toISOString().slice(0, 10);
+  if (s.is_replay) return "Practice";
+  if (s.starts_on && s.starts_on > today) return "Coming up";
+  if (s.ends_on && s.ends_on < today) return "Finished";
+  return "On now";
+}
