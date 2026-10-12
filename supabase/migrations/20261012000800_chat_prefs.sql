@@ -51,6 +51,5 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists push_outbox_skip_muted on notify.push_outbox;
-create trigger push_outbox_skip_muted before insert on notify.push_outbox
+create or replace trigger push_outbox_skip_muted before insert on notify.push_outbox
   for each row execute function notify.skip_muted_chat();
