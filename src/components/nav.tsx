@@ -20,7 +20,7 @@ const TABS = [
 ];
 
 /** Screens that sit under a tab without being its own address: a league's table under Leagues, the log under Matches. */
-const UNDER: Record<string, string[]> = { "/leagues/": ["/leaderboard"], "/fixtures/": ["/standings"] };
+const UNDER: Record<string, string[]> = { "/leagues/": ["/leaderboard", "/rankings"], "/fixtures/": ["/standings"] };
 
 interface Unread { count: number; tagged: boolean }
 
