@@ -22,6 +22,7 @@ import { ProvinceTable } from "@/components/province-table";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { usePoolPrizes } from "@/lib/prizes";
+import { usePreview, withTrialPrize } from "@/lib/preview";
 import { plural, topRecruiters, usePoolRecruits } from "@/lib/recruits";
 import { usePoolRecruiterPrizes } from "@/lib/recruiter-prizes";
 import { RecruiterPrizeLine } from "@/components/recruiter-prize";
@@ -64,7 +65,9 @@ function Leaderboard() {
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
-  const [prizes, reloadPrizes] = usePoolPrizes(pool!.id);
+  const [realPrizes, reloadPrizes] = usePoolPrizes(pool!.id);
+  const trial = usePreview();
+  const prizes = withTrialPrize(realPrizes, currentRound(matches), trial);
   const sponsor = usePoolSponsor();
   const backers = useSeasonSponsors(season.id);
   const recruits = usePoolRecruits(pool!.id);
@@ -181,7 +184,7 @@ function Leaderboard() {
         )}
         {runs && <RemovedPlayers pool={pool!} tick={removals} />}
         {prizeBlock}
-        <RoundRecap rows={rows} prizes={prizes} sponsor={sponsor} />
+        <RoundRecap rows={rows} prizes={realPrizes} sponsor={sponsor} />
         {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
         </>
       )}

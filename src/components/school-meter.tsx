@@ -8,6 +8,8 @@ import { readCache, writeCache } from "@/lib/cache";
 import { schoolHref } from "@/lib/crest";
 import type { ProjectState } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
+import { TRIAL_PROJECT, usePreview } from "@/lib/preview";
+import { TrialTag } from "@/components/sponsor-tile";
 import { supabase } from "@/lib/supabase";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
@@ -46,27 +48,30 @@ export function SchoolMeter() {
     })();
   }, [key, me.user_id, season.id]);
 
+  const trial = usePreview();
   if (!mine || !mine.length) return null;
   return (
     <div className="card smeter">
       <h2>Playing for your school</h2>
-      {mine.map((m) => <SchoolLine key={`${m.stage}:${m.page.school.emis}`} m={m} />)}
+      {mine.map((m) => <SchoolLine key={`${m.stage}:${m.page.school.emis}`} m={m} trial={trial} />)}
       <p className="small muted smeter-foot">Only money that has really been given shows here. <Link href="/giving/">Every rand, school by school</Link></p>
     </div>
   );
 }
 
-function SchoolLine({ m }: { m: Mine }) {
+function SchoolLine({ m, trial }: { m: Mine; trial: boolean }) {
   const s = m.page.school;
-  const proj = m.page.projects.find((p) => p.state === "open" || p.state === "funded" || p.state === "ordered");
   const given = m.page.given?.committed_minor ?? 0;
+  const real = m.page.projects.find((p) => p.state === "open" || p.state === "funded" || p.state === "ordered");
+  // While trial sponsors are on, a school with no real project or money shows a made-up one, marked Trial.
+  const proj = real ?? (trial && !given ? TRIAL_PROJECT : undefined);
   const st = m.page.standing.find((x) => x.stage === m.stage);
   const confirmed = st?.confirmed ?? 0;
 
   let bar: number, line: React.ReactNode, sub: React.ReactNode;
   if (proj) {
     bar = proj.target_minor ? proj.pledged_minor / proj.target_minor : 0;
-    line = <><b>{money(proj.pledged_minor)}</b> of {money(proj.target_minor)} backed for {proj.title}</>;
+    line = <><b>{money(proj.pledged_minor)}</b> of {money(proj.target_minor)} backed for {proj.title}{proj === TRIAL_PROJECT && <TrialTag />}</>;
     sub = proj.paid_minor > 0 ? `${money(proj.paid_minor)} paid so far, by ${proj.backers} ${proj.backers === 1 ? "backer" : "backers"}.`
       : `${proj.backers} ${proj.backers === 1 ? "backer" : "backers"} so far. Nobody pays until it's fully backed.`;
   } else if (given > 0) {

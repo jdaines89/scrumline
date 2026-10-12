@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { initials, money, query } from "@/lib/sponsor";
+import { TrialTag } from "@/components/sponsor-tile";
 import { SAMPLE_ALLOC, SAMPLE_BOOKING, SAMPLE_MINE, SAMPLE_RESULTS, previewOn, sampleDays } from "@/lib/preview";
 import { supabase } from "@/lib/supabase";
 import { roundText } from "@/lib/format";
@@ -102,7 +103,7 @@ export default function SponsorResults() {
       <div className="card narrow">
         <div className="sp-head">
           <div className="sp-tile big">{initials(b.sponsor_name)}</div>
-          <div><h2>{b.sponsor_name}</h2>
+          <div><h2>{b.sponsor_name}{b.booking_id === SAMPLE_BOOKING && <> <TrialTag /></>}</h2>
             <div className="small muted">{b.pool_name}{b.round ? `, ${roundText(b.round)}` : ""} · {b.season_name}</div></div>
         </div>
         <p className={`small ${b.status === "live" ? "school-ok" : "muted"}`}>{STATE[b.status] ?? b.status}</p>

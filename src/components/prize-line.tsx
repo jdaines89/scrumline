@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { PrizeChat } from "@/components/prize-chat";
 import { useLeague } from "@/components/league";
 import { PrizeDetail } from "@/components/prize-detail";
+import { TrialTag } from "@/components/sponsor-tile";
+import { TRIAL_OFFERER } from "@/lib/preview";
 import { prizePhotoUrl, type PoolPrize } from "@/lib/prizes";
 import { supabase } from "@/lib/supabase";
 import { roundName, roundText } from "@/lib/format";
@@ -18,7 +20,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<PoolPrize | null>(null);
   const [chat, setChat] = useState<PoolPrize | null>(null);
-  const nameOf = (id: string) => (id === me.user_id ? "you" : members.find((m) => m.user_id === id)?.display_name ?? "a player");
+  const nameOf = (id: string) => (id === TRIAL_OFFERER ? "the owner" : id === me.user_id ? "you" : members.find((m) => m.user_id === id)?.display_name ?? "a player");
   // The round this is about: the one asked for, else the one in play, else the next.
   const shown = round !== undefined
     ? prizes.find((p) => p.round === round)
@@ -59,7 +61,7 @@ export function PrizeLine({ prizes, round, onChange, compact = false }: { prizes
             <div className="prize-text">
               <span className="prize-label">{roundName(shown.round)} prize</span>
               <strong>{shown.prize}</strong>
-              <span className="prize-meta">{shown.sponsor} · offered by {nameOf(shown.offered_by)}</span>
+              <span className="prize-meta">{shown.offered_by === TRIAL_OFFERER ? <>{shown.sponsor}<TrialTag /></> : <>{shown.sponsor} · offered by {nameOf(shown.offered_by)}</>}</span>
             </div>
             <span className="prize-more" aria-hidden="true">›</span>
           </button>

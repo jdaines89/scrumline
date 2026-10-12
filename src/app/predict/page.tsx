@@ -12,6 +12,8 @@ import { Crowd, type CrowdRow } from "@/components/crowd";
 import { RoundDigest } from "@/components/round-digest";
 import { PrizeLine } from "@/components/prize-line";
 import { usePoolPrizes } from "@/lib/prizes";
+import { usePreview, withTrialPrize } from "@/lib/preview";
+import { currentRound } from "@/components/sponsor-line";
 import { SeasonAhead } from "@/components/season-ahead";
 import { TournamentLine } from "@/components/tournament-line";
 import { useSeasonSponsors } from "@/lib/tournament-sponsor";
@@ -76,7 +78,9 @@ function Predict() {
   // A round number means nothing in another tournament: switching starts on that tournament's own open round.
   const [roundOf, setRoundOf] = useState(season.id);
   if (roundOf !== season.id) { setRoundOf(season.id); setRound(rounds.length ? firstOpenRound(rounds, isLocked) : null); }
-  const [prizes, reloadPrizes] = usePoolPrizes(pool?.id);
+  const [realPrizes, reloadPrizes] = usePoolPrizes(pool?.id);
+  const trial = usePreview();
+  const prizes = withTrialPrize(realPrizes, currentRound(matches), trial);
   const backers = useSeasonSponsors(season.id);
   const [preds, setPreds] = useState<Map<string, Prediction>>(new Map());
   const [draft, setDraft] = useState<Record<string, [string, string]>>({});

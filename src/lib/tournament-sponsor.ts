@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { trialSeasonSponsor, usePreview } from "@/lib/preview";
 
 /** A tournament's live sponsor: the whole tournament (round null) or one round of it. */
 export interface SeasonSponsor {
@@ -21,10 +22,13 @@ export function useSeasonSponsors(season: string | undefined): SeasonSponsor[] {
       writeCache(`tsponsor:${season}`, s); setAll(s);
     });
   }, [season]);
+  const trial = usePreview();
+  if (trial && season && !all.some((s) => s.round === null)) return [trialSeasonSponsor(), ...all];
   return all;
 }
 
 export function tournamentEvent(id: number, kind: "seen" | "tap") {
+  if (id < 0) return;  // trial sponsor
   if (kind === "seen") {
     const key = `sl:tseen:${id}:${new Date().toISOString().slice(0, 10)}`;
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { /* the database still dedupes */ }

@@ -9,6 +9,11 @@ export function SponsorTile({ name, logo, big }: { name: string; logo: string | 
     : <div className={`sp-tile${big ? " big" : ""}`}>{initials(name || "?")}</div>;
 }
 
+/** A quiet word beside a made-up trial business, so nobody takes it for a real one. */
+export function TrialTag() {
+  return <span className="trial-tag" title="Made-up business for the Scrumline trial. No money moves.">Trial</span>;
+}
+
 /** What a player sees on tapping a sponsor: who they are and where to find them. */
 export function SponsorAbout({ about, website, onTap }: { about: string | null; website: string | null; onTap?: () => void }) {
   if (!about && !website) return null;
