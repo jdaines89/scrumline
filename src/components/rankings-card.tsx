@@ -78,7 +78,7 @@ export function RankingsCard({ stage }: { stage: Stage | null }) {
   const you: Place | null = meRow
     ? meRow.place == null
       ? { rank: null, of: players, line: "Taking a break. Your next call puts you back on" }
-      : { rank: meRow.place, of: players, line: above ? `${above.points - meRow.points} behind ${above.team_name}` : tiedTop ? "Joint top of everyone" : "Top of everyone" }
+      : { rank: meRow.place, of: players, line: above ? `${above.points - meRow.points} behind ${above.team_name}` : tiedTop ? "Joint top of all players" : "Top of all players" }
     : null;
 
   const rows: { key: string; tab: string; title: string; scope: string; place: Place | null; loading: boolean }[] = [];
@@ -89,7 +89,7 @@ export function RankingsCard({ stage }: { stage: Stage | null }) {
   if (stage && (provinces === null || myProvince)) {
     rows.push({ key: "p", tab: "provinces", title: myProvince ? provinceName(myProvince.province) : "Your province", scope: "Provinces", loading: provinces === null, place: province });
   }
-  rows.push({ key: "e", tab: "everyone", title: "Everyone", loading: everyone === null, place: you,
+  rows.push({ key: "e", tab: "everyone", title: "All players", loading: everyone === null, place: you,
     scope: everyone === null ? "Every player" : `${players.toLocaleString("en-ZA")} ${players === 1 ? "player" : "players"}` });
 
   return (
