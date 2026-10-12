@@ -37,7 +37,7 @@ export function AlsoOn() {
       {soon.map((s) => (
         <div className="also-row" key={s.id}>
           <p><strong>{s.name}</strong> starts {new Date(`${s.starts_on}T12:00:00Z`).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "numeric", month: "long" })}. Your leagues are in it already.</p>
-          <button type="button" onClick={() => setSeason(s.id)}>Take a look</button>
+          <button type="button" onClick={() => setSeason(s.id)}>Open</button>
         </div>
       ))}
     </div>
