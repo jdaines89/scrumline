@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 // resizes-content: on Android the page shrinks with the keyboard, so nothing blank opens up between the chat and the keys.
-export const viewport: Viewport = { themeColor: "#0d1412", interactiveWidget: "resizes-content" };
+export const viewport: Viewport = { themeColor: "#11241d", interactiveWidget: "resizes-content" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

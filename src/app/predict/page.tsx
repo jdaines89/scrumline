@@ -351,7 +351,7 @@ function Predict() {
           const final = shut && m.home_score !== null && (done || !season.is_replay);
           const bankerShut = ms.some((x) => preds.get(x.id)?.is_banker && (matchStarted(x) || myLocks.has(x.id)));
           return (
-            <div key={m.id} className={p?.is_banker ? "match banker" : "match"}>
+            <div key={m.id} className={p?.is_banker ? "match banker" : "match"} style={{ "--hc": h.colour ?? "transparent", "--ac": a.colour ?? "transparent" } as React.CSSProperties}>
               <div className="mhead">
                 <span>{kickoff(m.kickoff_at)} · {m.venue}</span>
                 <span className="mactions">
