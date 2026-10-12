@@ -2056,3 +2056,16 @@ td { padding: 7px 8px; }
 }
 .stage-tabs button:hover { color: var(--text); }
 .stage-tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+/* Who you're compared with: plain underlined tabs, the same family as High / Primary
+   but a step bigger, instead of a pill box. */
+.scope-tabs { display: flex; gap: 2px; margin: 4px 0 12px; border-bottom: 1px solid var(--line); }
+.scope-tabs button, .scope-tabs button:hover {
+  flex: 1 1 auto; background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; margin-bottom: -1px;
+  padding: 8px 6px 11px; font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap;
+}
+.scope-tabs button:hover { color: var(--text); }
+.scope-tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+.scope-tabs + .stage-tabs, .scope-tabs ~ .view-area .stage-tabs { border-bottom-color: transparent; }
+.stage-tabs { gap: 8px; }
+.stage-tabs button, .stage-tabs button:hover { flex: 0 0 auto; padding: 4px 12px; font-size: 13px; border-bottom-width: 2px; }
+@media (max-width: 380px) { .scope-tabs button, .scope-tabs button:hover { font-size: 13px; padding-left: 3px; padding-right: 3px; } }
