@@ -143,7 +143,7 @@ function Leaderboard() {
       {sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
-      <Tabs label="Who you're compared with" items={[["overall", "This league"], ["everyone", "Everyone"], ["schools", "Schools"], ["provinces", "Provinces"]] as const}
+      <Tabs label="Who you're compared with" items={[["overall", "This league"], ["everyone", "All players"], ["schools", "Schools"], ["provinces", "Provinces"]] as const}
         value={view === "round" ? "overall" : view as "overall" | "everyone" | "schools" | "provinces"} onPick={setView} />
       {view !== "schools" && view !== "provinces" && view !== "everyone" && <CountsFrom />}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
