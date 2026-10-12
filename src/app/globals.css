@@ -2017,17 +2017,17 @@ button.lgc-invite, button.lgc-invite:hover { padding: 11px 14px; }
 .school-card { padding: 14px; gap: 10px; }
 .school-card-name { font-size: 16px; }
 td { padding: 7px 8px; }
-/* Each province's row carries its own landscape, fading in from the right
+/* Each province's row carries its own picture, fading in from the right
    behind the score, so the table reads like a collage of the country. */
 .provinces li { position: relative; }
 .provinces .srow { position: relative; isolation: isolate; }
 .provinces .srow > :not(.pscene) { position: relative; z-index: 1; }
 .provinces .pscene {
-  position: absolute; z-index: 0; top: -11px; bottom: -11px; right: -12px; width: min(78%, 340px); height: calc(100% + 22px);
-  opacity: 0.62; pointer-events: none;
+  position: absolute; z-index: 0; top: -11px; bottom: -11px; right: -12px; width: min(82%, 420px); height: calc(100% + 22px); max-width: none;
+  object-fit: cover; object-position: center 60%; opacity: 0.78; pointer-events: none;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 55%);
 }
-.provinces.waiting .pscene { opacity: 0.4; }
-.provinces .srow .btotal, .provinces .srow .sname { text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
+.provinces.waiting .pscene { opacity: 0.5; }
+.provinces .srow .btotal, .provinces .srow .sname { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.6); }
 .provinces .srow .smeta { color: #c3d5cc; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
