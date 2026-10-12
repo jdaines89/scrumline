@@ -5,6 +5,7 @@ import { Crest } from "@/components/team";
 import { dayHeading, kickTime, roundName } from "@/lib/format";
 import { readPendingCalls, writePendingCalls } from "@/lib/pending-calls";
 import { isRugbyScore, scoreInput } from "@/lib/rugby";
+import { useScoreTyping } from "@/lib/score-typing";
 import { supabase } from "@/lib/supabase";
 import type { Team } from "@/lib/types";
 
@@ -27,6 +28,7 @@ export function InviteCalls({ league, onCount }: { league: string; onCount: (n: 
   const [rows, setRows] = useState<Row[] | null>(null);
   const [draft, setDraft] = useState<Record<string, [string, string]>>({});
   const [open, setOpen] = useState(false);
+  const { typing, typed, left } = useScoreTyping();
 
   useEffect(() => {
     supabase.rpc("invite_round", { p_code: league || null }).then(({ data }) => {
@@ -67,6 +69,7 @@ export function InviteCalls({ league, onCount }: { league: string; onCount: (n: 
     writePendingCalls({ season: rows![0].season_id, calls, kickoffs });
   }
   const bad = (v: string) => v !== "" && !isRugbyScore(+v);
+  const wrong = (box: string, v: string) => bad(v) && typing !== box;
 
   return (
     <div className="icalls">
@@ -84,15 +87,15 @@ export function InviteCalls({ league, onCount }: { league: string; onCount: (n: 
             <div className="icall">
               <span className="icall-team"><Crest team={h} size={26} /><span>{h.display_name}</span></span>
               <span className="icall-boxes">
-                <input className={`pbox${bad(d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[0]}
-                  aria-label={`${h.display_name} score`} onChange={(e) => set(r.match_id, e.target.value, d[1])} />
-                <input className={`pbox${bad(d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[1]}
-                  aria-label={`${a.display_name} score`} onChange={(e) => set(r.match_id, d[0], e.target.value)} />
+                <input className={`pbox${wrong(`${r.match_id}:h`, d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[0]}
+                  aria-label={`${h.display_name} score`} onChange={(e) => { typed(`${r.match_id}:h`); set(r.match_id, e.target.value, d[1]); }} onBlur={() => left(`${r.match_id}:h`)} />
+                <input className={`pbox${wrong(`${r.match_id}:a`, d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} value={d[1]}
+                  aria-label={`${a.display_name} score`} onChange={(e) => { typed(`${r.match_id}:a`); set(r.match_id, d[0], e.target.value); }} onBlur={() => left(`${r.match_id}:a`)} />
               </span>
               <span className="icall-team away"><Crest team={a} size={26} /><span>{a.display_name}</span></span>
             </div>
             <div className="icall-when muted">{kickTime(r.kickoff_at)}</div>
-            {(bad(d[0]) || bad(d[1])) && <p className="scorewarn icall-warn">A rugby side can&apos;t score 1, 2 or 4.</p>}
+            {(wrong(`${r.match_id}:h`, d[0]) || wrong(`${r.match_id}:a`, d[1])) && <p className="scorewarn icall-warn">A rugby side can&apos;t score 1, 2 or 4.</p>}
           </div>
         );
       })}
