@@ -191,7 +191,12 @@ function Loaded({ children }: { children: ReactNode }) {
       supabase.from("pools").select("*").eq("season", seasonId).order("created_at"),
     ]);
     const ps = (pools.data ?? []) as Pool[];
-    const entry = (entries.data?.[0] as Entry | undefined) ?? null;
+    let entry = (entries.data?.[0] as Entry | undefined) ?? null;
+    // Everyone has one team name, so a new tournament picks it up the first time it's opened.
+    if (!entry && base.me.team_name) {
+      const made = await supabase.from("entries").insert({ season: seasonId, team_name: base.me.team_name, user_id: base.me.user_id }).select("*").maybeSingle();
+      entry = (made.data as Entry | null) ?? null;
+    }
     // Calls made on an invite link before signing up go in once there's a team to hold them.
     const waiting = entry ? callsToSave(readPendingCalls(), seasonId) : [];
     if (entry && waiting.length) {
