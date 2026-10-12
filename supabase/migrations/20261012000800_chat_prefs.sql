@@ -1,12 +1,14 @@
 -- Pin and mute league chats. Each player's own choice, kept on the server so
 -- it follows them to every device. Muting stops that league's chat pushes and
--- greys its unread count; the chat itself is never hidden.
+-- greys its unread count; "tags only" keeps tag and reply pushes and counts only
+-- the messages that tag the player. The chat itself is never hidden.
 
 create table if not exists public.chat_prefs (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   pool_id bigint not null references public.pools (id) on delete cascade,
   pinned_at timestamptz,
   muted boolean not null default false,
+  tags_only boolean not null default false,
   primary key (user_id, pool_id)
 );
 alter table public.chat_prefs enable row level security;
@@ -28,7 +30,8 @@ create or replace view public.chat_unread with (security_invoker = true) as
  select p.id as pool_id,
     count(c.id) filter (where c.author_id <> auth.uid()) as unread,
     count(t.message_id) as tagged,
-    coalesce(bool_or(cp.muted), false) as muted
+    coalesce(bool_or(cp.muted), false) as muted,
+    coalesce(bool_or(cp.tags_only), false) as tags_only
    from public.pools p
      left join public.chat_reads r on r.pool_id = p.id and r.user_id = auth.uid()
      left join public.chat_messages c on c.pool_id = p.id and c.id > coalesce(r.last_read_id, 0::bigint)

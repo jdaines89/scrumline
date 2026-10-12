@@ -12,10 +12,12 @@ import type { ChatMessage, Pool } from "@/lib/types";
 
 type Last = Pick<ChatMessage, "id" | "author_id" | "body" | "created_at" | "image_path" | "hidden_at" | "sticker"> & { pool_id: number };
 interface Unread { pool_id: number; unread: number; tagged: number }
-interface Pref { pool_id: number; pinned_at: string | null; muted: boolean }
+interface Pref { pool_id: number; pinned_at: string | null; muted: boolean; tags_only: boolean }
 interface Snapshot { last: Last[]; unread: Unread[]; prefs?: Pref[] }
 
 const PinIcon = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4h6l-1 6 3 3v1H7v-1l3-3-1-6z" /><path d="M12 14v6" /></svg>;
+const TagIcon = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2" /><path d="M15.2 12v1.3a2.4 2.4 0 0 0 4.8 0V12a8 8 0 1 0-3.2 6.4" /></svg>;
+const BellIcon = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 21h4" /></svg>;
 const MuteIcon = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 16v-5a6 6 0 0 0-9.5-4.9M6.3 8.6A6 6 0 0 0 6 11v5l-2 2h13" /><path d="M10 21h4" /><path d="M3 3l18 18" /></svg>;
 
 /** "14:05" today, "Yesterday", a weekday this week, else "4 Oct". */
@@ -44,7 +46,7 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
       // One tiny indexed read per league (newest message), plus the unread counts in one go.
       const [u, pr, ...lasts] = await Promise.all([
         supabase.from("chat_unread").select("pool_id, unread, tagged").in("pool_id", ids),
-        supabase.from("chat_prefs").select("pool_id, pinned_at, muted").in("pool_id", ids),
+        supabase.from("chat_prefs").select("pool_id, pinned_at, muted, tags_only").in("pool_id", ids),
         ...ids.map((id) => supabase.from("chat_messages")
           .select("id, pool_id, author_id, body, created_at, image_path, hidden_at, sticker")
           .eq("pool_id", id).order("id", { ascending: false }).limit(1).maybeSingle()),
@@ -67,10 +69,10 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
   const prefOf = (p: Pool) => snap.prefs?.find((x) => x.pool_id === leagueOf(p)) ?? null;
   const setPref = async (p: Pool, change: Partial<Pref>) => {
     const id = leagueOf(p), was = snap;
-    const now: Pref = { pool_id: id, pinned_at: null, muted: false, ...prefOf(p), ...change };
+    const now: Pref = { pool_id: id, pinned_at: null, muted: false, tags_only: false, ...prefOf(p), ...change };
     const next = { ...snap, prefs: [...(snap.prefs ?? []).filter((x) => x.pool_id !== id), now] };
     setSnap(next); writeCache(key, next); setErr("");
-    const { error } = await supabase.from("chat_prefs").upsert({ pool_id: id, pinned_at: now.pinned_at, muted: now.muted }, { onConflict: "user_id,pool_id" });
+    const { error } = await supabase.from("chat_prefs").upsert({ pool_id: id, pinned_at: now.pinned_at, muted: now.muted, tags_only: now.tags_only }, { onConflict: "user_id,pool_id" });
     if (error) { setSnap(was); writeCache(key, was); setErr("That didn't save. Check your connection and try again."); }
     else window.dispatchEvent(new Event("chat-read")); // the Chat tab's badge leaves muted leagues out
   };
@@ -97,7 +99,9 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
   };
 
   const row = ({ p, last, unread, pref }: (typeof rows)[number]) => {
-    const n = unread?.unread ?? 0, at = (unread?.tagged ?? 0) > 0, muted = !!pref?.muted;
+    // Tags only: the count is just the messages that tag you (shown as @), nothing else.
+    const tagsOnly = !!pref?.tags_only && !pref?.muted;
+    const n = tagsOnly ? (unread?.tagged ?? 0) : unread?.unread ?? 0, at = (unread?.tagged ?? 0) > 0, muted = !!pref?.muted;
     return (
       <li key={p.id}>
         <button type="button" className={`chatrow${n && !muted ? " new" : ""}${p.school_emis ? " school" : ""}`} onClick={() => onOpen(p)}
@@ -117,6 +121,7 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
             <span className="chatrow-bottom">
               <span className="chatrow-last">{last ? preview(last) : p.school_emis ? "Say hi to your old schoolmates" : "No messages yet"}</span>
               {muted && <span className="chatrow-flag" title="Muted" aria-label="Muted"><MuteIcon /></span>}
+              {tagsOnly && <span className="chatrow-flag" title="Tags and replies only" aria-label="Tags and replies only"><TagIcon /></span>}
               {pref?.pinned_at && <span className="chatrow-flag" title="Pinned" aria-label="Pinned"><PinIcon /></span>}
               {n > 0 && <span className={`chatrow-count${at ? " at" : ""}${muted ? " quiet" : ""}`} aria-label={at ? "You were mentioned" : `${n} unread`}>{at ? "@" : n > 99 ? "99+" : n}</span>}
             </span>
@@ -155,11 +160,23 @@ export function ChatList({ pools, onOpen }: { pools: Pool[]; onOpen: (p: Pool) =
                 <span><strong>{m?.pinned_at ? "Unpin" : "Pin to top"}</strong>
                   <small>{m?.pinned_at ? "It goes back to its usual place in your chats." : "Keeps this chat at the top of your list."}</small></span>
               </button>
-              <button type="button" className="cp-opt" onClick={() => { setPref(menu, { muted: !m?.muted }); setMenu(null); }}>
-                <MuteIcon />
-                <span><strong>{m?.muted ? "Unmute" : "Mute"}</strong>
-                  <small>{m?.muted ? "Phone alerts come back when someone tags or replies to you here." : "No phone alerts from this chat, even when you're tagged. It stays in your list."}</small></span>
-              </button>
+            </div>
+            <h3 className="cp-h">Alerts</h3>
+            <div className="cp-opts">
+              {([
+                ["all", "Everything", "Every new message is counted. You're alerted when someone tags or replies to you.", { muted: false, tags_only: false }],
+                ["tags", "Tags and replies only", "Ordinary messages aren't counted. Only tags and replies to you show up and alert you.", { muted: false, tags_only: true }],
+                ["off", "Muted", "No phone alerts from this chat, even when you're tagged. It stays in your list.", { muted: true, tags_only: false }],
+              ] as const).map(([k, title, hint, change]) => {
+                const on = k === "off" ? !!m?.muted : k === "tags" ? !!m?.tags_only && !m?.muted : !m?.muted && !m?.tags_only;
+                return (
+                  <button type="button" key={k} className={`cp-opt${on ? " on" : ""}`} aria-pressed={on} onClick={() => { setPref(menu, change); setMenu(null); }}>
+                    {k === "off" ? <MuteIcon /> : k === "tags" ? <TagIcon /> : <BellIcon />}
+                    <span><strong>{title}</strong><small>{hint}</small></span>
+                    {on && <svg className="cp-tick" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+                  </button>
+                );
+              })}
             </div>
             <button type="button" className="wip-save ghost" onClick={() => setMenu(null)}>Cancel</button>
           </div>
