@@ -20,6 +20,7 @@ import { buildDigest } from "@/lib/digest";
 import { Crest } from "@/components/team";
 import { kickoff, roundName, roundText } from "@/lib/format";
 import { isRugbyScore, scoreInput } from "@/lib/rugby";
+import { useScoreTyping } from "@/lib/score-typing";
 import { firstOpenRound, lockRound, useRoundLocks } from "@/lib/rounds";
 import { readCache, writeCache } from "@/lib/cache";
 import { callSaver, type SaveState } from "@/lib/call-saver";
@@ -94,6 +95,8 @@ function Predict() {
   // Per match: whether the last thing typed is saving, saved or failed to save.
   const [saveState, setSaveState] = useState<Record<string, { s: SaveState; error?: string }>>({});
   const saver = useRef<ReturnType<typeof callSaver<[number, number]>> | null>(null);
+  const { typing, typed, left } = useScoreTyping();
+  const wrong = (box: string, v: string) => bad(v) && typing !== box;
   saver.current ??= callSaver<[number, number]>({
     send: async (matchId, [h, a]) => {
       const { error } = await supabase.from("predictions").upsert(
@@ -379,11 +382,11 @@ function Predict() {
                     <span className="pfinal-s">{m.home_score}<span className="muted">–</span>{m.away_score}</span>
                   </div>
                 ) : <>
-                <input className={`pbox${bad(d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
-                  aria-label={`${h.display_name} score`} onChange={(e) => save(m.id, e.target.value, d[1])} onBlur={() => saver.current!.flush(m.id)} />
+                <input className={`pbox${wrong(`${m.id}:h`, d[0]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[0]}
+                  aria-label={`${h.display_name} score`} onChange={(e) => { typed(`${m.id}:h`); save(m.id, e.target.value, d[1]); }} onBlur={() => { left(`${m.id}:h`); saver.current!.flush(m.id); }} />
                 <span className="muted">–</span>
-                <input className={`pbox${bad(d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[1]}
-                  aria-label={`${a.display_name} score`} onChange={(e) => save(m.id, d[0], e.target.value)} onBlur={() => saver.current!.flush(m.id)} />
+                <input className={`pbox${wrong(`${m.id}:a`, d[1]) ? " bad" : ""}`} inputMode="numeric" pattern="[0-9]*" maxLength={2} disabled={shut} value={d[1]}
+                  aria-label={`${a.display_name} score`} onChange={(e) => { typed(`${m.id}:a`); save(m.id, d[0], e.target.value); }} onBlur={() => { left(`${m.id}:a`); saver.current!.flush(m.id); }} />
                 </>}
                 </div>
                 <span className="pside">
@@ -398,7 +401,7 @@ function Predict() {
                   ? <p className="savestate failed" role="alert">Not saved: {saveState[m.id].error}. <button type="button" className="linkish" onClick={() => saver.current!.flush(m.id)}>Try again</button></p>
                   : <p className="savestate" aria-live="polite">{saveState[m.id].s === "saving" ? "Saving…" : <>Saved {d[0]}–{d[1]}</>}</p>
               )}
-              {!shut && (bad(d[0]) || bad(d[1])) && (
+              {!shut && (wrong(`${m.id}:h`, d[0]) || wrong(`${m.id}:a`, d[1])) && (
                 <p className="scorewarn">A rugby side can&apos;t score 1, 2 or 4, so this call isn&apos;t saved yet.</p>
               )}
               {final && (
