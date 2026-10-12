@@ -9,7 +9,6 @@ import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { pageKind, track } from "@/lib/track";
 import type { Member } from "@/lib/types";
-import { usePreview } from "@/lib/preview";
 
 const TABS = [
   ["/", "Home"],
@@ -104,7 +103,6 @@ export function Nav() {
   const unread = useUnread(player);
   const me = useMe(player);
   const sponsors = useSponsors(player);
-  const preview = usePreview();
   const schoolContact = useSchoolContact(player);
   useEffect(() => {
     if (!player) return;
@@ -145,7 +143,7 @@ export function Nav() {
       )}
     </Link>
     <nav className="tabs">
-      {[...TABS, ...(sponsors || preview ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
+      {[...TABS, ...(sponsors ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
         <Link key={href} href={href} className={path === href || (UNDER[href] ?? []).some((u) => path?.startsWith(u)) || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
           {label}
           {href === "/chat/" && path !== href && unread.count > 0 &&

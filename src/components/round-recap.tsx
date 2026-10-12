@@ -117,10 +117,12 @@ export function RoundRecap({ rows, prizes = [], sponsor = null, round: only, inC
     const out: Backer[] = [];
     if (!recap) return out;
     const add = (label: string, name: string, logo: string | null) => { if (!out.some((b) => b.name === name)) out.push({ label, name, logo }); };
-    const titleSponsor = tournament.find((t) => t.round === null), roundSponsor = tournament.find((t) => t.round === recap.round);
+    // Trial businesses (negative ids) stay out of the share picture: it leaves the app without its Trial label.
+    const real = tournament.filter((t) => t.id >= 0);
+    const titleSponsor = real.find((t) => t.round === null), roundSponsor = real.find((t) => t.round === recap.round);
     if (titleSponsor) add("Tournament sponsor", titleSponsor.display_name, titleSponsor.logo_path);
     if (roundSponsor) add(`${roundName(recap.round)} sponsor`, roundSponsor.display_name, roundSponsor.logo_path);
-    if (sponsor) add("League sponsor", sponsor.display_name, sponsor.logo_path);
+    if (sponsor && sponsor.booking_id >= 0) add("League sponsor", sponsor.display_name, sponsor.logo_path);
     if (recap.biz) add(`${roundName(recap.round)} prize by`, recap.biz.name, recap.biz.logo);
     return out;
   }, [recap, tournament, sponsor]);

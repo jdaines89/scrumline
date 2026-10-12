@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Crest, CrestFind, CrestUpload } from "@/components/crest";
 import { SchoolSearch } from "@/components/school-search";
-import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS, usePreview } from "@/lib/preview";
+import { SAMPLE_DASHBOARD, SAMPLE_PAYOUTS } from "@/lib/preview";
 import { pickedSchool, rememberPickedSchool, ROLE_NAME, type Dashboard, type Payout } from "@/lib/school";
 import { money } from "@/lib/sponsor";
 import { schoolHref } from "@/lib/crest";
@@ -24,7 +24,8 @@ const PAYOUT: Record<string, string> = {
 
 /** A school's own page: pick the school, add its bank account, then see and share what it has raised. */
 export default function SchoolPage() {
-  const preview = usePreview();
+  // A school contact's own page shows only real money, even while trial sponsors are on.
+  const preview = false;
   const [emis, setEmis] = useState<string | null | undefined>(undefined);
   const [dash, setDash] = useState<Dashboard | null>(null);
   const [payouts, setPayouts] = useState<Payout[]>([]);

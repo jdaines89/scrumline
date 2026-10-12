@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
+import { SponsorAbout, SponsorTile, TrialTag } from "@/components/sponsor-tile";
+import { TRIAL_OFFERER } from "@/lib/preview";
 import { prizePhotoUrl, whoWon, type PoolPrize } from "@/lib/prizes";
 import { roundName } from "@/lib/format";
 
@@ -48,7 +49,7 @@ export function PrizeDetail({ prize, nameOf, onClose, label, state: given }: {
             <SponsorTile name={prize.sponsor} logo={prize.sponsor_logo} />
             <div>
               <small>Offered by {nameOf(prize.offered_by)} from</small>
-              <b>{prize.sponsor}</b>
+              <b>{prize.sponsor}{prize.offered_by === TRIAL_OFFERER && <TrialTag />}</b>
             </div>
           </div>
           {!label && <p className="prize-meta pz-rule">Anyone in the league can win it except {nameOf(prize.offered_by)}, who offered it.</p>}

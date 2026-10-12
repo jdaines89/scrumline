@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
+import { SponsorAbout, SponsorTile, TrialTag } from "@/components/sponsor-tile";
+import { isTrial } from "@/lib/preview";
 import { tournamentEvent, type SeasonSponsor } from "@/lib/tournament-sponsor";
 import { roundName } from "@/lib/format";
 
@@ -39,6 +40,7 @@ function One({ s, lead }: { s: SeasonSponsor; lead: string }) {
           {more
             ? <button type="button" className="linkish sp-name" aria-expanded={open} onClick={() => setOpen(!open)}><b>{s.display_name}</b></button>
             : <b>{s.display_name}</b>}
+          {isTrial(s.id) && <TrialTag />}
         </div>
         {s.offer && (s.link
           ? <a href={s.link} target="_blank" rel="noopener sponsored" onClick={() => tournamentEvent(s.id, "tap")}>{s.offer} ›</a>

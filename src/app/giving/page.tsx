@@ -7,6 +7,7 @@ import { ProjectsSection } from "@/components/projects-section";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
 import { readCache, writeCache } from "@/lib/cache";
 import { SAMPLE_GIVING, usePreview } from "@/lib/preview";
+import { TrialTag } from "@/components/sponsor-tile";
 import { money } from "@/lib/sponsor";
 import { useSponsorSeason } from "@/lib/sponsor-season";
 import { supabase } from "@/lib/supabase";
@@ -31,7 +32,9 @@ export default function GivingPage() {
   const key = `giving2:${season}`;
   const [real, setG] = useState<Giving | null>(() => readCache<Giving>(key) ?? null);
   const preview = usePreview();
-  const g: Giving | null = preview ? SAMPLE_GIVING : real;
+  // Trial figures only while no real money has been given; real giving always wins.
+  const sample = preview && !real?.totals?.committed_minor;
+  const g: Giving | null = sample ? SAMPLE_GIVING : real;
 
   useEffect(() => {
     setG(readCache<Giving>(key) ?? null);
@@ -49,6 +52,7 @@ export default function GivingPage() {
       <div className="card narrow">
         <p className="sp-kicker">Giving</p>
         <h2>Where sponsors&apos; money goes</h2>
+        {sample && <p className="small muted trial-note"><TrialTag /> These figures and businesses are made up for the trial. No money has moved.</p>}
         <p className="sub">Every rand businesses have given schools through Scrumline, school by school. Paid means sent to the school; confirmed means the school has said it arrived.</p>
         {seasons.length > 0 && (
           <label className="sp-season">

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
-import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
-import { sampleSponsor, usePreview } from "@/lib/preview";
+import { SponsorAbout, SponsorTile, TrialTag } from "@/components/sponsor-tile";
+import { isTrial, sampleSponsor, usePreview } from "@/lib/preview";
 import { sponsorEvent, type PoolSponsor } from "@/lib/sponsor";
 import { supabase } from "@/lib/supabase";
 import { roundName } from "@/lib/format";
@@ -50,7 +50,7 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
       <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
         aria-label={`Sponsored by ${sponsor.display_name}`}>
         <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
-        <span><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b></span>
+        <span><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b>{isTrial(sponsor.booking_id) && <TrialTag />}</span>
       </button>
       {open && (
         <div className="sp-pop">
@@ -70,6 +70,7 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
           {more
             ? <button type="button" className="linkish sp-name" aria-expanded={open} onClick={() => setOpen(!open)}><b>{sponsor.display_name}</b></button>
             : <b>{sponsor.display_name}</b>}
+          {isTrial(sponsor.booking_id) && <TrialTag />}
         </div>
         {sponsor.offer && (sponsor.link
           ? <a href={sponsor.link} target="_blank" rel="noopener sponsored" onClick={() => sponsorEvent(sponsor.booking_id, "tap")}>{sponsor.offer} ›</a>

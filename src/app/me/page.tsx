@@ -11,6 +11,7 @@ import { Tabs } from "@/components/tabs";
 import { useLeague } from "@/components/league";
 import { signOut } from "@/lib/push";
 import { supabase } from "@/lib/supabase";
+import { setPreview, TRIAL_SPONSORS, usePreview } from "@/lib/preview";
 
 /** Your picture, name, team, schools, notifications and password, in one place. */
 export default function MePage() {
@@ -114,6 +115,8 @@ export default function MePage() {
         <div className="mepage-side">
           <NotifySettings me={me} onMessage={say} />
 
+          <TrialSwitch />
+
           <BlockedPeople members={members} />
 
           <div className="card">
@@ -152,6 +155,24 @@ export default function MePage() {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Made-up businesses filling the sponsor spots, so players can see how sponsorship will look. */
+function TrialSwitch() {
+  const on = usePreview();
+  if (!TRIAL_SPONSORS) return null;
+  return (
+    <div className="card">
+      <div className="me-visibility">
+        <div className="pref-text">
+          <strong>Trial sponsors</strong>
+          <span className="small muted">Made-up businesses show where real sponsors will appear, each marked Trial. No money moves. <Link href="/sponsor/results/">See what a business sees</Link></span>
+        </div>
+        <Tabs size="sub" label="Trial sponsors" items={[["on", "Show"], ["off", "Hide"]] as const}
+          value={on ? "on" : "off"} onPick={(v) => setPreview(v === "on")} />
       </div>
     </div>
   );
