@@ -24,12 +24,12 @@ import { readCache, writeCache } from "@/lib/cache";
 import type { Pool } from "@/lib/types";
 import { roundName, roundText } from "@/lib/format";
 import { ord } from "@/lib/growth";
+import { CLASS_MINIMUM } from "@/lib/school";
 
 interface Score { pool_id: number; user_id: string; total_points: number }
 interface Unread { pool_id: number; unread: number; tagged: number }
-/** Your class at one of your schools: its place among the ranked classes (null until 3 of it are playing). */
+/** Your class at one of your schools: its place among the ranked classes (null until enough of it are playing). */
 interface ClassPlace { emis: string; stage: string; school_year: number; place: number | null; ranked: number; players: number }
-const CLASS_RANKED_AT = 3;
 type Prize = Pick<PoolPrize, "round" | "prize" | "status" | "winners" | "due_at">;
 
 /** Where you stand in one league: rank, how many, and the gap to the top. */
@@ -199,7 +199,7 @@ export default function PoolsPage() {
     const rp = recruiterShownOn.has(p.id) ? recruiter.get(p.id) : undefined;
     // A class not ranked yet: how many more of the year it needs, and the way to bring them in.
     const cp = classPlace(p);
-    const need = cp && cp.place === null ? Math.max(1, CLASS_RANKED_AT - cp.players) : 0;
+    const need = cp && cp.place === null ? Math.max(1, CLASS_MINIMUM - cp.players) : 0;
     return (
       <div key={p.id} className={`lgc${p.id === pool?.id ? " on" : ""}`}>
         <button type="button" className="lgc-main" onClick={() => openLeague(p.id)}>

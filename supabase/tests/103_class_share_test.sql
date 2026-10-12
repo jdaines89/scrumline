@@ -94,4 +94,14 @@ select pg_temp.check((select j -> 'round_top' = 'null'::jsonb and j -> 'class_le
                       from (select public.my_share_moments() as j) x), 'round and class pictures wait for the round to finish');
 reset role;
 
+-- The trial switch: a class ranks once one of it is playing, scored the same way.
+create or replace function public.school_rules_relaxed() returns boolean language sql immutable as $$ select true $$;
+select pg_temp.as_user((select user_id from u where n = 7));
+select pg_temp.check((select average is not null and players = 1 from public.school_classes_at('209990001', 'high', 'cs-test') where school_year = 2009),
+                     'in the trial a class of one is ranked');
+select pg_temp.check((select place is not null and ranked = 3 from public.my_class_places('cs-test') where emis = '209990001'),
+                     'in the trial Leagues ranks a class of one');
+reset role;
+create or replace function public.school_rules_relaxed() returns boolean language sql immutable as $$ select false $$;
+
 do $$ begin raise notice 'CLASS AND SHARE CHECKS PASSED'; end $$;
