@@ -7,6 +7,7 @@ import { useLeague } from "@/components/league";
 import { schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
+import { SchoolBreakdown } from "@/components/school-breakdown";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
 
 type Stage = "high" | "primary";
@@ -26,6 +27,7 @@ export function SchoolTable() {
   const { season } = useLeague();
   const crests = useCrests();
   const [stage, setStage] = useState<Stage>("high");
+  const [open, setOpen] = useState<string | null>(null);
   const key = `schools3:${season.id}:${stage}`;
   const [rows, setRows] = useState<SchoolRow[] | null>(() => readCache<SchoolRow[]>(key) ?? null);
 
@@ -65,9 +67,15 @@ export function SchoolTable() {
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
                     <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
                     <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
-                    <Link href={`${schoolHref(r.emis)}&how=${stage}`} className="btotal" aria-label={`${r.name}: points by round`}>{Number(r.score).toFixed(1)}</Link>
+                    <span className="btotal">{Number(r.score).toFixed(1)}</span>
                     <Meta parts={[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`]} />
+                    <button type="button" className="sch-how-btn srow-how" aria-expanded={open === r.emis}
+                      onClick={() => setOpen(open === r.emis ? null : r.emis)}>
+                      Points by round
+                      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" className={open === r.emis ? "up" : ""}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
                   </div>
+                  {open === r.emis && <SchoolBreakdown emis={r.emis} stage={stage} season={season.id} total={Number(r.score)} />}
                 </li>
               ))}
             </ol>

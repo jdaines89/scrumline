@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { ChatButton } from "@/components/chat-button";
+import { SchoolBreakdown } from "@/components/school-breakdown";
 import { ClassTable } from "@/components/class-table";
 import { Crest, CrestUpload } from "@/components/crest";
 import { useLeague } from "@/components/league";
@@ -217,7 +218,7 @@ function Standings({ standing, seasonName, emis, season, how }: {
                     Points by round
                     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" className={open === t.stage ? "up" : ""}><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </button>
-                  {open === t.stage && <Breakdown emis={emis} stage={t.stage} season={season} total={Number(t.score)} />}
+                  {open === t.stage && <SchoolBreakdown emis={emis} stage={t.stage} season={season} total={Number(t.score)} />}
                 </li>
               )}
             </Fragment>
@@ -225,55 +226,6 @@ function Standings({ standing, seasonName, emis, season, how }: {
         })}
       </ul>
       <p className="small" style={{ margin: "12px 0 0" }}><Link href="/leaderboard/?tab=schools">See the whole schools table</Link></p>
-    </div>
-  );
-}
-
-interface BreakdownRound {
-  round: number; turnout: number; counted: number; average: number; adds: number; running: number;
-  players: { name: string; pts: number }[];
-}
-const NAMED = 3;
-
-/**
- * Round by round, who played for a school and what each round gave it. The
- * rounds' points come from rounded running totals, so they always sum to the
- * score above. No formula wording on screen, by Justin's choice.
- */
-function Breakdown({ emis, stage, season, total }: { emis: string; stage: "primary" | "high"; season: string; total: number }) {
-  const key = `schoolhow1:${emis}:${stage}:${season}`;
-  const [rows, setRows] = useState<BreakdownRound[] | null>(() => readCache<BreakdownRound[]>(key) ?? null);
-  useEffect(() => {
-    supabase.rpc("school_score_breakdown", { p_emis: emis, p_stage: stage, p_season: season })
-      .then(({ data, error }) => { if (error) return; const r = (data ?? []) as BreakdownRound[]; writeCache(key, r); setRows(r); });
-  }, [emis, key, season, stage]);
-  return (
-    <div className="sch-how-body">
-      {rows === null ? (
-        <div className="skeleton" style={{ height: 120 }} aria-busy="true" />
-      ) : (
-        <ol className="sch-how-list">
-          {rows.map((r) => {
-            const shown = r.players.slice(0, NAMED);
-            const more = r.players.length - shown.length;
-            return (
-              <li key={r.round}>
-                <div>
-                  <b>{roundName(r.round)}</b>
-                  <span className="small muted">
-                    {shown.map((x) => `${x.name} ${x.pts}`).join(" · ")}{more > 0 ? ` · ${more} more` : ""}
-                  </span>
-                </div>
-                <div className="sch-how-nums"><b>{Number(r.adds).toFixed(1)}</b></div>
-              </li>
-            );
-          })}
-          <li className="sch-how-total">
-            <b>Total</b>
-            <div className="sch-how-nums"><b>{total.toFixed(1)}</b></div>
-          </li>
-        </ol>
-      )}
     </div>
   );
 }
