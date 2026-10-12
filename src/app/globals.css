@@ -2047,3 +2047,12 @@ td { padding: 7px 8px; }
 .sch-how-btn[aria-expanded="true"] { border-color: var(--accent-dim); color: var(--accent); }
 /* Switching tables keeps the page's height, so the scroll position doesn't jump. */
 .view-area { min-height: 70vh; }
+/* High / Primary: quiet underlined tabs under the scope bar, so the top of the
+   table reads as one bar and a choice inside it, not two stacked pill bars. */
+.stage-tabs { display: flex; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+.stage-tabs button, .stage-tabs button:hover {
+  flex: 1; background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; margin-bottom: -1px;
+  padding: 6px 0 10px; font-size: 14px; font-weight: 600; color: var(--muted);
+}
+.stage-tabs button:hover { color: var(--text); }
+.stage-tabs button.on { color: var(--text); border-bottom-color: var(--accent); }

@@ -148,8 +148,6 @@ function Leaderboard() {
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
         <button type="button" role="tab" aria-selected={view === "provinces"} className={view === "provinces" ? "on" : ""} onClick={() => setView("provinces")}>Provinces</button>
       </div>
-      {view === "schools" && <p className="sub">Every school playing this tournament, not just the ones in this league.</p>}
-      {view === "provinces" && <p className="sub">Every province playing this tournament, by where players went to school.</p>}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && <CountsFrom />}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && !pool!.school_emis && pool!.created_by === me.user_id && (
