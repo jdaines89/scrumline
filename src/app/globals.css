@@ -1754,3 +1754,16 @@ body {
     var(--panel-2);
 }
 .match .mhead { background: transparent; }
+/* Provinces: the schools table's rows without a crest. */
+.provinces .srow { grid-template-columns: 28px minmax(0, 1fr) 3.6em; }
+.provinces .srow .sname { grid-column: 2; }
+.provinces .srow .btotal { grid-column: 3; }
+.provinces .srow .smeta, .provinces .srow .srow-how { grid-column: 2 / 4; }
+.provinces .sch-how-list li.me b { color: var(--accent); }
+/* Four scopes still fit a phone in one row. */
+.seg.four { max-width: 100%; }
+.seg.four button { white-space: nowrap; }
+@media (max-width: 480px) {
+  .seg.four { display: flex; }
+  .seg.four button { flex: 1 1 auto; padding: 6px 4px; font-size: 12.5px; }
+}

@@ -18,6 +18,7 @@ import { RoundRecap } from "@/components/round-recap";
 import { RoundTable } from "@/components/round-table";
 import { SchoolTable } from "@/components/school-table";
 import { EveryoneTable } from "@/components/everyone-table";
+import { ProvinceTable } from "@/components/province-table";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
 import { usePoolPrizes } from "@/lib/prizes";
@@ -47,7 +48,7 @@ function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[] | null>(() => readCache<LeaderRow[]>(`board:${pool!.id}`) ?? null);
   const [picked, setPicked] = useState<string | null>(null);
   const [profile, setProfile] = useState<string | null>(null);
-  const [view, setView] = useState<"overall" | "round" | "everyone" | "schools">("overall");
+  const [view, setView] = useState<"overall" | "round" | "everyone" | "schools" | "provinces">("overall");
   // Bumped when someone is removed, so the table and the removed list reload.
   const [removals, setRemovals] = useState(0);
   const runs = runsLeague(pool!, me);
@@ -57,7 +58,7 @@ function Leaderboard() {
   // ?tab=schools opens the schools table straight away (a school's page links here).
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
-    if (tab === "schools" || tab === "everyone") setView(tab);
+    if (tab === "schools" || tab === "everyone" || tab === "provinces") setView(tab);
   }, []);
   const mine = rows?.find((r) => r.user_id === me.user_id)?.entry_id ?? null;
   // A whole-school pool can run to thousands: its classes race each other instead of a line per player.
@@ -130,7 +131,7 @@ function Leaderboard() {
   return (
     <div className="card">
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
-      {view === "schools" ? <h2>Schools</h2> : view === "everyone" ? <h2>Everyone</h2> : (
+      {view === "schools" ? <h2>Schools</h2> : view === "provinces" ? <h2>Provinces</h2> : view === "everyone" ? <h2>Everyone</h2> : (
         <div className="league-title">
           <LeaguePicture pool={pool!} size={44} expandable />
           <h2><PoolName pool={pool!} /></h2>
@@ -138,9 +139,10 @@ function Leaderboard() {
         </div>
       )}
       {view === "schools" && <p className="sub">Every school playing this tournament, not just the ones in this league.</p>}
-      {view !== "schools" && view !== "everyone" && <CountsFrom />}
-      {view !== "schools" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
-      {view !== "schools" && view !== "everyone" && !pool!.school_emis && pool!.created_by === me.user_id && (
+      {view === "provinces" && <p className="sub">Every province playing this tournament, by where players went to school.</p>}
+      {view !== "schools" && view !== "provinces" && view !== "everyone" && <CountsFrom />}
+      {view !== "schools" && view !== "provinces" && view !== "everyone" && pool!.school_emis && <SchoolPictureEdit pool={pool!} />}
+      {view !== "schools" && view !== "provinces" && view !== "everyone" && !pool!.school_emis && pool!.created_by === me.user_id && (
         <div className="league-pic-edit">
           <p className="small muted">
             <button type="button" className="linkish small" onClick={() => { setPicMsg(null); setEditPic(!editPic); }}>
@@ -152,13 +154,14 @@ function Leaderboard() {
         </div>
       )}
       {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
-      {view !== "schools" && sponsor ? <SponsorLine sponsor={sponsor} />
+      {view !== "schools" && view !== "provinces" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
-      <div className="seg" role="tablist">
+      <div className="seg four" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
         <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
+        <button type="button" role="tab" aria-selected={view === "provinces"} className={view === "provinces" ? "on" : ""} onClick={() => setView("provinces")}>Provinces</button>
       </div>
       {(view === "overall" || view === "round") && rows && rows.length > 0 && (
         <p className="small board-switch">
@@ -167,7 +170,7 @@ function Leaderboard() {
           </button>
         </p>
       )}
-      {view === "schools" ? <SchoolTable /> : view === "everyone" ? <EveryoneTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
+      {view === "schools" ? <SchoolTable /> : view === "provinces" ? <ProvinceTable /> : view === "everyone" ? <EveryoneTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
         {wholeSchool ? <ClassTable poolId={pool!.id} /> : <PoolRace rows={playing} />}
