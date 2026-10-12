@@ -12,8 +12,11 @@ const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { timeZon
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-ZA", { timeZone: SAST, hour: "2-digit", minute: "2-digit", hour12: false });
 
 export default function FixturesPage() {
-  const { rounds, matches, teams } = useLeague();
+  const { season, rounds, matches, teams } = useLeague();
   const [round, setRound] = useState(() => currentRound(rounds, matches));
+  // Switching tournament starts on that tournament's own current round, not the same number.
+  const [roundOf, setRoundOf] = useState(season.id);
+  if (roundOf !== season.id) { setRoundOf(season.id); setRound(currentRound(rounds, matches)); }
   const ms = matches.filter((m) => m.round === round);
   const days = new Map<string, Match[]>();
   for (const m of ms) days.set(day(m.kickoff_at), [...(days.get(day(m.kickoff_at)) ?? []), m]);

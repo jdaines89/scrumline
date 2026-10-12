@@ -72,6 +72,9 @@ function Predict() {
   const [remind, setRemind] = useState(me.email_reminders);
   const { locked, isLocked, matchStarted, reload: reloadLocks } = useRoundLocks(entry!.id, season, matches);
   const [round, setRound] = useState<number | null>(null);
+  // A round number means nothing in another tournament: switching starts on that tournament's own open round.
+  const [roundOf, setRoundOf] = useState(season.id);
+  if (roundOf !== season.id) { setRoundOf(season.id); setRound(rounds.length ? firstOpenRound(rounds, isLocked) : null); }
   const [prizes, reloadPrizes] = usePoolPrizes(pool?.id);
   const backers = useSeasonSponsors(season.id);
   const [preds, setPreds] = useState<Map<string, Prediction>>(new Map());
