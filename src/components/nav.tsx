@@ -29,7 +29,8 @@ function useUnread(uid: string | null): Unread {
   const [u, setU] = useState<Unread>({ count: 0, tagged: false });
   const refresh = useCallback(async () => {
     if (!uid) return;
-    const { data } = await supabase.from("chat_unread").select("unread, tagged");
+    // Muted leagues don't count towards the Chat tab's badge.
+    const { data } = await supabase.from("chat_unread").select("unread, tagged").eq("muted", false);
     const rows = (data ?? []) as { unread: number; tagged: number }[];
     setU({ count: rows.reduce((n, r) => n + r.unread, 0), tagged: rows.some((r) => r.tagged > 0) });
   }, [uid]);
