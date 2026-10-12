@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { useLeague } from "@/components/league";
+import { ProvinceScene } from "@/components/province-scene";
 import { provinceName, schoolHref } from "@/lib/crest";
 import { readCache, writeCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
@@ -57,10 +58,13 @@ export function ProvinceTable() {
         <>
           {ranked.length > 0 && (
             <ol className="board schools-table provinces">
-              {ranked.map((r) => (
-                <li key={r.province} className={r.mine ? "me" : ""}>
+              {ranked.map((r) => {
+                const place = 1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length;
+                return (
+                <li key={r.province} className={[r.mine ? "me" : "", place <= 3 ? `p${place}` : ""].filter(Boolean).join(" ")}>
                   <div className="srow">
-                    <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
+                    <ProvinceScene code={r.province} />
+                    <span className="rank">{place}</span>
                     <span className="sname">{provinceName(r.province)}</span>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
                     <Meta parts={[`${r.schools.toLocaleString("en-ZA")} ${r.schools === 1 ? "school" : "schools"}`, `${r.players.toLocaleString("en-ZA")} ${r.players === 1 ? "player" : "players"}`]} />
@@ -83,7 +87,8 @@ export function ProvinceTable() {
                     </div>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ol>
           )}
           {waiting.length > 0 && (
@@ -93,6 +98,7 @@ export function ProvinceTable() {
                 {waiting.map((p) => (
                   <li key={p}>
                     <div className="srow">
+                      <ProvinceScene code={p} />
                       <span className="rank blank" aria-hidden />
                       <span className="sname">{provinceName(p)}</span>
                       <Meta parts={["No school ranked yet"]} />
