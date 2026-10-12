@@ -1806,7 +1806,7 @@ body {
 }
 .match .mhead { background: transparent; }
 /* Provinces: the schools table's rows without a crest. */
-.provinces .srow { grid-template-columns: 28px minmax(0, 1fr) 3.6em; }
+.provinces .srow { grid-template-columns: 28px minmax(0, 1fr) auto; }
 .provinces .srow .sname { grid-column: 2; }
 .provinces .srow .btotal { grid-column: 3; }
 .provinces .srow .smeta, .provinces .srow .srow-how { grid-column: 2 / 4; }
@@ -2033,3 +2033,10 @@ td { padding: 7px 8px; }
 .provinces .srow .srow-how { background: rgba(17, 36, 29, 0.85); }
 .provinces .srow .btotal, .provinces .srow .sname { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.6); }
 .provinces .srow .smeta { color: #dce8e2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
+/* The points sit on their own dark chip so they read over any picture. */
+.provinces .srow .btotal {
+  justify-self: end; align-self: start; padding: 3px 9px; border-radius: 9px;
+  background: rgba(9, 20, 15, 0.82); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  font-size: 19px; font-variant-numeric: tabular-nums; text-shadow: none;
+}
+.provinces li.p1 .srow .btotal { color: var(--gold); }
