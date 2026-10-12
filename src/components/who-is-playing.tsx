@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { fullName, suggestTeams } from "@/lib/names";
 import { supabase } from "@/lib/supabase";
-import type { Member } from "@/lib/types";
+import { MEMBER_COLUMNS, type Member } from "@/lib/types";
 
 /** Whether an old display name looks like a name someone chose (not their email's start or a "Player" stand-in). */
 function chosenName(m: Member): string {
@@ -38,13 +38,13 @@ export function WhoIsPlaying({ me, members, onDone }: { me: Member; members: Mem
     setBusy(true);
     const { data, error } = await supabase.from("members")
       .update({ first_name: first.trim(), last_name: last.trim(), known_as: known.trim() || null, team_name: t })
-      .eq("user_id", me.user_id).select().single();
+      .eq("user_id", me.user_id).select(MEMBER_COLUMNS).single();
     setBusy(false);
     if (error) {
       setMsg(error.code === "23505" ? "Someone already plays as that team. Pick another." : error.message);
       return;
     }
-    onDone(data as Member);
+    onDone({ ...me, ...(data as Partial<Member>) });
   }
 
   return (

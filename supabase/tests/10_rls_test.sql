@@ -1033,7 +1033,7 @@ insert into public.matches (id, season, round, kickoff_at, home_team_id, away_te
   ('t-push', '2027', 2, now() + interval '20 minutes', '142072', '142073', 'SCHEDULED', 'test');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
 update public.members set reminder_by = 'email' where user_id = '00000000-0000-0000-0000-00000000000c';
-select pg_temp.check((select reminder_by from public.members where user_id = '00000000-0000-0000-0000-00000000000c') = 'email', 'a player can ask for reminders by email');
+select pg_temp.check((select reminder_by from public.my_member()) = 'email', 'a player can ask for reminders by email');
 update public.members set reminder_by = 'email' where user_id = '00000000-0000-0000-0000-00000000000a';
 reset role;
 select pg_temp.check((select reminder_by from public.members where user_id = '00000000-0000-0000-0000-00000000000a') = 'push', 'but not for someone else');

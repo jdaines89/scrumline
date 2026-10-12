@@ -40,9 +40,8 @@ export function SchoolStep({ me, onJoined, onDone, onLater }: {
   // Never blocks: if the note doesn't save, the question still goes away for this visit.
   async function asked(): Promise<Member> {
     const at = new Date().toISOString();
-    const { data, error } = await supabase.from("members").update({ school_asked_at: at })
-      .eq("user_id", me.user_id).select().single();
-    return error ? { ...me, school_asked_at: at } : (data as Member);
+    await supabase.from("members").update({ school_asked_at: at }).eq("user_id", me.user_id);
+    return { ...me, school_asked_at: at };
   }
 
   async function skip() {

@@ -84,7 +84,7 @@ function useMe(uid: string | null): Member | undefined {
     if (!uid) { setMe(undefined); return; }
     const cached = readCache<{ me: Member }>("base")?.me;
     if (cached?.user_id === uid) setMe(cached);
-    supabase.from("members").select("*").eq("user_id", uid).maybeSingle()
+    supabase.rpc("my_member").maybeSingle()
       .then(({ data }) => { if (data) setMe(data as Member); });
   }, [uid]);
   return me;
