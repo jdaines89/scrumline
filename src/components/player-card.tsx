@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AchBadge } from "@/components/achievement-badge";
 import { Avatar } from "@/components/avatar";
+import { useLeague } from "@/components/league";
 import { SponsorAbout, SponsorTile } from "@/components/sponsor-tile";
+import { achievements, type ScoredCall } from "@/lib/achievements";
 import { readCache, writeCache } from "@/lib/cache";
 import { schoolHref } from "@/lib/crest";
 import { fullName } from "@/lib/names";
@@ -47,6 +50,32 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
     });
     return () => { live = false; };
   }, [key, member.user_id]);
+
+  // Their calling achievements in the tournament you're looking at. Scored calls are only
+  // readable for players who share a league with you, so for anyone else this stays hidden.
+  const { season, matches, me } = useLeague();
+  const achKey = `player-ach:${member.user_id}:${season.id}`;
+  const [calls, setCalls] = useState<ScoredCall[] | null>(() => readCache<ScoredCall[] | null>(achKey) ?? null);
+  useEffect(() => {
+    let live = true;
+    setCalls(readCache<ScoredCall[] | null>(achKey) ?? null);
+    (async () => {
+      const { data: e } = await supabase.from("entries").select("id").eq("season", season.id).eq("user_id", member.user_id).maybeSingle();
+      let rows: ScoredCall[] | null = null;
+      if (e) {
+        const { data: shared } = member.user_id === me.user_id ? { data: true } : await supabase.rpc("shares_pool", { p_entry: e.id });
+        if (shared) {
+          const { data } = await supabase.from("prediction_points").select("round, right_result, near_pts, exact_pts, is_banker").eq("entry_id", e.id);
+          rows = (data ?? []) as ScoredCall[];
+        }
+      }
+      if (!live) return;
+      writeCache(achKey, rows);
+      setCalls(rows);
+    })();
+    return () => { live = false; };
+  }, [achKey, member.user_id, me.user_id, season.id]);
+  const earned = calls ? achievements(calls, matches).filter((a) => a.earned) : null;
 
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -99,6 +128,22 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
                     <SponsorAbout about={b.about} website={b.website} />
                   </div>
                 ))}
+              </section>
+            )}
+
+            {earned && (
+              <section>
+                <h3>Achievements</h3>
+                {earned.length === 0 ? <p className="small muted">None unlocked yet in {season.name}.</p> : (
+                  <ul className="pc-ach">
+                    {earned.map((a) => (
+                      <li key={a.key} title={a.rule}>
+                        <AchBadge k={a.key} have={a.have} goal={a.goal} earned size={48} />
+                        <span>{a.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
             )}
 
