@@ -157,7 +157,7 @@ function Leaderboard() {
       {view !== "schools" && view !== "provinces" && sponsor ? <SponsorLine sponsor={sponsor} />
         : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
       {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
-      <div className="seg four" role="tablist">
+      <div className="seg four wide" role="tablist">
         <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
         <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
         <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>

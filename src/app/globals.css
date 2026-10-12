@@ -1767,3 +1767,6 @@ body {
   .seg.four { display: flex; }
   .seg.four button { flex: 1 1 auto; padding: 6px 4px; font-size: 12.5px; }
 }
+/* Tab bars that span the card, so the scope bar and the stage bar under it line up. */
+.seg.wide { display: flex; width: 100%; }
+.seg.wide button { flex: 1 1 0; padding-left: 4px; padding-right: 4px; white-space: nowrap; }

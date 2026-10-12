@@ -22,7 +22,7 @@ export default function RankingsPage() {
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       <h2>Rankings</h2>
       <p className="sub">Everyone playing {season.name}, whether or not you share a league.</p>
-      <div className="seg" role="tablist">
+      <div className="seg wide" role="tablist">
         {([["schools", "Schools"], ["provinces", "Provinces"], ["everyone", "Everyone"]] as const).map(([v, label]) => (
           <button key={v} type="button" role="tab" aria-selected={view === v} className={view === v ? "on" : ""} onClick={() => setView(v)}>{label}</button>
         ))}
