@@ -320,6 +320,7 @@ export default function PoolsPage() {
         <div className="lg-head">
           <h2>Your leagues</h2>
           <p className="sub">Your calls count in every league you&apos;re in.</p>
+          <p className="small"><Link href="/rankings/">Rankings: schools, provinces and everyone ›</Link></p>
         </div>
         <WaitingInvites onJoined={async (id) => { await reloadPools(); setPool(id); }} />
         {pools.length === 0 && <p className="muted">None yet. Start one below, or join with a code someone sent you.</p>}

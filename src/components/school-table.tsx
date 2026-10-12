@@ -45,7 +45,7 @@ export function SchoolTable() {
 
   return (
     <>
-      <div className="seg sm" role="tablist" aria-label="School stage">
+      <div className="seg sm wide" role="tablist" aria-label="School stage">
         {(["high", "primary"] as const).map((s) => (
           <button key={s} type="button" role="tab" aria-selected={stage === s} className={stage === s ? "on" : ""} onClick={() => setStage(s)}>
             {s === "high" ? "High schools" : "Primary schools"}
