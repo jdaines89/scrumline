@@ -7,6 +7,7 @@ import { BlockedPeople } from "@/components/blocked-people";
 import { MySchools } from "@/components/my-schools";
 import { reportProblem } from "@/components/report-problem";
 import { NotifySettings } from "@/components/notify-settings";
+import { Tabs } from "@/components/tabs";
 import { useLeague } from "@/components/league";
 import { signOut } from "@/lib/push";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +21,7 @@ export default function MePage() {
   const [team, setTeam] = useState(me.team_name ?? "");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [openProfile, setOpenProfile] = useState(!!me.open_profile);
   const [held, setHeld] = useState<number | null>(null);
   const [recruited, setRecruited] = useState<number | null>(null);
   useEffect(() => {
@@ -44,6 +46,12 @@ export default function MePage() {
       .eq("user_id", me.user_id);
     if (error) return say(false, error.code === "23505" ? "Someone already plays as that team. Pick another." : error.message);
     window.location.reload();
+  }
+
+  async function saveOpen(value: boolean) {
+    setOpenProfile(value);
+    const { error } = await supabase.from("members").update({ open_profile: value }).eq("user_id", me.user_id);
+    if (error) { setOpenProfile(!value); say(false, error.message); }
   }
 
   async function savePassword(e: FormEvent) {
@@ -92,6 +100,15 @@ export default function MePage() {
             </label>
             <div><button type="submit" disabled={!namesChanged}>Save</button></div>
           </form>
+
+          <div className="me-visibility">
+            <div className="pref-text">
+              <strong>Who can open your profile</strong>
+              <span className="small muted">From the Everyone table. People in your leagues always can.</span>
+            </div>
+            <Tabs size="sub" label="Who can open your profile" items={[["leagues", "Your leagues"], ["everyone", "Everyone"]] as const}
+              value={openProfile ? "everyone" : "leagues"} onPick={(v) => saveOpen(v === "everyone")} />
+          </div>
         </div>
 
         <div className="mepage-side">

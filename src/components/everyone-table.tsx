@@ -6,15 +6,19 @@ import { readCache, writeCache } from "@/lib/cache";
 import { ord } from "@/lib/growth";
 import { supabase } from "@/lib/supabase";
 import { GroundRules } from "@/components/ground-rules";
+import { PlayerCard } from "@/components/player-card";
 
-interface EveryoneRow { pos: number | null; place: number | null; team_name: string; points: number; mine: boolean; players: number; resting_players: number }
+interface EveryoneRow { user_id: string | null; pos: number | null; place: number | null; team_name: string; points: number; mine: boolean; players: number; resting_players: number }
 
 /**
  * Where you stand among everyone playing this tournament, across every league:
- * the top three and the two either side of you, by team name only.
+ * the top three and the two either side of you, by team name. A row opens the
+ * player's profile when they're in one of your leagues or chose to show it to everyone.
  */
 export function EveryoneTable() {
-  const { season } = useLeague();
+  const { season, members } = useLeague();
+  const [open, setOpen] = useState<string | null>(null);
+  const person = open ? members.find((m) => m.user_id === open) : undefined;
   const key = `sl:everyone:${season.id}`;
   const [rows, setRows] = useState<EveryoneRow[] | null>(() => readCache<EveryoneRow[]>(key) ?? null);
 
@@ -48,11 +52,13 @@ export function EveryoneTable() {
       {ranked.length > 0 && (
         <ol className="board everyone">
           {ranked.map((r, i) => (
-            <li key={r.team_name} className={`${r.mine ? "me" : ""}${i > 0 && r.pos! - ranked[i - 1].pos! > 1 ? " gap" : ""}`}>
+            <li key={r.team_name} className={`${r.mine ? "me" : ""}${i > 0 && r.pos! - ranked[i - 1].pos! > 1 ? " gap" : ""}${r.user_id ? " opens" : ""}`}
+              onClick={r.user_id ? () => setOpen(r.user_id) : undefined}>
               <div className="brow">
                 <span className="rank">{r.place}</span>
                 <div className="who"><strong>{r.team_name}</strong></div>
                 <span className="btotal">{r.points}</span>
+                {r.user_id ? <span className="bchev" aria-hidden="true">›</span> : <span className="bchev" />}
               </div>
             </li>
           ))}
@@ -63,9 +69,10 @@ export function EveryoneTable() {
       )}
       <GroundRules title="Every caller, every league" lines={[
         ["One table for the whole tournament.", "Everyone who calls, whatever league they play in."],
-        ["Team names only.", "No one sees who you are, just how you call."],
+        ["Team names first.", "Tap a player in your leagues, or anyone who shows their profile to everyone. Choose yours on your Profile page."],
         ...(resting > 0 ? [["Taking a break?", `${resting.toLocaleString("en-ZA")} ${resting === 1 ? "player is" : "players are"} back on the table with their next call.`] as [string, string]] : []),
       ]} />
+      {person && <PlayerCard member={person} onClose={() => setOpen(null)} />}
     </>
   );
 }

@@ -1771,6 +1771,11 @@ header.top .shell:has(.achbtn) .brand { padding-right: 104px; }
 .board.everyone li.gap { border-top: 1px dashed var(--line); margin-top: 0; padding-top: 22px; position: relative; }
 .board.everyone li.gap::before { content: "···"; position: absolute; top: 2px; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 12px; letter-spacing: 2px; }
 .board.everyone li, .board.resting li { cursor: default; }
+.board.everyone li.opens { cursor: pointer; }
+.board.everyone .bchev { width: 10px; flex: none; color: var(--muted); font-size: 18px; line-height: 1; text-align: right; }
+.me-visibility { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--line); }
+.me-visibility .pref-text { display: grid; gap: 2px; min-width: 0; }
+.me-visibility .seg, .me-visibility .stage-tabs { flex: none; margin: 0; }
 .seg button { white-space: nowrap; }
 
 .nowrap { white-space: nowrap; }
