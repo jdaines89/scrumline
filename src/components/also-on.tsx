@@ -7,6 +7,8 @@ import { worthSwitching, type NextUp } from "@/lib/seasons";
 import { supabase } from "@/lib/supabase";
 import { startsIn } from "@/components/season-ahead";
 
+const SOON_KEY = "sl:soon-hidden:";
+
 /**
  * When the tournament you're looking at is resting and another one is on
  * (the URC break and the November tests), one quiet line pointing at it.
@@ -14,6 +16,16 @@ import { startsIn } from "@/components/season-ahead";
 export function AlsoOn() {
   const { seasons, season, matches, setSeason, competitions } = useLeague();
   const [other, setOther] = useState<NextUp | null>(null);
+  // "Starts soon" lines you've closed stay closed, one tournament at a time.
+  const [closed, setClosed] = useState<string[]>([]);
+  const isClosed = (id: string) => {
+    if (closed.includes(id)) return true;
+    try { return !!localStorage.getItem(SOON_KEY + id); } catch { return false; }
+  };
+  const close = (id: string) => {
+    setClosed((c) => [...c, id]);
+    try { localStorage.setItem(SOON_KEY + id, "1"); } catch { /* storage blocked: hidden until the page reloads */ }
+  };
   const others = seasons.filter((s) => !s.is_replay && s.id !== season.id).map((s) => s.id).join(",");
   useEffect(() => {
     setOther(null);
@@ -31,13 +43,16 @@ export function AlsoOn() {
   const today = new Date(now).toISOString().slice(0, 10);
   const fortnight = new Date(now + 14 * 864e5).toISOString().slice(0, 10);
   const soon = seasons.filter((s) => !s.is_replay && s.id !== season.id && s.id !== shown?.id
-    && s.starts_on && s.starts_on > today && s.starts_on <= fortnight);
+    && s.starts_on && s.starts_on > today && s.starts_on <= fortnight && !isClosed(s.id));
   const soonCard = soon.length > 0 && (
     <div className="card also-soon">
       {soon.map((s) => (
         <div className="also-row" key={s.id}>
           <p><strong>{s.name}</strong> starts {new Date(`${s.starts_on}T12:00:00Z`).toLocaleDateString("en-ZA", { timeZone: "Africa/Johannesburg", weekday: "short", day: "numeric", month: "long" })}. Your leagues are in it already.</p>
-          <button type="button" onClick={() => setSeason(s.id)}>Open</button>
+          <div className="also-acts">
+            <button type="button" className="ghost" onClick={() => close(s.id)}>Not now</button>
+            <button type="button" onClick={() => setSeason(s.id)}>Open</button>
+          </div>
         </div>
       ))}
     </div>
