@@ -4,56 +4,47 @@ import { useState } from "react";
 import { useLeague } from "@/components/league";
 import { MatchesSwitch } from "@/components/matches-switch";
 import { RoundPicker, currentRound } from "@/components/round-picker";
-import { Crest } from "@/components/team";
+import { CombinedCalendar } from "@/components/combined-calendar";
+import { FixtureCard, fixtureDay as day } from "@/components/fixture-card";
 import type { Match } from "@/lib/types";
-
-const SAST = "Africa/Johannesburg";
-const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { timeZone: SAST, weekday: "long", day: "numeric", month: "long" });
-const time = (iso: string) => new Date(iso).toLocaleTimeString("en-ZA", { timeZone: SAST, hour: "2-digit", minute: "2-digit", hour12: false });
 
 export default function FixturesPage() {
   const { rounds, matches, teams } = useLeague();
   const [round, setRound] = useState(() => currentRound(rounds, matches));
+  const [all, setAll] = useState(false);
   const ms = matches.filter((m) => m.round === round);
   const days = new Map<string, Match[]>();
   for (const m of ms) days.set(day(m.kickoff_at), [...(days.get(day(m.kickoff_at)) ?? []), m]);
 
+  if (all) return (
+    <>
+      <MatchesSwitch />
+      <Scope all={all} onPick={setAll} />
+      <CombinedCalendar />
+    </>
+  );
   return (
     <>
       <MatchesSwitch />
+      <Scope all={all} onPick={setAll} />
       <RoundPicker rounds={rounds} round={round} onPick={setRound} matches={matches} />
       {[...days].map(([d, list], i) => (
         <div className="card" key={d}>
           <h2>{d}</h2>
           {i === 0 && <p className="sub">Kick-off times are South African time.</p>}
-          {list.map((m) => {
-            const h = teams.get(m.home_team_id), a = teams.get(m.away_team_id);
-            const played = m.home_score !== null;
-            return (
-              <div className="fixture" key={m.id}>
-                <div className="fmeta">
-                  <strong>{time(m.kickoff_at)}</strong>
-                  {m.venue && <span>{m.venue}</span>}
-                  {m.status === "POSTP" && <span className="badge loss">postponed</span>}
-                  {m.status === "INTR" && <span className="badge draw">interrupted, score stood</span>}
-                </div>
-                <div className="fside">
-                  <span className="ha home">Home</span>
-                  {h && <Crest team={h} size={28} />}
-                  <strong>{h?.display_name}</strong>
-                  {played && <span className="fscore">{m.home_score}</span>}
-                </div>
-                <div className="fside">
-                  <span className="ha">Away</span>
-                  {a && <Crest team={a} size={28} />}
-                  <strong>{a?.display_name}</strong>
-                  {played && <span className="fscore">{m.away_score}</span>}
-                </div>
-              </div>
-            );
-          })}
+          {list.map((m) => <FixtureCard key={m.id} m={m} teams={teams} />)}
         </div>
       ))}
     </>
+  );
+}
+
+/** One tournament's rounds, or every tournament together by date. */
+function Scope({ all, onPick }: { all: boolean; onPick: (v: boolean) => void }) {
+  return (
+    <div className="seg sm wide" role="tablist" aria-label="Which tournaments">
+      <button type="button" role="tab" aria-selected={!all} className={all ? "" : "on"} onClick={() => onPick(false)}>This tournament</button>
+      <button type="button" role="tab" aria-selected={all} className={all ? "on" : ""} onClick={() => onPick(true)}>All tournaments</button>
+    </div>
   );
 }
