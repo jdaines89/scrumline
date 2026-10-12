@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Dashboard, Payout } from "./school";
 import type { PoolPrize } from "./prizes";
+import type { MyReward } from "./rewards";
 import type { PoolSponsor } from "./sponsor";
 import type { SeasonSponsor } from "./tournament-sponsor";
 
@@ -125,3 +126,16 @@ export function withTrialPrize(prizes: PoolPrize[], round: number | null, on: bo
 /** The school meter's trial project, when a school has nothing real yet. */
 export const TRIAL_PROJECT = { id: -1, title: "15 match balls and a kit bag", state: "open" as const,
   target_minor: 1200000, pledged_minor: 840000, paid_minor: 0, backers: 3 };
+
+/** Trial badge rewards on Achievements, only while the tournament has no real ones. Codes are never real. */
+export function trialRewards(earned: (key: string) => boolean, claimed: string[]): MyReward[] {
+  const terms = "Trial reward: the business and code are made up, so there is nothing to collect.";
+  return [
+    { campaign_id: -1, title: "Free coffee", sponsor_name: "Touchline Coffee", achievement_key: "sharpshooter", code: "TRIAL-COFFEE" },
+    { campaign_id: -2, title: "R200 off a service", sponsor_name: "Front Row Motors", achievement_key: "clean-sweep", code: "TRIAL-SERVICE" },
+    { campaign_id: -3, title: "Free eye test", sponsor_name: "Scrumcap Optometrists", achievement_key: "banker-bang", code: "TRIAL-EYES" },
+  ].map((r) => {
+    const done = claimed.includes(r.achievement_key);
+    return { ...r, terms, ends_at: null, remaining: 25, earned: earned(r.achievement_key), claimed: done, code: done ? r.code : null };
+  });
+}

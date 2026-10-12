@@ -7,6 +7,8 @@ import { achievements, type Achievement, type ScoredCall } from "@/lib/achieveme
 import { readCache, writeCache } from "@/lib/cache";
 import { rewardTag, type MyReward } from "@/lib/rewards";
 import { supabase } from "@/lib/supabase";
+import { TrialTag } from "@/components/sponsor-tile";
+import { trialRewards, usePreview } from "@/lib/preview";
 
 // Earned badges this phone has already shown off, so each pops only the first time.
 const SEEN_KEY = "sl:ach-seen";
@@ -14,14 +16,16 @@ const seen = (): string[] => { try { return JSON.parse(localStorage.getItem(SEEN
 
 function Achievements() {
   const { entry, matches, season } = useLeague();
-  const [rewards, setRewards] = useState<MyReward[]>([]);
+  const [realRewards, setRewards] = useState<MyReward[]>([]);
+  const trial = usePreview();
+  const [trialClaimed, setTrialClaimed] = useState<string[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const loadRewards = () => { supabase.rpc("my_rewards", { p_season: season.id }).then(({ data }) => setRewards((data ?? []) as MyReward[])); };
   useEffect(loadRewards, [season.id]); // eslint-disable-line react-hooks/exhaustive-deps
-  const rewardFor = (key: string) => rewards.find((r) => r.achievement_key === key);
   async function claim(r: MyReward) {
     setMsg(null);
+    if (r.campaign_id < 0) { setTrialClaimed((c) => [...c, r.achievement_key]); return; }  // trial: nothing is written
     const { error } = await supabase.rpc("claim_reward", { p_campaign: r.campaign_id });
     if (error) setMsg(error.message);
     loadRewards();
@@ -38,6 +42,10 @@ function Achievements() {
   }, [entry]);
 
   const list = achievements(calls ?? [], matches);
+  // Trial rewards fill in only while the tournament has no real ones.
+  const rewards = trial && !realRewards.length
+    ? trialRewards((k) => !!list.find((a) => a.key === k)?.earned, trialClaimed) : realRewards;
+  const rewardFor = (key: string) => rewards.find((r) => r.achievement_key === key);
   useEffect(() => {
     if (calls === null) return;
     const done = list.filter((a) => a.earned).map((a) => a.key);
@@ -74,7 +82,7 @@ function Achievements() {
               return (
                 <div className="ach-reward">
                   <strong>{r.title}</strong>
-                  {r.sponsor_name && <span className="small muted">From {r.sponsor_name}</span>}
+                  {r.sponsor_name && <span className="small muted">From {r.sponsor_name}{r.campaign_id < 0 && <TrialTag />}</span>}
                   {r.claimed && r.code ? (
                     <>
                       <code className="ach-code">{r.code}</code>
