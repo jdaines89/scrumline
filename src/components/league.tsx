@@ -14,6 +14,7 @@ import { callsToSave, readPendingCalls, writePendingCalls } from "@/lib/pending-
 import { SchoolStep } from "@/components/school-step";
 import { needsNames } from "@/lib/names";
 import { defaultSeason, pickerGroups, seasonLine, seasonStatus } from "@/lib/seasons";
+import { TournamentLogo } from "@/components/tournament-logo";
 
 interface League {
   seasons: Season[];
@@ -272,7 +273,7 @@ const POOL_SCREENS: string[] = [];
 
 /** Which tournament you're looking at, and on pool screens which pool. */
 function Switcher() {
-  const { seasons, season, setSeason, pools, pool, setPool } = useLeague();
+  const { seasons, season, setSeason, pools, pool, setPool, competitions } = useLeague();
   const path = usePathname() ?? "";
   const [picking, setPicking] = useState(false);
   if (isSponsorPath(path)) return <SponsorTabs />;
@@ -284,6 +285,7 @@ function Switcher() {
       {seasons.length > 1 ? (
         <>
           <button type="button" className="tpick" onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={`Tournament: ${season.name}. Change tournament`}>
+            <TournamentLogo competition={competitions.get(season.competition_id)} size={40} />
             <TournamentFace season={season} />
             <span className="tpick-btn" aria-hidden="true">
               <svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -292,7 +294,7 @@ function Switcher() {
           {picking && <TournamentSheet onClose={() => setPicking(false)} />}
         </>
       ) : (
-        <div className="tpick solo"><TournamentFace season={season} /></div>
+        <div className="tpick solo"><TournamentLogo competition={competitions.get(season.competition_id)} size={40} /><TournamentFace season={season} /></div>
       )}
       {showPool && <label>
         <span>League</span>
@@ -328,7 +330,7 @@ function TournamentFace({ season }: { season: Season }) {
  * finished and practice, each with one line saying when it runs.
  */
 function TournamentSheet({ onClose }: { onClose: () => void }) {
-  const { seasons, season, setSeason } = useLeague();
+  const { seasons, season, setSeason, competitions } = useLeague();
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
@@ -351,6 +353,7 @@ function TournamentSheet({ onClose }: { onClose: () => void }) {
                 return (
                   <button key={s.id} type="button" className={on ? "tsheet-row on" : "tsheet-row"} aria-current={on ? "true" : undefined}
                     onClick={() => { if (!on) setSeason(s.id); onClose(); }}>
+                    <TournamentLogo competition={competitions.get(s.competition_id)} size={36} />
                     <span className="tsheet-text">
                       <span className="tsheet-name">{s.name}</span>
                       {seasonLine(s) && <span className="tsheet-when">{g.label === "On now" && <i className="tdot on" aria-hidden="true" />}{seasonLine(s)}</span>}
