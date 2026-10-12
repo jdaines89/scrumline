@@ -131,13 +131,23 @@ function Leaderboard() {
   return (
     <div className="card">
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
-      {view === "schools" ? <h2>Schools</h2> : view === "provinces" ? <h2>Provinces</h2> : view === "everyone" ? <h2>Everyone</h2> : (
-        <div className="league-title">
-          <LeaguePicture pool={pool!} size={44} expandable />
-          <h2><PoolName pool={pool!} /></h2>
-          <ChatButton pool={pool!} />
-        </div>
-      )}
+      {/* The heading, tournament line and scope bar stay the same in every view, so switching
+          between the league, everyone, schools and provinces never moves the bar. */}
+      <div className="league-title">
+        <LeaguePicture pool={pool!} size={44} expandable />
+        <h2><PoolName pool={pool!} /></h2>
+        <ChatButton pool={pool!} />
+      </div>
+      {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
+      {sponsor ? <SponsorLine sponsor={sponsor} />
+        : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
+      {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
+      <div className="seg four wide" role="tablist">
+        <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
+        <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
+        <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
+        <button type="button" role="tab" aria-selected={view === "provinces"} className={view === "provinces" ? "on" : ""} onClick={() => setView("provinces")}>Provinces</button>
+      </div>
       {view === "schools" && <p className="sub">Every school playing this tournament, not just the ones in this league.</p>}
       {view === "provinces" && <p className="sub">Every province playing this tournament, by where players went to school.</p>}
       {view !== "schools" && view !== "provinces" && view !== "everyone" && <CountsFrom />}
@@ -153,16 +163,6 @@ function Leaderboard() {
           {editPic && <LeaguePicturePicker onMessage={(ok, text) => { setPicMsg(text); if (ok) setEditPic(false); }} />}
         </div>
       )}
-      {/* One sponsor line and one prize panel: the pool's own sponsor beats the tournament's, the round prize beats the recruiter prize. */}
-      {view !== "schools" && view !== "provinces" && sponsor ? <SponsorLine sponsor={sponsor} />
-        : <TournamentLine sponsors={backers} seasonName={season.name} round={currentRound(matches)} single />}
-      {/* Who you're up against: your league, everyone in the tournament, or the schools. */}
-      <div className="seg four wide" role="tablist">
-        <button type="button" role="tab" aria-selected={view === "overall" || view === "round"} className={view === "overall" || view === "round" ? "on" : ""} onClick={() => setView("overall")}>This league</button>
-        <button type="button" role="tab" aria-selected={view === "everyone"} className={view === "everyone" ? "on" : ""} onClick={() => setView("everyone")}>Everyone</button>
-        <button type="button" role="tab" aria-selected={view === "schools"} className={view === "schools" ? "on" : ""} onClick={() => setView("schools")}>Schools</button>
-        <button type="button" role="tab" aria-selected={view === "provinces"} className={view === "provinces" ? "on" : ""} onClick={() => setView("provinces")}>Provinces</button>
-      </div>
       {(view === "overall" || view === "round") && rows && rows.length > 0 && (
         <p className="small board-switch">
           <button type="button" className="linkish small" onClick={() => setView(view === "round" ? "overall" : "round")}>
@@ -170,6 +170,7 @@ function Leaderboard() {
           </button>
         </p>
       )}
+      <div className="view-area">
       {view === "schools" ? <SchoolTable /> : view === "provinces" ? <ProvinceTable /> : view === "everyone" ? <EveryoneTable /> : view === "round" ? (rows === null ? <SkeletonRows /> : <><RoundTable rows={rows} />{prizeBlock}</>) : rows === null ? <SkeletonRows /> : rows.length === 0 ? <p className="muted">No one here yet.</p> : (
         <>
         {top && <TopRecruiter ids={top.ids} count={top.count} rows={rows} />}
@@ -189,6 +190,7 @@ function Leaderboard() {
         {profile && person(profile) && <PlayerCard member={person(profile)!} onClose={() => setProfile(null)} />}
         </>
       )}
+      </div>
       {view === "overall" && rows && rows.length > 0 && <p className="small muted" style={{ marginTop: 12 }}>
         {picked ? "RES right result · MAR exact margin · CLS within 3 points · EXA exact score · BNK the extra your Banker doubled." : "Tap a team to see their points and compare rounds."}
       </p>}

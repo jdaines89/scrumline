@@ -2040,3 +2040,10 @@ td { padding: 7px 8px; }
   font-size: 19px; font-variant-numeric: tabular-nums; text-shadow: none;
 }
 .provinces li.p1 .srow .btotal { color: var(--gold); }
+/* "Top schools" stays readable once tapped: a phone keeps :hover after a tap,
+   and the green hover would put dark text on the dark chip. */
+.sch-how-btn:hover, .provinces .srow .srow-how:hover { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+.provinces .srow .srow-how:hover { background: rgba(17, 36, 29, 0.85); }
+.sch-how-btn[aria-expanded="true"] { border-color: var(--accent-dim); color: var(--accent); }
+/* Switching tables keeps the page's height, so the scroll position doesn't jump. */
+.view-area { min-height: 70vh; }

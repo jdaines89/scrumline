@@ -27,7 +27,9 @@ export default function RankingsPage() {
           <button key={v} type="button" role="tab" aria-selected={view === v} className={view === v ? "on" : ""} onClick={() => setView(v)}>{label}</button>
         ))}
       </div>
-      {view === "schools" ? <SchoolTable /> : view === "provinces" ? <ProvinceTable /> : <EveryoneTable />}
+      <div className="view-area">
+        {view === "schools" ? <SchoolTable /> : view === "provinces" ? <ProvinceTable /> : <EveryoneTable />}
+      </div>
     </div>
   );
 }
