@@ -76,7 +76,7 @@ export default function Home() {
             </Link>
           </div>
         )}
-        <TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} />
+        <div className="home-backers"><TournamentLine sponsors={backers} seasonName={season.name} round={nextRound} /></div>
       </div>
       {!season.is_replay && <FullTimeCard />}
       <SeasonAhead />

@@ -721,6 +721,10 @@ a.rowline:hover { text-decoration: none; background: var(--panel-2); }
 .bars i.last { background: var(--accent); }
 .spline { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
 .spline b { color: var(--text); font-weight: 600; }
+/* Home: the tournament's sponsor sits clear of the Call your scores button */
+.home-backers { margin-top: 16px; }
+.home-backers:empty { display: none; }
+.home-backers .spline:last-child { margin-bottom: 0; }
 .spline a { color: var(--muted); }
 .spline a:hover { color: var(--accent); }
 
