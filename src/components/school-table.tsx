@@ -67,7 +67,7 @@ export function SchoolTable() {
                 <li key={r.emis} className={r.mine ? "me" : ""}>
                   <div className="srow">
                     <span className="rank">{1 + ranked.filter((x) => Number(x.score) > Number(r.score)).length}</span>
-                    <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
+                    <Crest emis={r.emis} path={crests.get(r.emis)} size={36} />
                     <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
                     <span className="btotal">{Number(r.score).toFixed(1)}</span>
                     <Meta parts={[r.town, SCHOOL_TRIAL ? `${r.confirmed} ${r.confirmed === 1 ? "player" : "players"}` : `${r.confirmed} confirmed`, `${r.rounds_counted} ${r.rounds_counted === 1 ? "round" : "rounds"}`]} />
@@ -88,9 +88,8 @@ export function SchoolTable() {
               <ol className="board schools-table waiting">
                 {waiting.map((r) => (
                   <li key={r.emis} className={r.mine ? "me" : ""}>
-                    <div className="srow">
-                      <span className="rank blank" aria-hidden />
-                      <Crest emis={r.emis} path={crests.get(r.emis)} size={32} />
+                    <div className="srow norank">
+                      <Crest emis={r.emis} path={crests.get(r.emis)} size={36} />
                       <Link href={schoolHref(r.emis)} className="sch-link sname">{r.name}</Link>
                       <Meta parts={SCHOOL_TRIAL
                         ? [`${r.members} in the league`, "ranked after a scored call"]

@@ -286,7 +286,7 @@ function Switcher() {
     <div className="switcher">
       <div className="tpick">
         <button type="button" className="tpick-logo" onClick={() => setAbout(true)} aria-haspopup="dialog" aria-label={`About ${season.name}`}>
-          <TournamentLogo competition={competitions.get(season.competition_id)} size={40} />
+          <TournamentLogo competition={competitions.get(season.competition_id)} size={32} />
         </button>
         {seasons.length > 1 ? (
           <button type="button" className="tpick-main" onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={`Tournament: ${season.name}. Change tournament`}>

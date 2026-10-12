@@ -269,10 +269,10 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 .legend dd { margin: 0; }
 
 /* Tournament and pool switcher */
-.switcher { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.switcher { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 /* The tournament you're looking at: one calm bar, the full name, a status line, and a round chevron button to change it. */
-.tpick { box-sizing: border-box; display: flex; align-items: center; gap: 12px; flex: 1 1 100%; min-width: 0; min-height: 64px;
-  padding: 11px 12px 11px 12px; border-radius: 16px; color: var(--text); text-align: left;
+.tpick { box-sizing: border-box; display: flex; align-items: center; gap: 10px; flex: 1 1 100%; min-width: 0; min-height: 52px;
+  padding: 7px 10px; border-radius: 14px; color: var(--text); text-align: left;
   background: linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .02)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), 0 6px 18px -12px rgba(0, 0, 0, .6);
   transition: box-shadow .15s, background .15s; }
 .tpick:has(.tpick-main:hover) { background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03)); }
@@ -286,12 +286,12 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
   border-radius: 12px; -webkit-tap-highlight-color: transparent; }
 .tpick-main:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 .tpick-main:active { transform: scale(.995); }
-.tpick-text { display: grid; gap: 3px; flex: 1; min-width: 0; }
-.tpick-name { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.25; overflow-wrap: break-word; }
-.tpick-line { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); line-height: 1.3; }
+.tpick-text { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.tpick-name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.25; overflow-wrap: break-word; }
+.tpick-line { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); line-height: 1.3; }
 .tdot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); opacity: .55; }
 .tdot.on { background: var(--accent); opacity: 1; box-shadow: 0 0 0 3px rgba(53, 201, 138, .18); }
-.tpick-btn { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: var(--text);
+.tpick-btn { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: var(--text);
   background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); transition: background .15s, color .15s; }
 .tpick-main:hover .tpick-btn { background: var(--accent); color: #062015; }
 .switcher label { display: flex; flex-direction: column; gap: 3px; flex: 1 1 140px; min-width: 0; }
@@ -1206,17 +1206,25 @@ a.sch-link { color: inherit; text-decoration: none; }
 a.sch-link:hover { text-decoration: underline; }
 /* Every school row the same shape: rank, crest, name and score on top, details underneath. */
 .schools-table li { padding: 12px; }
-.srow { display: grid; grid-template-columns: 28px 32px minmax(0, 1fr) 3.6em; grid-template-rows: auto auto auto; column-gap: 10px; row-gap: 2px; align-items: center; }
+.srow { display: grid; grid-template-columns: 28px 36px minmax(0, 1fr) 3.6em; grid-template-rows: auto auto auto; column-gap: 10px; row-gap: 2px; align-items: center; }
 .srow .rank { grid-column: 1; grid-row: 1 / 4; }
 .srow .school-mark { grid-column: 2; grid-row: 1 / 4; }
 .srow .rank.blank { visibility: hidden; }
+/* Every school gets the same 36px slot: crests fit inside it, and a school without one shows a quiet tile the same size. */
+.srow .school-mark { width: 36px; height: 36px; border-radius: 8px; }
+.srow .school-mark.plain { border: 0; background: rgba(255, 255, 255, .06); }
+/* Not ranked yet: no rank to show, so the crest sits at the row's left edge. */
+.srow.norank { grid-template-columns: 36px minmax(0, 1fr) 3.6em; }
+.srow.norank .school-mark { grid-column: 1; }
+.srow.norank .sname { grid-column: 2 / 4; }
+.srow.norank .smeta { grid-column: 2 / 4; }
 .srow .sname { grid-column: 3; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
 .srow .btotal { grid-column: 4; grid-row: 1; text-align: right; line-height: 1.25; white-space: nowrap; }
 .srow .smeta { grid-column: 3 / 5; grid-row: 2; line-height: 1.35; }
 .srow .smeta > span { white-space: nowrap; }
 .schools-table.waiting .smeta > span { white-space: normal; }
 .schools-table .srow .btotal { font-size: 18px; }
-.schools-table.waiting .sname { font-weight: 600; grid-column: 3 / 5; }
+.schools-table.waiting .sname { font-weight: 600; }
 .lg-panel-head { display: flex; align-items: center; gap: 10px; }
 .lg-panel-name { flex: 1; min-width: 0; color: var(--text); }
 .lg-panel-link { font-size: 12.5px; font-weight: 500; white-space: nowrap; }
@@ -1670,31 +1678,31 @@ button.chat-back:hover { color: var(--text); }
 
 /* Home: your team, front and centre. A mown-pitch card with the name big and the round's calls as one chalk segment per match. */
 .card.teamcard {
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; padding: 16px;
   background:
     linear-gradient(180deg, rgba(28, 54, 44, 0) 0%, var(--panel) 92%),
     repeating-linear-gradient(90deg, #21402f 0 44px, #1b3529 44px 88px);
   border-top: 2px solid var(--gold);
 }
-.tc-head { display: flex; align-items: center; gap: 14px; }
+.tc-head { display: flex; align-items: center; gap: 12px; }
 .tc-head > :first-child { flex: none; }
 .tc-who { display: flex; flex-direction: column; min-width: 0; }
-.tc-hi { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.card .tc-name { margin: 2px 0 0; font-size: 28px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.tc-hi { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card .tc-name { margin: 1px 0 0; font-size: 22px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .card .tc-name.tc-none { color: var(--muted); font-size: 20px; }
 .tc-replay { margin: 12px 0 0; }
-.tc-round { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.tc-round { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
 .tc-round-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .tc-round-name { font-weight: 700; font-size: 15px; }
 .tc-count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.tc-bar { display: flex; gap: 4px; margin: 10px 0 14px; }
+.tc-bar { display: flex; gap: 4px; margin: 8px 0 10px; }
 .tc-bar span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .3s; }
 .tc-bar span.on { background: var(--accent); }
-.btn.tc-go { display: block; width: 100%; text-align: center; padding: 12px 16px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: #07140e; }
+.btn.tc-go { display: block; width: 100%; text-align: center; padding: 10px 16px; font-size: 15px; background: var(--accent); border-color: var(--accent); color: #07140e; }
 .btn.tc-go:hover { filter: brightness(1.08); }
 .btn.tc-go.done { background: transparent; border-color: var(--line); color: var(--text); }
 .btn.tc-go.done:hover { background: var(--panel-2); filter: none; }
-.card.teamcard > .btn.tc-go { margin-top: 16px; }
+.card.teamcard > .btn.tc-go { margin-top: 12px; }
 @media (min-width: 761px) { .btn.tc-go { display: inline-block; width: auto; min-width: 220px; } }
 /* Your banker on the full-time card: quiet gold words, clear of the score. */
 .ft-bank { color: var(--gold); font-weight: 600; white-space: nowrap; }
