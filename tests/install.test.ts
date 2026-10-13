@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { installHow } from "../src/lib/install";
+import { alertsOffer, installHow } from "../src/lib/install";
 
 const safari = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
 const chromeIos = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/126.0.6478.54 Mobile/15E148 Safari/604.1";
@@ -20,4 +20,18 @@ describe("installHow", () => {
     expect(installHow(samsung)).toBe("android");
   });
   it("a Mac", () => expect(installHow(mac, "MacIntel", 0)).toBe("desktop"));
+});
+
+describe("alertsOffer", () => {
+  it("offers Turn on wherever the browser can do push", () => expect(alertsOffer("off", false, false)).toBe("turn-on"));
+  it("never asks to install without one-tap install (iPhones, Redmi, WhatsApp links)", () => {
+    expect(alertsOffer("needs-home-screen", false, false)).toBeNull();
+    expect(alertsOffer("unsupported", false, false)).toBeNull();
+  });
+  it("offers one-tap install only where the browser has it", () => expect(alertsOffer("unsupported", true, false)).toBe("install"));
+  it("nothing once installed, on or blocked", () => {
+    expect(alertsOffer("unsupported", true, true)).toBeNull();
+    expect(alertsOffer("on", false, true)).toBeNull();
+    expect(alertsOffer("blocked", false, false)).toBeNull();
+  });
 });
