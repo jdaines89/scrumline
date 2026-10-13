@@ -5,7 +5,7 @@ import { plural } from "@/lib/recruits";
 import { supabase } from "@/lib/supabase";
 import { logEvent } from "@/lib/events";
 
-/** used: everyone the link brought in; waiting: those who haven't made a call yet, the only ones the cap counts. */
+/** used: people who joined with this link (a fresh one comes after cap); waiting: those who haven't made a call yet. */
 interface Mine { code: string; used: number; cap: number; waiting: number }
 /** This month's recruiter prize in one of your pools, with your own count so far. */
 interface Running { pool_id: number; pool_name: string; prize: string; sponsor: string; mine: number; best: number }
@@ -45,13 +45,6 @@ export function InviteCard() {
     } catch { /* dismissed */ }
   }
 
-  async function reset() {
-    if (!window.confirm("Make a new link? The old one will stop working.")) return;
-    const { data } = await supabase.rpc("reset_invite_code");
-    if (data) setMine({ ...mine!, code: data as string });
-    setCopied(false);
-  }
-
   return (
     <div className="card invite">
       <h2>Bring more people into the game</h2>
@@ -80,10 +73,8 @@ export function InviteCard() {
         <button type="button" onClick={share} disabled={full}>{copied ? "Copied" : "Share"}</button>
       </div>
       <p className="small muted invite-foot">
-        {full ? `${mine.cap} people you invited haven't played yet, so the link is paused until some of them make a call.`
-          : mine.used === 0 ? "Your link never runs out while the people you bring in play."
-          : `${plural(mine.used, "person", "people")} joined with your link. It never runs out while they play.`}{" "}
-        <button type="button" className="linkish" onClick={reset}>Reset link</button>
+        {full ? `${mine.waiting} people you invited haven't played yet, so the link is paused until some of them make a call.`
+          : `${mine.used} of ${mine.cap} have joined with this link. After ${mine.cap}, you get a new link automatically.`}
       </p>
     </div>
   );
