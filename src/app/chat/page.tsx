@@ -35,6 +35,7 @@ interface Notice { id: number; kind: "prize_won" | "round_recap" | "reveal"; rou
 /** A day's kickoff reveals, one card in the log like an announcement. Negative ids keep them apart from notices. */
 const asNotices = (rs: RevealRow[]): Notice[] => groupReveals(rs).map((d) =>
   ({ id: -d.id, kind: "reveal", round: 0, winners: [], prize: null, sponsor: null, created_at: d.created_at, match_ids: d.match_ids }));
+interface ChatCache { msgs: ChatMessage[]; reactions: Reaction[]; polls: [number, { options: string[]; closed: boolean }][]; votes: PollVote[] }
 const byTime = (xs: Notice[]) => [...xs].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
 export default function ChatPage() {
@@ -63,7 +64,7 @@ function Chats() {
       window.scrollTo(0, 0);
     }} />;
   }
-  return <Chat onBack={leagues.length < 2 ? undefined : () => {
+  return <Chat key={pool ? leagueOf(pool) : 0} onBack={leagues.length < 2 ? undefined : () => {
     if (pushed.current) { pushed.current = false; window.history.back(); }
     else window.history.replaceState(null, "", window.location.pathname);
   }} />;
@@ -77,7 +78,10 @@ function Chat({ onBack }: { onBack?: () => void }) {
   const chatId = pool!.league_id ?? pool!.id;
   const [inPool, setInPool] = useState<Set<string>>(new Set());
   const members = useMemo(() => everyone.filter((m) => inPool.has(m.user_id)), [everyone, inPool]);
-  const [msgs, setMsgs] = useState<ChatMessage[]>([]);
+  // Draw last time's messages straight away while the fresh ones load, so a refresh never flashes "No messages yet".
+  const [cached] = useState(() => readCache<ChatCache>(`chat:${chatId}`));
+  const [msgs, setMsgs] = useState<ChatMessage[]>(cached?.msgs ?? []);
+  const [loaded, setLoaded] = useState(false);
   const [text, setText] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const [profile, setProfile] = useState<Member | null>(null);
@@ -89,7 +93,7 @@ function Chat({ onBack }: { onBack?: () => void }) {
   const [more, setMore] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const people = useMemo(() => new Map(everyone.map((m) => [m.user_id, m])), [everyone]);
-  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>(cached?.reactions ?? []);
   const [notices, setNotices] = useState<Notice[]>([]);
   const idsKey = msgs.map((m) => m.id).join(",");
   const shownIds = useRef<number[]>([]);
@@ -115,8 +119,8 @@ function Chat({ onBack }: { onBack?: () => void }) {
   const [flash, setFlash] = useState<number | null>(null);
 
   // Polls on the messages on screen, and their votes, refreshed whenever anyone votes.
-  const [polls, setPolls] = useState<Map<number, { options: string[]; closed: boolean }>>(new Map());
-  const [votes, setVotes] = useState<PollVote[]>([]);
+  const [polls, setPolls] = useState<Map<number, { options: string[]; closed: boolean }>>(new Map(cached?.polls ?? []));
+  const [votes, setVotes] = useState<PollVote[]>(cached?.votes ?? []);
   // Polls need their tables; until the database has them the poll button stays hidden.
   const [pollsOn, setPollsOn] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -223,7 +227,12 @@ function Chat({ onBack }: { onBack?: () => void }) {
     await Promise.all([loadReactions(), loadPolls()]);
     setMsgs(list);
     setMore(list.length === PAGE);
+    setLoaded(true);
   }, [chatId, loadReactions, loadPolls]);
+  // Keep the newest page on this device for next time (cleared on sign-out).
+  useEffect(() => {
+    if (loaded) writeCache(`chat:${chatId}`, { msgs: msgs.slice(-PAGE), reactions, polls: [...polls], votes } satisfies ChatCache);
+  }, [loaded, chatId, msgs, reactions, polls, votes]);
 
   // League announcements (a round prize won), shown in the log by time.
   useEffect(() => {
@@ -639,7 +648,7 @@ function Chat({ onBack }: { onBack?: () => void }) {
         if (el.scrollTop < 60) older();
       }}>
         {more && <p className="muted small" style={{ textAlign: "center" }}>{loadingOlder ? "Loading older messages…" : "Scroll up for older messages"}</p>}
-        {msgs.length === 0 && !notices.length && <p className="muted small">No messages yet. Start the banter.</p>}
+        {loaded && msgs.length === 0 && !notices.length && <p className="muted small">No messages yet. Start the banter.</p>}
         {msgs.length === 0 && notices.map((n) => <NoticeRow key={`n${n.id}`} n={n} me={me.user_id} people={people} recap={recapProps} inLeague={inPool} teams={teams} />)}
         {msgs.map((m, i) => {
           // Announcements that came after the previous message and before this one (or after the last).
