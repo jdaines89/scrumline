@@ -114,6 +114,8 @@ export function trialSeasonSponsor(): SeasonSponsor {
     about: "A made-up coffee shop for the Scrumline trial.", website: null };
 }
 
+const TICKETS_ABOUT = "A made-up ticket seller for the Scrumline trial. Seats for club, provincial and test rugby.";
+
 // Trial round prizes from the made-up businesses. Each tournament and round
 // picks its own, so the same prize doesn't show everywhere at once.
 const TRIAL_PRIZES = [
@@ -125,6 +127,8 @@ const TRIAL_PRIZES = [
     details: "Top scorer in this league for the round wins breakfast for two on a match day." },
   { sponsor: "Scrumcap Optometrists", prize: "Free eye test", about: "Made-up optometrists for the Scrumline trial. Eye tests, frames and contact lenses.",
     details: "Top scorer in this league for the round wins a free eye test." },
+  { sponsor: "Halfway Line Tickets", prize: "Two tickets to a rugby match", about: TICKETS_ABOUT,
+    details: "Top scorer in this league for the round wins two tickets to a rugby match." },
 ];
 
 function pick(seasonId: string, round: number) {
@@ -157,6 +161,8 @@ export function trialRewards(earned: (key: string) => boolean, claimed: string[]
       sponsor_about: ABOUT },
     { campaign_id: -3, title: "Free eye test", sponsor_name: "Scrumcap Optometrists", achievement_key: "banker-bang", code: "TRIAL-EYES",
       sponsor_about: "Made-up optometrists for the Scrumline trial. Eye tests, frames and contact lenses." },
+    { campaign_id: -4, title: "Two match tickets", sponsor_name: "Halfway Line Tickets", achievement_key: "dead-on", code: "TRIAL-TICKETS",
+      sponsor_about: TICKETS_ABOUT },
   ].map((r) => {
     const done = claimed.includes(r.achievement_key);
     return { ...r, sponsor_logo: null, sponsor_website: null, terms, ends_at: null, remaining: 25, earned: earned(r.achievement_key), claimed: done, code: done ? r.code : null };
