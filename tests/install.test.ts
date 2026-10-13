@@ -7,6 +7,7 @@ const fbIos = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKi
 const chromeAndroid = "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36";
 const webview = "Mozilla/5.0 (Linux; Android 14; SM-S918B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/126.0.0.0 Mobile Safari/537.36";
 const samsung = "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36";
+const miBrowser = "Mozilla/5.0 (Linux; U; Android 13; en-gb; 23021RAAEG Build/TKQ1.221114.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/112.0.5615.136 Mobile Safari/537.36 XiaoMi/MiuiBrowser/14.5.0-gn";
 const mac = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15";
 
 describe("installHow", () => {
@@ -19,5 +20,6 @@ describe("installHow", () => {
     expect(installHow(chromeAndroid)).toBe("android");
     expect(installHow(samsung)).toBe("android");
   });
+  it("Xiaomi's own browser", () => expect(installHow(miBrowser)).toBe("mi-browser"));
   it("a Mac", () => expect(installHow(mac, "MacIntel", 0)).toBe("desktop"));
 });

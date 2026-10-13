@@ -109,11 +109,17 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
       {!installed && installable && (
         <button type="button" className="ghost notify-install" onClick={async () => { await install(); }}>Install Scrumline on this phone</button>
       )}
+      {!installed && how === "android" && (
+        <p className="small muted notify-xiaomi">
+          On a Xiaomi, Redmi or POCO phone? The phone stops Chrome adding icons until you allow it: press and hold the Chrome icon, tap App info, then Other permissions, and allow Home screen shortcuts. Then install again.
+        </p>
+      )}
       {how && !installed && !installable && (
         <div className="install">
           <div className="pref-text">
             <strong>Install Scrumline on this phone</strong>
             <span className="small muted">{{
+              "mi-browser": "Xiaomi's browser can't install Scrumline. Open this page in Chrome, then come back here.",
               "in-app": "This page is open inside another app, which can't install it. Open it in Chrome or Safari, then come back here.",
               "ios-safari": "Tap the Share button at the bottom of Safari, choose Add to Home Screen, then open Scrumline from your home screen.",
               "ios-other": "Tap the Share button next to the address bar and choose Add to Home Screen. If it isn't there, open this page in Safari.",
@@ -121,7 +127,7 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
               desktop: "Open this page on your phone to add it to your home screen.",
             }[how]}</span>
           </div>
-          {how === "in-app" && (
+          {(how === "in-app" || how === "mi-browser") && (
             <button type="button" className="ghost" onClick={async () => {
               try { await navigator.clipboard.writeText(location.href); setCopied(true); } catch { /* copy blocked; the words still say what to do */ }
             }}>{copied ? "Copied" : "Copy link"}</button>
