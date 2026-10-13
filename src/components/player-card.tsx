@@ -55,20 +55,24 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
   // readable for players who share a league with you, so for anyone else this stays hidden.
   const { season, matches, me } = useLeague();
   const achKey = `player-ach:${member.user_id}:${season.id}`;
-  const [calls, setCalls] = useState<ScoredCall[] | null>(() => readCache<ScoredCall[] | null>(achKey) ?? null);
+  // undefined = still loading, null = not shown for this player. The card waits for both
+  // this and the profile, so it draws once instead of sections popping in one by one.
+  const [calls, setCalls] = useState<ScoredCall[] | null | undefined>(() => readCache<ScoredCall[] | null>(achKey));
   useEffect(() => {
     let live = true;
-    setCalls(readCache<ScoredCall[] | null>(achKey) ?? null);
+    setCalls(readCache<ScoredCall[] | null>(achKey));
     (async () => {
-      const { data: e } = await supabase.from("entries").select("id").eq("season", season.id).eq("user_id", member.user_id).maybeSingle();
       let rows: ScoredCall[] | null = null;
-      if (e) {
-        const { data: shared } = member.user_id === me.user_id ? { data: true } : await supabase.rpc("shares_pool", { p_entry: e.id });
-        if (shared) {
-          const { data } = await supabase.from("prediction_points").select("round, right_result, near_pts, exact_pts, is_banker").eq("entry_id", e.id);
-          rows = (data ?? []) as ScoredCall[];
+      try {
+        const { data: e } = await supabase.from("entries").select("id").eq("season", season.id).eq("user_id", member.user_id).maybeSingle();
+        if (e) {
+          const { data: shared } = member.user_id === me.user_id ? { data: true } : await supabase.rpc("shares_pool", { p_entry: e.id });
+          if (shared) {
+            const { data } = await supabase.from("prediction_points").select("round, right_result, near_pts, exact_pts, is_banker").eq("entry_id", e.id);
+            rows = (data ?? []) as ScoredCall[];
+          }
         }
-      }
+      } catch { rows = null; }
       if (!live) return;
       writeCache(achKey, rows);
       setCalls(rows);
@@ -95,7 +99,7 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
           </div>
         </div>
 
-        {p === null ? <div className="skeleton" style={{ height: 120, marginTop: 16 }} /> : (
+        {p === null || calls === undefined ? <div className="skeleton" style={{ height: 320, marginTop: 16 }} /> : (
           <>
             {p.schools.length > 0 && (
               <section>
