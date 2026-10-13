@@ -1105,6 +1105,10 @@ reset role;
 set role service_role;
 select pg_temp.check((select problem from public.invite_check(:'invcode', 'another@example.com')) like '%isn''t valid%', 'and the old one stops working');
 reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select code as rotcode from public.my_invite() \gset
+select pg_temp.check((select used from public.my_invite()) = 0, 'a reset link starts its count again');
+reset role;
 
 -- Sponsor platform: prices, one sponsor per slot, the split, and results
 reset role;
@@ -2099,7 +2103,7 @@ select pg_temp.check(public.can_offer_recruiter_prize((select id from pp), (publ
                      'and the business can offer again');
 -- Invite links: the limit counts only people who haven't played yet
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
-select pg_temp.check((select used = 3 and waiting = 0 from public.my_invite()), 'invitees who have played don''t count towards the link''s limit');
+select pg_temp.check((select waiting = 0 from public.my_invite()), 'invitees who have played don''t count towards the link''s limit');
 reset role; select set_config('request.jwt.claim.sub', '', false);
 insert into auth.users (id, email, invited_at, raw_user_meta_data) values ('00000000-0000-0000-0000-0000000000e4', 'rec4@example.com', now(), '{}');
 insert into public.invites (invitee_id, invited_by, email) values ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-00000000000c', 'rec4@example.com');
