@@ -80,7 +80,7 @@ function Predict() {
   if (roundOf !== season.id) { setRoundOf(season.id); setRound(rounds.length ? firstOpenRound(rounds, isLocked) : null); }
   const [realPrizes, reloadPrizes] = usePoolPrizes(pool?.id);
   const trial = usePreview();
-  const prizes = withTrialPrize(realPrizes, currentRound(matches), trial);
+  const prizes = withTrialPrize(realPrizes, season.id, currentRound(matches), trial);
   const backers = useSeasonSponsors(season.id);
   const [preds, setPreds] = useState<Map<string, Prediction>>(new Map());
   const [draft, setDraft] = useState<Record<string, [string, string]>>({});
