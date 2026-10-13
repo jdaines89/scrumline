@@ -69,7 +69,7 @@ export function InviteCard() {
               <span className="muted">
                 {r.mine > 0 ? `${plural(r.mine, "new player counts", "new players count")} for you this month${r.mine >= r.best ? ", the most so far" : `, the leader has ${r.best}`}.`
                   : r.best > 0 ? `The leader has ${plural(r.best, "new player", "new players")} so far.` : "Nobody has brought anyone in yet."}{" "}
-                A new player counts once three of their calls have kicked off.
+                A new player counts once they have called three games.
               </span>
             </li>
           ))}

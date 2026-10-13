@@ -54,7 +54,7 @@ export default function Rules() {
         <h3>4. Recruiter prizes</h3>
         <ul>
           <li>A business can offer a prize for a league&apos;s top recruiter of a month. Inviting never earns prediction points.</li>
-          <li>A new player counts for whoever&apos;s link brought them in, once they have called 3 matches that have kicked off.</li>
+          <li>A new player counts for whoever&apos;s link brought them in, once they have called 3 matches.</li>
           <li>The result is fixed 7 days after the month ends. Ties share the prize. The same 14-day delivery rule applies.</li>
         </ul>
       </section>
