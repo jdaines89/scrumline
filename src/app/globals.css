@@ -355,20 +355,24 @@ details.mates li .pts { text-align: right; color: var(--accent); font-weight: 70
 .chat-pool { position: relative; display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--muted); cursor: pointer; }
 .chat-pool.one { cursor: default; }
 .chat-pool h2 { margin: 0; min-width: 0; font-size: 15px; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; text-wrap: balance; }
-/* Long league names step down a size so they fit beside the sponsor in two lines */
-.chat-pool h2.long { font-size: 13px; }
+/* Very long league names step down a little */
+.chat-pool h2.long { font-size: 14px; }
 a.chat-title, a.chat-title:hover { display: flex; align-items: center; gap: 4px; min-width: 0; color: inherit; text-decoration: none; border-radius: 8px; padding: 2px 6px 2px 0; }
 a.chat-title:active { background: rgba(255, 255, 255, 0.05); }
 .chat-title-go { flex: none; color: var(--muted); }
 .chat-pool select { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
-.spline.compact { margin: 0; flex: 0 1 auto; max-width: 36%; }
-.sp-chip { display: flex; align-items: center; gap: 8px; min-width: 0; text-align: right; color: var(--text); }
-.sp-chip span { display: grid; min-width: 0; }
-.sp-chip small { font-size: 10px; color: var(--muted); }
-.sp-chip b { font-size: 12px; font-weight: 600; line-height: 1.2; overflow-wrap: break-word; }
-.sp-chip .trial-tag { margin: 2px 0 0; justify-self: end; }
-.sp-chip .sp-tile { order: 2; width: 28px; height: 28px; flex: none; }
-.sp-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; width: min(280px, calc(100vw - 32px)); display: grid; gap: 4px;
+/* The sponsor is a tidy bar under the league name: logo, "Sponsored by" over the full name, Trial tag at the end. */
+.chat-head:has(.spline.compact) { flex-wrap: wrap; row-gap: 8px; }
+.spline.compact { display: block; margin: 0; flex: 1 0 100%; max-width: 440px; min-width: 0; position: relative; }
+.sp-chip { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; padding: 7px 10px; text-align: left; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; }
+.sp-chip .sp-tile { width: 32px; height: 32px; flex: none; font-size: 11px; }
+.sp-chip .sp-text { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.sp-chip small { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.sp-chip b { font-size: 14px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.sp-chip .trial-tag { flex: none; margin: 0; }
+.sp-chip .sp-go { flex: none; color: var(--muted); }
+.sp-pop { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 5; display: grid; gap: 4px;
   padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; color: var(--muted); }
 .sp-pop b { color: var(--text); font-weight: 600; }
 

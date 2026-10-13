@@ -50,7 +50,9 @@ export function SponsorLine({ sponsor, compact }: { sponsor: PoolSponsor | null;
       <button type="button" className="linkish sp-chip" aria-expanded={open} onClick={() => setOpen(!open)}
         aria-label={`Sponsored by ${sponsor.display_name}`}>
         <SponsorTile name={sponsor.display_name} logo={sponsor.logo_path} />
-        <span><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b>{isTrial(sponsor.booking_id) && <TrialTag />}</span>
+        <span className="sp-text"><small>{sponsor.round ? `${roundName(sponsor.round)} sponsor` : "Sponsored by"}</small><b>{sponsor.display_name}</b></span>
+        {isTrial(sponsor.booking_id) && <TrialTag />}
+        {more && <svg className="sp-go" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
       </button>
       {open && (
         <div className="sp-pop">
