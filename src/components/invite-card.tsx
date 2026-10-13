@@ -37,9 +37,7 @@ export function InviteCard() {
   const named = schools.length ? schools.join(" and ") : null;
 
   async function share() {
-    const text = named
-      ? `Every weekend's rugby on Scrumline helps fund South African schools. I'm calling the games for ${named}: get the scores right, win prizes from local businesses and push our schools up the table. Got a business? Sponsor a round and get seen by players every weekend. Free to play, no betting. Join me: ${link}`
-      : `Every weekend's rugby on Scrumline helps fund South African schools. Get the scores right, win prizes from local businesses and push your school up the table. Got a business? Sponsor a round and get seen by players every weekend. Free to play, no betting. Join me: ${link}`;
+    const text = `There is a game on this weekend and I have kept you a place. Call the score of every match${named ? `, and push ${named} up the table` : ""}. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${link}`;
     logEvent("invite_shared", { from: "invite_card" });
     try {
       if (navigator.share) await navigator.share({ text });

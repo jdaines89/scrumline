@@ -91,7 +91,7 @@ export function Join() {
           <h2>{info.inviter} wants you in {league.pool_name}</h2>
           <p className="sub">
             A Scrumline league{league.players > 1 ? ` with ${league.players} players already in` : ""}. Call the scores, climb the table and win
-            prizes from local businesses, while every game you play helps fund South African schools.
+            prizes from local businesses. Sponsors fund South African schools, and every call you make builds something bigger than the game.
           </p>
         </>
       ) : (

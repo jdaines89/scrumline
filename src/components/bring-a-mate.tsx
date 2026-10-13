@@ -34,7 +34,7 @@ export function BringAMate({ season, seasonName }: { season: string; seasonName:
   if (!a || !a.pool_id || !a.join_code) return null;
   const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
   const link = joinLink(site, code, a.join_code);
-  const text = `${roundName(a.round)} of the ${seasonName} is done and I'm ${a.of > 1 ? `in the mix in "${a.pool_name}"` : `playing "${a.pool_name}"`} on Scrumline. Join us for ${roundText(a.round + 1)}: call the score of every match, free, no betting.\n\nTap to join: ${link}`;
+  const text = `${roundName(a.round)} of the ${seasonName} is done and I'm ${a.of > 1 ? `in the mix in "${a.pool_name}"` : `playing "${a.pool_name}"`} on Scrumline. There is a place saved for you in ${roundText(a.round + 1)}: call the score of every match. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${link}`;
 
   function hide() {
     try { localStorage.setItem(key(season, a!.round), "1"); } catch { /* fine */ }

@@ -20,8 +20,8 @@ describe("Bok tests card", () => {
   it("carries the league and the one join link", () => {
     const text = bokInvite("Italy and France", "Nations Championship 2026", "The Originals", "https://x/join/?c=abc-DEF");
     expect(text).toContain('"The Originals"');
-    expect(text).toContain("no betting");
+    expect(text).toContain("Get our schools over the line.");
     expect(text.endsWith("Tap to join: https://x/join/?c=abc-DEF")).toBe(true);
-    expect(bokInvite("Italy", "Nations Championship 2026", null, "https://x")).toContain("calling the scores on Scrumline.");
+    expect(bokInvite("Italy", "Nations Championship 2026", null, "https://x")).toContain("a place saved for you on Scrumline.");
   });
 });

@@ -165,7 +165,7 @@ function ShareSchool({ name, seasonName }: { name: string; seasonName: string })
   }, []);
   async function share() {
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const text = `Play for ${name} on Scrumline in the ${seasonName}. Call the score of every match and climb the schools table, while businesses fund things the school needs. Free to play, no betting.\n\nTap to join: ${joinLink(site, code)}`;
+    const text = `There is a place saved for you in ${name} on Scrumline. Call the score of every match this weekend and push ${name} up the schools table. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${joinLink(site, code)}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);

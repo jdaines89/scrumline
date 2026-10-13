@@ -48,7 +48,7 @@ export function ShareMomentButton({ moment, label = "Share" }: { moment: Moment;
     logEvent("moment_shared", { kind: moment.kind });
     const file = new File([blob], `scrumline-${moment.kind}.jpg`, { type: "image/jpeg" });
     const site = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}`;
-    const text = `${moment.kicker}: ${moment.headline}. ${moment.detail}\n\nCall every match with me on Scrumline. Free to play, no betting, and it helps fund South African schools: ${joinLink(site, code)}`;
+    const text = `${moment.kicker}: ${moment.headline}. ${moment.detail}\n\nThere is a place saved for you on Scrumline. Every call builds something bigger than the game. Get our schools over the line. ${joinLink(site, code)}`;
     try {
       if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     } catch (e) { if ((e as Error).name === "AbortError") return; }
