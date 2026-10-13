@@ -17,6 +17,6 @@ export function opponents(names: string[]): string {
 
 /** The WhatsApp message: who the Boks play, which league to join, and the one link that does it. */
 export function bokInvite(rivals: string, seasonName: string, league: string | null, link: string): string {
-  const where = league ? `I'm calling the scores in "${league}" on Scrumline` : "I'm calling the scores on Scrumline";
-  return `The Boks play ${rivals} in the ${seasonName} this November. ${where}. Call the Boks' tests with us: free to play, no betting.\n\nTap to join: ${link}`;
+  const where = league ? `There is a place saved for you in "${league}" on Scrumline.` : "There is a place saved for you on Scrumline.";
+  return `${where} The Boks play ${rivals} in the ${seasonName} this November: call the score of every test. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${link}`;
 }

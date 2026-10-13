@@ -275,8 +275,8 @@ export default function PoolsPage() {
     // A school league isn't joined by code: newcomers land in it once they name the school.
     const link = school ? joinLink(site, myCode) : joinLink(site, myCode, joinCode);
     const text = school
-      ? `Play for ${poolName} on Scrumline in the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`
-      : `Join my league "${poolName}" on Scrumline for the ${season.name}. Call the score of every match, climb the table and win prizes from local businesses, while helping fund South African schools. Free to play, no betting.\n\nTap to join: ${link}`;
+      ? `There is a place saved for you in ${poolName} on Scrumline. Call the score of every match this weekend and push our school up the table. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${link}`
+      : `There is a place saved for you in "${poolName}". Call the score of every match this weekend and climb our table. Every call builds something bigger than the game. Get our schools over the line.\n\nTap to join: ${link}`;
     return { link, text };
   }
 
