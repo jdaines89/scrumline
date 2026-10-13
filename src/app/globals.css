@@ -2128,3 +2128,12 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .rk .lgc-rank.big { font-size: 15px; }
 .rk .rk-top .lgc-rank { color: #f0cf6a; background: rgba(217, 183, 90, 0.14); box-shadow: inset 0 0 0 1px rgba(217, 183, 90, 0.4); }
 .rk-wait { display: inline-block; width: 11em; max-width: 100%; border-radius: 6px; background: rgba(167, 192, 180, 0.12); }
+
+/* Home: every other tournament, always listed */
+.also-more { display: grid; gap: 4px; }
+.also-more h3 { margin: 0 0 6px; font-size: var(--fs-body); }
+.also-more-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 10px 0; color: inherit; cursor: pointer; }
+.also-more h3 + .also-more-row { border-top: 0; }
+.also-more-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.also-more-text span { font-size: 13px; color: var(--muted); }
+.also-more-go { flex: none; font-size: 14px; font-weight: 600; color: var(--accent); }
