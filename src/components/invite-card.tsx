@@ -67,8 +67,9 @@ export function InviteCard() {
               <span className="prize-label">Recruiter prize · {r.pool_name}</span><br />
               <strong>{r.prize}</strong> from {r.sponsor}.{" "}
               <span className="muted">
-                {r.mine > 0 ? `You've brought in ${r.mine} this month${r.mine >= r.best ? ", the most so far" : `, the leader has ${r.best}`}.`
-                  : r.best > 0 ? `The leader has ${plural(r.best, "new player", "new players")} so far.` : "Nobody has brought anyone in yet."}
+                {r.mine > 0 ? `${plural(r.mine, "new player counts", "new players count")} for you this month${r.mine >= r.best ? ", the most so far" : `, the leader has ${r.best}`}.`
+                  : r.best > 0 ? `The leader has ${plural(r.best, "new player", "new players")} so far.` : "Nobody has brought anyone in yet."}{" "}
+                A new player counts once they have called three games.
               </span>
             </li>
           ))}
