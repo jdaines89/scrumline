@@ -19,8 +19,9 @@ function shares(counts: number[]): number[] {
 }
 
 export function Crowd({ c, home, away }: { c: CrowdRow; home?: Team; away?: Team }) {
-  const split = c.home_wins !== null && c.draws !== null && c.away_wins !== null;
-  const [h, d, a] = split ? shares([c.home_wins!, c.draws!, c.away_wins!]) : [0, 0, 0];
+  // Below 3 calls there's nothing to show, so the card stays hidden rather than explaining why.
+  if (c.home_wins === null || c.draws === null || c.away_wins === null) return null;
+  const [h, d, a] = shares([c.home_wins, c.draws, c.away_wins]);
   // Too thin a slice for its label: the colour still shows, the label moves to the line below.
   const seg = (cls: string, pctv: number, label: string) => pctv > 0 && (
     <span className={cls} style={{ flex: pctv }}>{pctv >= 18 ? `${label} ${pctv}%` : ""}</span>
@@ -33,21 +34,15 @@ export function Crowd({ c, home, away }: { c: CrowdRow; home?: Team; away?: Team
         <span>The crowd</span>
         <span className="muted">{c.calls} call{c.calls === 1 ? "" : "s"} across the tournament</span>
       </div>
-      {split ? (
-        <>
-          <div className="crowdbar" role="img"
-            aria-label={`${h}% ${home?.display_name ?? "home"}, ${d}% draw, ${a}% ${away?.display_name ?? "away"}`}>
-            {seg("h", h, home?.short_name ?? "Home")}
-            {seg("d", d, "Draw")}
-            {seg("a", a, away?.short_name ?? "Away")}
-          </div>
-          <p className="small muted" style={{ marginTop: 6, marginBottom: 0 }}>
-            {thin.map(([n, p]) => `${n} ${p}% · `).join("")}Average <strong className="txt">{Math.round(c.avg_home!)}–{Math.round(c.avg_away!)}</strong>
-          </p>
-        </>
-      ) : (
-        <p className="small muted" style={{ marginTop: 4, marginBottom: 0 }}>The split shows once 3 players have locked a call.</p>
-      )}
+      <div className="crowdbar" role="img"
+        aria-label={`${h}% ${home?.display_name ?? "home"}, ${d}% draw, ${a}% ${away?.display_name ?? "away"}`}>
+        {seg("h", h, home?.short_name ?? "Home")}
+        {seg("d", d, "Draw")}
+        {seg("a", a, away?.short_name ?? "Away")}
+      </div>
+      <p className="small muted" style={{ marginTop: 6, marginBottom: 0 }}>
+        {thin.map(([n, p]) => `${n} ${p}% · `).join("")}Average <strong className="txt">{Math.round(c.avg_home!)}–{Math.round(c.avg_away!)}</strong>
+      </p>
     </div>
   );
 }
