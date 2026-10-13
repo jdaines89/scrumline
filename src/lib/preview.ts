@@ -114,13 +114,33 @@ export function trialSeasonSponsor(): SeasonSponsor {
     about: "A made-up coffee shop for the Scrumline trial.", website: null };
 }
 
+// Trial round prizes from the made-up businesses. Each tournament and round
+// picks its own, so the same prize doesn't show everywhere at once.
+const TRIAL_PRIZES = [
+  { sponsor: "Lineout Physio", prize: "Free sports massage", about: "A made-up sports physio for the Scrumline trial.",
+    details: "Top scorer in this league for the round wins a 45-minute sports massage." },
+  { sponsor: "Front Row Motors", prize: "Car wash and valet", about: ABOUT,
+    details: "Top scorer in this league for the round wins a full car wash and valet." },
+  { sponsor: "Touchline Coffee", prize: "Match-day breakfast for two", about: "A made-up coffee shop for the Scrumline trial.",
+    details: "Top scorer in this league for the round wins breakfast for two on a match day." },
+  { sponsor: "Scrumcap Optometrists", prize: "Free eye test", about: "Made-up optometrists for the Scrumline trial. Eye tests, frames and contact lenses.",
+    details: "Top scorer in this league for the round wins a free eye test." },
+];
+
+function pick(seasonId: string, round: number) {
+  let h = round;
+  for (const c of seasonId) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return TRIAL_PRIZES[h % TRIAL_PRIZES.length];
+}
+
 /** A trial round prize for the round in play, only when the league has none of its own. */
-export function withTrialPrize(prizes: PoolPrize[], round: number | null, on: boolean): PoolPrize[] {
+export function withTrialPrize(prizes: PoolPrize[], seasonId: string, round: number | null, on: boolean): PoolPrize[] {
   if (!on || round === null || prizes.some((p) => p.round === round)) return prizes;
-  return [...prizes, { round, sponsor: "Lineout Physio", prize: "Free sports massage", offered_by: TRIAL_OFFERER,
+  const t = pick(seasonId, round);
+  return [...prizes, { round, sponsor: t.sponsor, prize: t.prize, offered_by: TRIAL_OFFERER,
     status: "upcoming", winners: null, received: [], due_at: null, image_path: null,
-    details: "Top scorer in this league for the round wins a 45-minute sports massage. Trial prize: nobody really wins it.",
-    sponsor_about: "A made-up sports physio for the Scrumline trial.", sponsor_website: null, sponsor_logo: null, edit_until: null }];
+    details: `${t.details} Trial prize: nobody really wins it.`,
+    sponsor_about: t.about, sponsor_website: null, sponsor_logo: null, edit_until: null }];
 }
 
 /** The school meter's trial project, when a school has nothing real yet. */

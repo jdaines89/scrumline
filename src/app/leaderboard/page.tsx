@@ -67,7 +67,7 @@ function Leaderboard() {
   const wholeSchool = !!pool!.school_emis && !pool!.school_year;
   const [realPrizes, reloadPrizes] = usePoolPrizes(pool!.id);
   const trial = usePreview();
-  const prizes = withTrialPrize(realPrizes, currentRound(matches), trial);
+  const prizes = withTrialPrize(realPrizes, season.id, currentRound(matches), trial);
   const sponsor = usePoolSponsor();
   const backers = useSeasonSponsors(season.id);
   const recruits = usePoolRecruits(pool!.id);
