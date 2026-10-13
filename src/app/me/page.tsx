@@ -102,13 +102,15 @@ export default function MePage() {
             <div><button type="submit" disabled={!namesChanged}>Save</button></div>
           </form>
 
-          <div className="me-visibility">
-            <div className="pref-text">
-              <strong>Who can open your profile</strong>
-              <span className="small muted">From the Everyone table. People in your leagues always can.</span>
+          <div className="profile-who">
+            <strong id="who-sees-profile">Who can see your profile</strong>
+            <p className="small muted">People in your leagues can always see it.</p>
+            <div className="seg wide" role="radiogroup" aria-labelledby="who-sees-profile">
+              {([[false, "Just my leagues"], [true, "Everyone"]] as const).map(([v, text]) => (
+                <button key={text} type="button" role="radio" aria-checked={openProfile === v} className={openProfile === v ? "on" : ""}
+                  onClick={() => openProfile !== v && saveOpen(v)}>{text}</button>
+              ))}
             </div>
-            <Tabs size="sub" label="Who can open your profile" items={[["leagues", "Your leagues"], ["everyone", "Everyone"]] as const}
-              value={openProfile ? "everyone" : "leagues"} onPick={(v) => saveOpen(v === "everyone")} />
           </div>
         </div>
 
