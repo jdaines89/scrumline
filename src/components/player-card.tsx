@@ -99,7 +99,7 @@ export function PlayerCard({ member, onClose }: { member: Member; onClose: () =>
           </div>
         </div>
 
-        {p === null || calls === undefined ? <div className="skeleton" style={{ height: 320, marginTop: 16 }} /> : (
+        {p === null || calls === undefined ? <div className="skeleton" style={{ height: 355, marginTop: 16 }} /> : (
           <>
             {p.schools.length > 0 && (
               <section>
