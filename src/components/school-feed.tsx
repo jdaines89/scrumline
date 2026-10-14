@@ -163,7 +163,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
           {!c.mine && (reporting === c.id
             ? <div className="small">{REASONS.map(([v, l]) => <button key={v} type="button" className="linkish" style={{ marginRight: 10 }} onClick={() => report(c.id, v)}>{l}</button>)}
                 <button type="button" className="linkish muted" onClick={() => setReporting(null)}>Cancel</button></div>
-            : <button type="button" className="linkish small muted" onClick={() => setReporting(c.id)}>Report</button>)}
+            : <button type="button" className="linkish small" style={{ color: "var(--muted)" }} onClick={() => setReporting(c.id)}>Report</button>)}
         </div>
       ))}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
