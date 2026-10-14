@@ -1,3 +1,4 @@
+-- destructive-ok: only drops two foreign-key constraints (no data is lost); trial posts have negative ids with no project row
 -- Trial projects in the school feed take real comments and reactions from every player.
 -- Trial projects are example posts that live only in the app (negative ids, no school_projects row,
 -- no money). Their comments and reactions use the same feed tables, with the same moderation, spam
