@@ -52,6 +52,9 @@ insert into public.feed_reactions (project_id, post_key, emoji) values (:proj, :
 select pg_temp.check(pg_temp.fails(format($$insert into public.feed_reactions (project_id, post_key, emoji) values (%s, 'e999999999', '🔥')$$, :proj)), 'no reaction on a post that does not exist');
 select pg_temp.check(pg_temp.fails(format($$insert into public.feed_reactions (project_id, post_key, emoji) values (%s, 'e%s', '💩')$$, :proj, 1)), 'only the fixed emoji');
 select pg_temp.check((select (reactions->>'🔥')::int = 1 and mine = array['🔥'] from public.school_feed((select emis from f)) where post_key = :'epost'), 'the feed counts reactions and shows mine');
+insert into public.feed_reactions (project_id, post_key, emoji) values (:proj, :'epost', '😮');
+select pg_temp.check((select mine = array['😮'] and (reactions->>'😮')::int = 1 and coalesce((reactions->>'🔥')::int, 0) = 0 from public.school_feed((select emis from f)) where post_key = :'epost'), 'reacting again swaps the earlier reaction, one per player per post');
+insert into public.feed_reactions (project_id, post_key, emoji) values (:proj, :'epost', '🔥');
 reset role;
 select pg_temp.as_user((select b from f));
 select pg_temp.check(pg_temp.fails(format($$delete from public.feed_reactions where project_id = %s$$, :proj)) = false

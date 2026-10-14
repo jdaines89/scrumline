@@ -52,8 +52,7 @@ const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress",
 function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const word = (STAMP[it.event] ?? "Update");
   const fig = facts
-    ? [facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : null,
-       facts.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ")
+    ? (facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : "")
     : "";
   const stat = facts ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
@@ -139,22 +138,29 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
 
+  // One reaction per player per post: tapping another swaps it, tapping the same takes it off.
   async function react(e: string) {
     const on = mine.includes(e);
-    setMine(on ? mine.filter((x) => x !== e) : [...mine, e]);
-    setCounts({ ...counts, [e]: Math.max(0, (counts[e] ?? 0) + (on ? -1 : 1)) });
+    const prev = mine[0];
+    const next = { ...counts };
+    if (prev) next[prev] = Math.max(0, (next[prev] ?? 0) - 1);
+    if (!on) next[e] = (next[e] ?? 0) + 1;
+    setMine(on ? [] : [e]); setCounts(next);
     if (it.trial) return;
-    const { error } = on
-      ? await supabase.from("feed_reactions").delete().match({ project_id: it.project_id, post_key: it.post_key, user_id: me, emoji: e })
-      : await supabase.from("feed_reactions").insert({ project_id: it.project_id, post_key: it.post_key, user_id: me, emoji: e });
+    const t = supabase.from("feed_reactions");
+    const key = { project_id: it.project_id, post_key: it.post_key, user_id: me };
+    let error: { message: string } | null = null;
+    if (prev) ({ error } = await t.delete().match({ ...key, emoji: prev }));
+    if (!error && !on) ({ error } = await t.insert({ ...key, emoji: e }));
     if (error && !error.message.includes("duplicate")) { setMine(it.mine); setCounts(it.reactions); }
   }
 
   const stamp = STAMP[it.event] ?? "Update";
-  const where = [it.town, provinceName(it.province)].filter(Boolean).join(", ");
+  const place = [it.town, provinceName(it.province)].filter(Boolean).join(", ");
+  const where = [place, facts?.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ");
   const facts_line = facts
     ? [facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : null,
-       facts.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ")
+       ].filter(Boolean).join(" · ")
     : "";
   const others = EMOJI.filter((e) => e !== "🔥");
 
