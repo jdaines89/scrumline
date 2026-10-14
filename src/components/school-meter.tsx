@@ -11,7 +11,7 @@ import { money } from "@/lib/sponsor";
 import { TRIAL_PROJECT, usePreview } from "@/lib/preview";
 import { TrialTag } from "@/components/sponsor-tile";
 import { supabase } from "@/lib/supabase";
-import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
+import { SCHOOL_TRIAL } from "@/lib/school";
 
 type Stage = "primary" | "high";
 interface Standing { stage: Stage; position: number | null; of: number; score: number | null; confirmed: number; members: number }
@@ -20,8 +20,6 @@ interface Proj { id: number; title: string; state: ProjectState; target_minor: n
 interface Page { school: { emis: string; name: string }; crest_path: string | null; standing: Standing[]; given: Given | null; projects: Proj[] }
 interface Mine { stage: Stage; page: Page }
 
-/** Confirmed players a school needs in a round for it to count on the school table (school_round_minimum()). */
-const MINIMUM = SCHOOL_MINIMUM;
 const CONFIRMED = SCHOOL_TRIAL ? "" : "confirmed ";
 
 /**
@@ -80,13 +78,10 @@ function SchoolLine({ m, trial }: { m: Mine; trial: boolean }) {
     line = <><b>{money(given)}</b> given by sponsors</>;
     sub = `${money(paid)} of it paid to the school so far.`;
   } else {
-    bar = confirmed / MINIMUM;
-    line = confirmed >= MINIMUM
-      ? <><b>{confirmed}</b> {CONFIRMED}{confirmed === 1 ? "player" : "players"}{st?.position ? <>, {ordinal(st.position)} of {st.of} on the school table</> : null}</>
-      : <><b>{confirmed} of {MINIMUM}</b> confirmed players</>;
-    sub = confirmed >= MINIMUM
-      ? "Nothing given yet. A school with players calling every week is what sponsors back."
-      : `At ${MINIMUM}, it scores on the school table every round. Nothing given yet.`;
+    // No project yet: say so plainly. A bar of players against a minimum sits at 100% for most schools and says nothing.
+    bar = -1;
+    line = <><b>{confirmed}</b> {CONFIRMED}{confirmed === 1 ? "player" : "players"}{st?.position ? <>, {ordinal(st.position)} of {st.of} on the school table</> : null}</>;
+    sub = "No library project yet. Players calling every week is what gets a school's library backed.";
   }
   const pct = Math.max(0, Math.min(100, Math.round(bar * 100)));
   return (
@@ -95,7 +90,7 @@ function SchoolLine({ m, trial }: { m: Mine; trial: boolean }) {
       <span className="smeter-body">
         <strong className="smeter-name">{s.name}</strong>
         <span className="smeter-line">{line}</span>
-        <span className="proj-bar" aria-label={`${pct}%`}><span style={{ width: `${pct}%` }} /></span>
+        {bar >= 0 && <span className="proj-bar" aria-label={`${pct}%`}><span style={{ width: `${pct}%` }} /></span>}
         <span className="small muted">{sub}</span>
       </span>
     </Link>

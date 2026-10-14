@@ -148,8 +148,8 @@ export function withTrialPrize(prizes: PoolPrize[], seasonId: string, round: num
 }
 
 /** The school meter's trial project, when a school has nothing real yet. */
-export const TRIAL_PROJECT = { id: -1, title: "15 match balls and a kit bag", state: "open" as const,
-  target_minor: 1200000, pledged_minor: 840000, paid_minor: 0, backers: 3 };
+export const TRIAL_PROJECT = { id: -1, title: "a library shelf of 300 children's books", state: "open" as const,
+  target_minor: 1500000, pledged_minor: 1020000, paid_minor: 0, backers: 3 };
 
 /** Trial badge rewards on Achievements, only while the tournament has no real ones. Codes are never real. */
 export function trialRewards(earned: (key: string) => boolean, claimed: string[]): MyReward[] {
