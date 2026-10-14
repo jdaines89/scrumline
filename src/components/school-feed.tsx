@@ -234,3 +234,45 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
     </div>
   );
 }
+
+/**
+ * Home: the latest good news from any school, photo first, with one bold way
+ * into the whole feed. Always shows (even before the first post) so the way in
+ * never disappears.
+ */
+export function GoodNewsCard() {
+  const [it, setIt] = useState<Item | null | undefined>(() => readCache<Item | null>("goodnews1"));
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.rpc("school_feed", { p_emis: null, p_province: null, p_before: null, p_limit: 8 }).then(({ data, error }) => {
+      if (error) return;
+      const rows = (data ?? []) as Item[];
+      const pick = rows.find((r) => r.image_path) ?? rows[0] ?? null;
+      writeCache("goodnews1", pick); setIt(pick);
+    });
+  }, []);
+  useEffect(() => { setUrl(null); if (it?.image_path) projectPhotoUrl(it.image_path).then(setUrl); }, [it?.image_path]);
+  const where = it ? [it.town, provinceName(it.province)].filter(Boolean).join(", ") : "";
+  return (
+    <div className="card goodnews">
+      <h2>Good news from schools</h2>
+      {it && (
+        <Link href="/feed/" className="gn-latest">
+          {it.image_path && (
+            <div className="feed-hero">
+              {url ? <img src={url} alt={it.note ?? it.title} /> : <div className="skeleton feed-hero-skel" />}
+              <span className="feed-stamp">{STAMP[it.event] ?? "Update"}</span>
+              <div className="feed-hero-foot"><b>{it.school}</b><span>{where}</span></div>
+            </div>
+          )}
+          {!it.image_path && (
+            <div className="gn-text"><span className="feed-stamp flat">{STAMP[it.event] ?? "Update"}</span><b>{it.school}</b><span className="small muted">{where}</span></div>
+          )}
+          <p className="feed-title" style={{ margin: "10px 0 0" }}><b>{it.title}</b></p>
+        </Link>
+      )}
+      {it === null && <p className="sub" style={{ margin: "0 0 4px" }}>Projects are coming to schools. Every one shows up here, with photos.</p>}
+      <Link href="/feed/" className="btn gn-go">See all the good happening ›</Link>
+    </div>
+  );
+}
