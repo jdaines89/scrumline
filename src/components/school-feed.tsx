@@ -101,11 +101,11 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
 
   useEffect(() => { setItems(readCache<Item[]>(key) ?? null); setMore(true); load(); }, [key, load]);
 
-  // A project's stage is its newest post that moves it along; posts arrive newest first.
+  // A project's stage is its newest post that moves it along; posts arrive newest first. A tab shows the projects at that stage and only the posts that belong to it, so an old "New project" post never sits under Delivered.
   const shown = items && (trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items);
   const stageOf = new Map<number, Stage>();
   for (const it of shown ?? []) if (STAGE_OF[it.event] && !stageOf.has(it.project_id)) stageOf.set(it.project_id, STAGE_OF[it.event]);
-  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage));
+  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage && (!STAGE_OF[it.event] || STAGE_OF[it.event] === stage)));
 
   // A filter can leave a page nearly empty while older posts wait: fetch on until there is something to see.
   useEffect(() => {
