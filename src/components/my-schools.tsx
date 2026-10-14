@@ -7,6 +7,7 @@ import { Avatar } from "@/components/avatar";
 import { Crest, useCrests } from "@/components/crest";
 import { schoolHref } from "@/lib/crest";
 import { useLeague } from "@/components/league";
+import { readCache, writeCache } from "@/lib/cache";
 import { ROLE_NAME, SCHOOL_TRIAL } from "@/lib/school";
 import { supabase } from "@/lib/supabase";
 import type { Member, School } from "@/lib/types";
@@ -15,6 +16,7 @@ type Stage = "primary" | "high";
 interface Saved { stage: Stage; emis: string; last_year: number | null; first_saved_at: string; schools: School }
 /** Someone in the league at one of your schools, with their vouch count. */
 interface Mate { user_id: string; stage: Stage; emis: string; last_year: number | null; vouches: number; verified: boolean }
+interface Shown { saved: Saved[]; mates: Mate[]; given: string[] }
 const NEEDED = 2;
 
 const OPEN_DAYS = 14;
@@ -34,24 +36,32 @@ const day = (d: Date) => d.toLocaleDateString("en-ZA", { day: "numeric", month: 
  * is made of the people who really went there.
  */
 export function MySchools({ me, members, onMessage }: { me: Member; members: Member[]; onMessage: (ok: boolean, text: string) => void }) {
-  const [saved, setSaved] = useState<Saved[] | null>(null);
-  const [mates, setMates] = useState<Mate[]>([]);
-  const [given, setGiven] = useState<Set<string>>(new Set());
+  // Draws straight away from what this phone showed last time, then refreshes.
+  const key = `myschools1:${me.user_id}`;
+  const [saved, setSaved] = useState<Saved[] | null>(() => readCache<Shown>(key)?.saved ?? null);
+  const [mates, setMates] = useState<Mate[]>(() => readCache<Shown>(key)?.mates ?? []);
+  const [given, setGiven] = useState<Set<string>>(() => new Set(readCache<Shown>(key)?.given ?? []));
   const load = useCallback(async () => {
-    const { data } = await supabase.from("member_schools")
-      .select("stage, emis, last_year, first_saved_at, schools(emis, name, town, no_fee)")
-      .eq("user_id", me.user_id);
-    const mine = (data ?? []) as unknown as Saved[];
-    setSaved(mine);
-    if (!mine.length) { setMates([]); setGiven(new Set()); return; }
-    const [m, v] = await Promise.all([
-      supabase.from("school_members").select("user_id, stage, emis, last_year, vouches, verified")
-        .in("emis", mine.map((s) => s.emis)),
+    // Your vouches don't depend on your schools, so they load alongside them.
+    const [s, v] = await Promise.all([
+      supabase.from("member_schools")
+        .select("stage, emis, last_year, first_saved_at, schools(emis, name, town, no_fee)")
+        .eq("user_id", me.user_id),
       supabase.from("school_vouches").select("member_id, stage, emis").eq("voucher_id", me.user_id),
     ]);
-    setMates(((m.data ?? []) as Mate[]).filter((x) => mine.some((s) => s.stage === x.stage && s.emis === x.emis)));
-    setGiven(new Set((v.data ?? []).map((x) => `${x.member_id}:${x.stage}:${x.emis}`)));
-  }, [me.user_id]);
+    if (s.error) return; // keep showing what we had
+    const mine = (s.data ?? []) as unknown as Saved[];
+    let rows: Mate[] = [];
+    if (mine.length) {
+      const m = await supabase.from("school_members").select("user_id, stage, emis, last_year, vouches, verified")
+        .in("emis", mine.map((x) => x.emis));
+      if (m.error) return;
+      rows = ((m.data ?? []) as Mate[]).filter((x) => mine.some((y) => y.stage === x.stage && y.emis === x.emis));
+    }
+    const keys = (v.data ?? []).map((x) => `${x.member_id}:${x.stage}:${x.emis}`);
+    writeCache(key, { saved: mine, mates: rows, given: keys } satisfies Shown);
+    setSaved(mine); setMates(rows); setGiven(new Set(keys));
+  }, [me.user_id, key]);
   useEffect(() => { load(); }, [load]);
   // Saving a school changes which school pools you're in.
   const { reloadPools } = useLeague();
@@ -246,11 +256,16 @@ interface Claim { claim_id: number; contact_name: string; role: string; status: 
 
 /** Who looks after the school's money, so players who went there can say if that's wrong. */
 function ClaimLine({ emis, onMessage }: { emis: string; onMessage: (ok: boolean, text: string) => void }) {
-  const [c, setC] = useState<Claim | null>(null);
+  const [c, setC] = useState<Claim | null>(() => readCache<Claim | null>(`claim1:${emis}`) ?? null);
   const [asking, setAsking] = useState(false);
   const [why, setWhy] = useState("");
   const load = useCallback(() => {
-    supabase.rpc("school_claim_info", { p_emis: emis }).then(({ data }) => setC(((data ?? []) as Claim[])[0] ?? null));
+    supabase.rpc("school_claim_info", { p_emis: emis }).then(({ data, error }) => {
+      if (error) return;
+      const row = ((data ?? []) as Claim[])[0] ?? null;
+      writeCache(`claim1:${emis}`, row);
+      setC(row);
+    });
   }, [emis]);
   useEffect(() => { load(); }, [load]);
   if (!c) return null;
