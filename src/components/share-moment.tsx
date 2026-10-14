@@ -165,7 +165,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
     }
   } else if (photo) {
     // The project's own photo, printed and pinned at a slight angle, then what was done and who made it happen.
-    const pw = W - pad * 2, ph = 540, pcx = W / 2, pcy = 690 + ph / 2;
+    const pw = W - pad * 2, ph = 600, pcx = W / 2, pcy = 690 + ph / 2;
     g.save(); g.translate(pcx, pcy); g.rotate(1.2 * Math.PI / 180);
     g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 28; g.shadowOffsetY = 10;
     g.fillStyle = CHALK; g.fillRect(-pw / 2 - 12, -ph / 2 - 12, pw + 24, ph + 24);
@@ -199,7 +199,8 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
     g.fillStyle = MUTED; fit(m.statLabel ?? "", 600, 42, 26); g.fillText(m.statLabel ?? "", pad, y + down);
     y += down;
   }
-  g.fillStyle = CHALK; fit(`— ${name}`, 700, 44, 28); g.fillText(`— ${name}`, pad, photo ? Math.min(y + 70, H - 336) : Math.min(y + 96, H - 330));
+  // A project is about the school, not the sharer: no name on its picture.
+  if (m.kind !== "project") { g.fillStyle = CHALK; fit(`— ${name}`, 700, 44, 28); g.fillText(`— ${name}`, pad, Math.min(y + 96, H - 330)); }
 
   // Grain over everything above the foot, like a photo of a muddy pitch.
   const img = g.getImageData(0, 0, W, H - 300);
