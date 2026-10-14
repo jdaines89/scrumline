@@ -18,6 +18,7 @@ import { BringAMate } from "@/components/bring-a-mate";
 import { BokTests } from "@/components/bok-tests";
 import { FullTimeCard } from "@/components/full-time";
 import { SchoolMeter } from "@/components/school-meter";
+import { GoodNewsCard } from "@/components/school-feed";
 
 export default function Home() {
   const { season, matches, teams, me, entry } = useLeague();
@@ -83,6 +84,7 @@ export default function Home() {
       <AlsoOn />
       {!season.is_replay && <BokTests />}
       {!season.is_replay && <SchoolMeter />}
+      {!season.is_replay && <GoodNewsCard />}
       {!season.is_replay && <BringAMate season={season.id} seasonName={season.name} />}
       <AlertsCard />
       <div className="grid2">
