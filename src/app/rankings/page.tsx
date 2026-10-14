@@ -27,7 +27,6 @@ export default function RankingsPage() {
       <Link href="/leagues/" className="lg-back">‹ Your leagues</Link>
       <h2>Rankings</h2>
       <p className="sub">Everyone playing {season.name}, whether or not you share a league.</p>
-      <Link href="/feed/" className="btn gn-go gn-slim">Over the Line ›</Link>
       <div className="stack" style={{ marginBottom: 12 }}>
         <SchoolSearch onPick={(s) => router.push(schoolHref(s.emis))} placeholder="Find any school by name" />
       </div>

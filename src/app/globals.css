@@ -250,7 +250,7 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 @media (max-width: 560px) {
   nav.tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0; }
   nav.tabs::-webkit-scrollbar { display: none; }
-  nav.tabs a { padding: 8px 6px; white-space: nowrap; flex: 1 0 auto; text-align: center; }
+  nav.tabs a { padding: 10px 2px; font-size: 13px; white-space: nowrap; flex: 1 0 auto; text-align: center; }
   nav.tabs .signout { white-space: nowrap; }
 }
 
