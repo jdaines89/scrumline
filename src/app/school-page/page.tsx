@@ -135,7 +135,7 @@ function SchoolView({ p, season, seasonName, onChange, how }: { p: Page; season:
       <Players players={p.players} />
       <GivenCard p={p} />
       <div className="card narrow">
-        <h2>Happening at {s.name}</h2>
+        <h2>Over the Line at {s.name}</h2>
         <SchoolFeed emis={s.emis} />
       </div>
     </>
