@@ -55,13 +55,13 @@ const STAGE_OF: Record<string, Stage> = { opened: "fundraising", funded: "progre
 const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress", "In progress"], ["delivered", "Delivered"]] as const;
 
 /** The picture for a post: only real figures, and a trial post carries none. */
-function shareMoment(it: Item, facts?: Facts, photo?: string | null, admin = false): Moment {
+function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const word = (STAMP[it.event] ?? "Update");
   const fig = moneyLine(it, facts);
   const stat = facts ? (it.event === "opened" && facts.pledged_minor < facts.target_minor ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
-    kind: "project", kicker: it.trial && !admin ? "Example project" : word, stamp: it.trial && !admin ? "Example" : word, example: it.trial && admin, over: it.school, headline: it.title,
+    kind: "project", kicker: word, stamp: word, example: !!it.trial, over: it.school, headline: it.title,
     stat, statLabel: label, said: "", photo: photo ?? undefined, items: facts?.items, facts: fig || undefined,
     detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${facts?.items ? `. ${facts.items}` : ""}${fig ? `. ${fig}` : ""}.`,
   };
@@ -165,7 +165,6 @@ function moneyLine(it: Item, facts?: Facts): string {
 
 /** Cheer, comments, share and reactions for one post: used by a project's newest post and by each earlier post in its story. */
 function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; url: string | null }) {
-  const { me: who } = useLeague();
   const [mine, setMine] = useState<string[]>(it.mine);
   const [counts, setCounts] = useState<Record<string, number>>(it.reactions);
   const [open, setOpen] = useState(false);
@@ -201,7 +200,7 @@ function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; u
         <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
           💬{total > 0 && <span>{total}</span>}
         </button>
-        <ShareMomentButton moment={shareMoment(it, facts, url, who.is_admin)} label="Share" />
+        <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
       </div>
       <div className="feed-react">
         {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
