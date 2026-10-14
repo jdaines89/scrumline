@@ -136,6 +136,25 @@ select pg_temp.check(pg_temp.fails($$select * from public.feed_comment_reactions
 reset role;
 delete from public.feed_comments;
 
+-- Trial posts take real comments and reactions.
+select pg_temp.as_user((select a from f));
+select pg_temp.check(public.comment_check(-12, 'opened', 'A kind note on the trial post') is null, 'a kind comment on a trial post can go');
+insert into public.feed_comments (project_id, post_key, body) values (-12, 'opened', 'A kind note on the trial post');
+select pg_temp.check(pg_temp.fails($$insert into public.feed_comments (project_id, post_key, body) values (-12, 'e999', 'no such trial post')$$), 'no comment on a trial post that is not in the list');
+select pg_temp.check(pg_temp.fails($$insert into public.feed_comments (project_id, post_key, body) values (-99, 'opened', 'no such trial project')$$), 'no comment on a trial project that is not in the list');
+insert into public.feed_reactions (project_id, post_key, emoji) values (-12, 'opened', '🔥');
+insert into public.feed_reactions (project_id, post_key, emoji) values (-12, 'opened', '😮');
+select pg_temp.check((select mine = array['😮'] and (reactions->>'😮')::int = 1 and comments = 1 from public.feed_trial_state() where project_id = -12 and post_key = 'opened'), 'trial state counts comments, one reaction per player');
+reset role;
+select pg_temp.as_user((select b from f));
+select pg_temp.check((select comments = 1 and mine = '{}' from public.feed_trial_state() where project_id = -12 and post_key = 'opened'), 'another player sees the same trial comment and not my reaction as theirs');
+reset role;
+select pg_temp.as_user(null);
+select pg_temp.check(pg_temp.fails($$select * from public.feed_trial_state()$$), 'signed-out visitors cannot read trial state');
+reset role;
+delete from public.feed_comments;
+delete from public.feed_reactions where project_id < 0;
+
 -- Flood: 15 a minute.
 delete from public.member_blocks;
 delete from public.feed_comments;
@@ -148,6 +167,13 @@ do $$ begin
 end $$;
 select pg_temp.check(public.comment_check(:proj, 'opened', 'one more') like 'Slow down%', 'the 16th comment in a minute is refused');
 reset role;
+
+-- Removing a project removes its feed rows.
+insert into public.feed_reactions (project_id, post_key, user_id, emoji) select :proj, 'opened', a, '🔥' from f;
+delete from public.school_projects where id = :proj;
+select pg_temp.check(not exists (select 1 from public.feed_reactions where project_id = :proj), 'deleting a project removes its reactions');
+delete from public.feed_comments where project_id < 0;
+delete from public.feed_reactions where project_id < 0;
 
 delete from public.feed_comments;
 delete from moderation.caught where user_id = (select a from f);

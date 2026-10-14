@@ -61,7 +61,7 @@ function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const stat = facts ? (it.event === "opened" && facts.pledged_minor < facts.target_minor ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
-    kind: "project", kicker: word, stamp: word, example: it.trial, over: it.school, headline: it.title,
+    kind: "project", kicker: word, stamp: word, example: !!it.trial, over: it.school, headline: it.title,
     stat, statLabel: label, said: "", photo: photo ?? undefined, items: facts?.items, facts: fig || undefined,
     detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${facts?.items ? `. ${facts.items}` : ""}${fig ? `. ${fig}` : ""}.`,
   };
@@ -79,8 +79,22 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
   const [more, setMore] = useState(true);
   const [busy, setBusy] = useState(false);
   const [facts, setFacts] = useState<Record<number, Facts>>({});
-  const trial = useTrialFeed(emis, province);
+  const trialRaw = useTrialFeed(emis, province);
+  const [trialState, setTrialState] = useState<Record<string, { reactions: Record<string, number>; mine: string[]; comments: number }>>({});
   const [stage, setStage] = useState<StageFilter>("all");
+  // Trial posts carry what players have really done on them (reactions, comments), kept in the feed tables.
+  useEffect(() => {
+    if (!trialRaw.length) return;
+    supabase.rpc("feed_trial_state").then(({ data }) => {
+      if (!data) return;
+      setTrialState(Object.fromEntries((data as { project_id: number; post_key: string; reactions: Record<string, number>; mine: string[]; comments: number }[])
+        .map((r) => [`${r.project_id}:${r.post_key}`, r])));
+    });
+  }, [trialRaw.length]);
+  const trial = useMemo(() => trialRaw.map((t) => {
+    const st = trialState[`${t.project_id}:${t.post_key}`];
+    return st ? { ...t, reactions: st.reactions, mine: st.mine, comments: st.comments } : t;
+  }), [trialRaw, trialState]);
 
   const load = useCallback(async (before?: string) => {
     const { data, error } = await supabase.rpc("school_feed", {
@@ -156,6 +170,9 @@ function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; u
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const [total, setTotal] = useState(it.comments);
+  // Counts can arrive after the card is drawn (trial posts): take them in when they change.
+  const sync = JSON.stringify([it.reactions, it.mine, it.comments]);
+  useEffect(() => { setMine(it.mine); setCounts(it.reactions); setTotal(it.comments); }, [sync]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // One reaction per player per post: tapping another swaps it, tapping the same takes it off.
   async function react(e: string) {
@@ -165,7 +182,6 @@ function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; u
     if (prev) next[prev] = Math.max(0, (next[prev] ?? 0) - 1);
     if (!on) next[e] = (next[e] ?? 0) + 1;
     setMine(on ? [] : [e]); setCounts(next);
-    if (it.trial) return;
     const t = supabase.from("feed_reactions");
     const key = { project_id: it.project_id, post_key: it.post_key, user_id: me };
     let error: { message: string } | null = null;
@@ -307,7 +323,9 @@ export function FeedTotals() {
     });
   }, []);
   // Trial projects count too while they show, so the strip matches the posts below it.
-  const trialIds = [...new Set(useTrialFeed().filter((i) => i.event === "delivery").map((i) => i.project_id))];
+  const { me } = useLeague();
+  const trialAll = useTrialFeed();
+  const trialIds = me.is_admin ? [...new Set(trialAll.filter((i) => i.event === "delivery").map((i) => i.project_id))] : [];
   if (t && trialIds.length) t = { delivered: t.delivered + trialIds.length, schools: t.schools + trialIds.length,
     backed_minor: t.backed_minor + trialIds.reduce((n, id) => n + (TRIAL_FACTS[id]?.pledged_minor ?? 0), 0) };
   if (!t) return <div className="feed-totals" aria-hidden="true" style={{ visibility: "hidden" }}><div><b>0</b><span>x</span></div></div>;
@@ -320,13 +338,8 @@ export function FeedTotals() {
   );
 }
 
-/** Comments typed on trial posts: kept in memory only, never sent anywhere. */
-const TRIAL_COMMENTS = new Map<string, Comment[]>();
-let trialCommentId = 0;
-
 function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   const { me, members } = useLeague();
-  const tkey = `${it.project_id}:${it.post_key}`;
   const [list, setList] = useState<Comment[] | null>(null);
   const [text, setText] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -342,13 +355,12 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   const matches = tag === null ? [] : members.filter((m) => m.user_id !== me.user_id && m.display_name.toLowerCase().startsWith(tag.toLowerCase())).slice(0, 5);
 
   const load = useCallback(async () => {
-    if (it.trial) { const rows = TRIAL_COMMENTS.get(tkey) ?? []; setList(rows); onCount(rows.length); return; }
     let { data, error } = await supabase.rpc("feed_comments_list", { p_project: it.project_id, p_post_key: it.post_key });
     // Until the database has replies and reactions, fall back to plain comments.
     if (error) ({ data } = await supabase.rpc("feed_post_comments", { p_project: it.project_id, p_post_key: it.post_key }));
     const rows = (data ?? []) as Comment[];
     setList(rows); onCount(rows.length);
-  }, [it.project_id, it.post_key, it.trial, tkey, onCount]);
+  }, [it.project_id, it.post_key, onCount]);
   useEffect(() => { load(); }, [load]);
 
   function onType(v: string) {
@@ -370,12 +382,6 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   async function send() {
     const body = encodeMentions(text.trim(), members);
     if (!text.trim() || busy) return;
-    if (it.trial) {
-      const parent = replyTo && (list ?? []).find((c) => c.id === replyTo.id);
-      TRIAL_COMMENTS.set(tkey, [...(TRIAL_COMMENTS.get(tkey) ?? []), { id: --trialCommentId, author_id: me.user_id, author_name: me.display_name, body, created_at: new Date().toISOString(), mine: true,
-        reply_to: parent ? (parent.reply_to ?? parent.id) : null, reactions: {}, my_reaction: null }]);
-      setText(""); setReplyTo(null); setTag(null); load(); return;
-    }
     setBusy(true); setErr(null);
     const { data: why } = await supabase.rpc("comment_check", { p_project: it.project_id, p_post_key: it.post_key, p_body: body });
     if (why) { setErr(why as string); setBusy(false); return; }
@@ -396,7 +402,6 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
     if (!on) counts[e] = (counts[e] ?? 0) + 1;
     const patch = (x: Comment) => x.id === c.id ? { ...x, reactions: counts, my_reaction: on ? null : e } : x;
     setList((cur) => (cur ?? []).map(patch));
-    if (it.trial) { TRIAL_COMMENTS.set(tkey, (TRIAL_COMMENTS.get(tkey) ?? []).map(patch)); return; }
     const t = supabase.from("feed_comment_reactions");
     let error: { message: string } | null = null;
     if (prev) ({ error } = await t.delete().match({ comment_id: c.id, user_id: me.user_id, emoji: prev }));
@@ -406,7 +411,6 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
 
   async function report(id: number, reason: string) {
     setReporting(null);
-    if (it.trial) return;
     const { error } = await supabase.from("feed_comment_reports").insert({ comment_id: id, reason });
     if (error && !error.message.includes("duplicate")) { setErr(error.message); return; }
     setNote("Thanks. It's hidden and we'll look at it.");
@@ -452,7 +456,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
     <div className="feed-comments">
       {list === null ? <div className="skeleton" style={{ height: 48 }} /> : top.map((c) => row(c, false))}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
-      {it.trial && <p className="small muted" style={{ margin: "6px 0 0" }}><span className="trial-tag" style={{ marginRight: 8 }}>Trial</span>Comments on example posts stay on this phone and aren't saved.</p>}
+      {it.trial && <p className="small muted" style={{ margin: "6px 0 0" }}><span className="trial-tag" style={{ marginRight: 8 }}>Trial</span>An example project, amounts are made up. Your comments and reactions are real and everyone can see them.</p>}
       <div className="feed-compose">
         {replyTo && (
           <p className="fc-replying small">

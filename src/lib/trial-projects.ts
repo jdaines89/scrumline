@@ -5,14 +5,18 @@ import { TRIAL_SPONSORS, usePreview } from "./preview";
 
 // Trial school projects: example posts in the school feed, so the feed can be
 // judged with real photos before the first real project is delivered. Real
-// schools, made-up amounts and backers. Like trial sponsors, nothing is in
-// the database, no money moves, ids are negative and each post is marked Trial.
+// schools, made-up amounts and backers. Like trial sponsors, no money moves,
+// there is no project row, ids are negative and each post is marked Trial.
+// Comments, cheers and reactions on them are REAL and shared, stored in the feed
+// tables under the negative ids (supabase/migrations/20261014000600_trial_feed_engagement.sql).
+// To remove their rows: delete from public.feed_comments where project_id < 0;
+// delete from public.feed_reactions where project_id < 0;
 //
 // TRIAL_PROJECTS is the one switch: "admin" shows them only to admins, "all"
 // to every player (each can hide them with the Trial sponsors switch on
 // Profile), "off" removes them. To remove them for good, also delete this file,
 // public/trial-projects/ and the three trial lines in school-feed.tsx.
-export const TRIAL_PROJECTS: "admin" | "all" | "off" = "admin";
+export const TRIAL_PROJECTS: "admin" | "all" | "off" = "all";
 
 /** Photos ship with the app, so they are marked "static:" and never asked of storage. */
 export const STATIC = "static:";
@@ -37,26 +41,26 @@ function items(): TrialItem[] {
   return [
     post({ ...CLARENDON, project_id: -11, post_key: "e1", at: ago(1, 3), event: "delivery", title: "A library for the Foundation Phase",
       note: "Shelves are up and 1,200 books are in. Grade 1 to 3 now have a library period every week.",
-      image_path: photo("library.jpg"), reactions: { "🔥": 34, "👍": 9, "😮": 3 } }),
+      image_path: photo("library.jpg"), reactions: {} }),
     post({ ...UMVUZO, project_id: -12, post_key: "e2", at: ago(4, 6), event: "delivery", title: "New toilets and basins",
       note: "Eight flush toilets and six basins with running water, replacing the old pit toilets.",
-      image_path: photo("toilets-after.jpg"), reactions: { "🔥": 51, "👍": 14, "😢": 2 } }),
+      image_path: photo("toilets-after.jpg"), reactions: {} }),
     post({ ...VICTORIA, project_id: -13, post_key: "e3", at: ago(9, 2), event: "delivery", title: "Water tanks on the sports field",
       note: "Three 5,000 litre tanks on stands, so the school keeps water when the taps run dry.",
-      image_path: photo("water-tanks.jpg"), reactions: { "🔥": 27, "🏉": 6 } }),
+      image_path: photo("water-tanks.jpg"), reactions: {} }),
     post({ ...CLARENDON, project_id: -11, post_key: "funded", at: ago(16, 4), event: "funded", title: "A library for the Foundation Phase",
-      note: null, image_path: null, reactions: { "🔥": 12 } }),
+      note: null, image_path: null, reactions: {} }),
     post({ ...UMVUZO, project_id: -12, post_key: "opened", at: ago(31, 5), event: "opened", title: "New toilets and basins",
       note: "This is what learners use today. Help replace them with proper toilets.",
-      image_path: photo("toilets-before.jpg"), reactions: { "😢": 18, "👍": 7 } }),
+      image_path: photo("toilets-before.jpg"), reactions: {} }),
     post({ ...VICTORIA, project_id: -14, post_key: "opened", at: ago(2, 5), event: "opened", title: "Tackle bags and match balls for the juniors",
       note: "Our junior teams train with worn-out balls and no tackle bags. Help us kit them out.",
-      image_path: null, reactions: { "🔥": 8 } }),
+      image_path: null, reactions: {} }),
     post({ ...CLARENDON, project_id: -15, post_key: "e5", at: ago(1, 8), event: "order", title: "Shade sails over the playground",
       note: "Fully backed, and the sails are ordered. Installation is booked for the school holidays.",
-      image_path: null, reactions: { "🔥": 15, "👍": 4 } }),
+      image_path: null, reactions: {} }),
     post({ ...CLARENDON, project_id: -15, post_key: "funded", at: ago(6, 3), event: "funded", title: "Shade sails over the playground",
-      note: null, image_path: null, reactions: { "🔥": 11 } }),
+      note: null, image_path: null, reactions: {} }),
   ];
 }
 
