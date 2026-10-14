@@ -81,7 +81,7 @@ function SchoolLine({ m, trial }: { m: Mine; trial: boolean }) {
     // No project yet: say so plainly. A bar of players against a minimum sits at 100% for most schools and says nothing.
     bar = -1;
     line = <><b>{confirmed}</b> {CONFIRMED}{confirmed === 1 ? "player" : "players"}{st?.position ? <>, {ordinal(st.position)} of {st.of} on the school table</> : null}</>;
-    sub = "No library project yet. Players calling every week is what gets a school's library backed.";
+    sub = "No school project yet. Players calling every week is what gets a school's next project backed.";
   }
   const pct = Math.max(0, Math.min(100, Math.round(bar * 100)));
   return (
