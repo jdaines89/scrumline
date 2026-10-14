@@ -64,7 +64,7 @@ function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
 }
 
 /**
- * The good happening at schools: project events, newest first. One school's, one
+ * Over the Line: project events, newest first. One school's, one
  * province's, or the whole country's. Every post is a project event, so nothing
  * floats loose, and reactions and comments follow the chat rules.
  */
@@ -334,7 +334,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
 }
 
 /**
- * Home: the latest good news from any school, photo first, with one bold way
+ * Home: the latest from Over the Line, photo first, with one bold way
  * into the whole feed. Always shows (even before the first post) so the way in
  * never disappears.
  */
@@ -355,7 +355,7 @@ export function GoodNewsCard() {
   const where = latest ? [latest.town, provinceName(latest.province)].filter(Boolean).join(", ") : "";
   return (
     <div className="card goodnews">
-      <h2>Good news from schools</h2>
+      <h2>Over the Line</h2>
       {latest && (
         <Link href="/feed/" className="gn-latest">
           {latest.image_path && (
@@ -372,7 +372,7 @@ export function GoodNewsCard() {
         </Link>
       )}
       {latest === null && <p className="sub" style={{ margin: "0 0 4px" }}>Projects are coming to schools. Every one shows up here, with photos.</p>}
-      <Link href="/feed/" className="btn gn-go">See all the good happening ›</Link>
+      <Link href="/feed/" className="btn gn-go">See all ›</Link>
     </div>
   );
 }
