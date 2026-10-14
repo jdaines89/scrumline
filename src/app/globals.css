@@ -1839,13 +1839,12 @@ body {
 }
 .card h2 { font-size: 19px; font-weight: 700; }
 .lg-sect, .dkicker, .chatlist-sect, .tc-hi, .how-h, .fx-day, .prize-label, .tsheet-group h3 { color: #d9b75a; }
-/* Each match carries its two teams' jersey colours: a gradient line on top and
-   the faintest wash from each side, so a round reads like a fixture list, not a form. */
+/* Each match carries its two teams' jersey colours as a gradient line on top
+   so a round reads like a fixture list, not a form. No colour wash behind it. */
 .match {
   border-color: transparent;
   background:
     linear-gradient(90deg, var(--hc), var(--ac)) top / 100% 3px no-repeat,
-    linear-gradient(90deg, color-mix(in srgb, var(--hc) 7%, transparent) 0%, transparent 30%, transparent 70%, color-mix(in srgb, var(--ac) 7%, transparent) 100%),
     var(--panel-2);
 }
 .match .mhead { background: transparent; }
