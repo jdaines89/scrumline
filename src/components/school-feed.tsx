@@ -43,6 +43,13 @@ function ago(iso: string): string {
 }
 
 /** The stamped word on a post. */
+/** What an earlier post says when it has no words of its own, so opening it is never a dead tap. */
+const STORY_NOTE: Record<string, string> = {
+  opened: "The school opened this project and asked for backers.",
+  funded: "The goal was reached, so this project is fully backed. The school can now order what it needs.",
+  order: "The order has been placed.",
+  delivery: "This has been delivered to the school.",
+};
 const STAMP: Record<string, string> = { opened: "New project", funded: "Fully backed", order: "Ordered", delivery: "Delivered", note: "Update" };
 const rands = (minor: number) => `R${Math.round(minor / 100).toLocaleString("en-ZA")}`;
 /** Learner numbers come from a government list that is a year or so old, so only a rough figure is shown. */
@@ -221,6 +228,7 @@ function StoryPost({ it, me, facts }: { it: Item; me: string; facts?: Facts }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => { if (open && it.image_path) photoUrl(it.image_path).then(setUrl); }, [open, it.image_path]);
   const cheers = Object.values(it.reactions).reduce((n, c) => n + c, 0);
+  const sline = it.event === "funded" || it.event === "order" ? moneyLine(it, facts) : "";
   return (
     <li className="feed-past">
       <button type="button" className="feed-past-row" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -231,7 +239,8 @@ function StoryPost({ it, me, facts }: { it: Item; me: string; facts?: Facts }) {
       {open && (
         <div className="feed-past-body">
           {it.image_path && (url ? <img src={url} alt={it.note ?? it.title} /> : <div className="skeleton" style={{ height: 160 }} />)}
-          {it.note && <p className="feed-note">{it.note}</p>}
+          <p className="feed-note">{it.note ?? STORY_NOTE[it.event] ?? "An update on this project."}</p>
+          {sline && <Backers it={it} line={sline} canOpen={(facts?.backers ?? 0) > 0} />}
           <Engage it={it} me={me} facts={facts} url={url} />
         </div>
       )}
@@ -261,10 +270,14 @@ function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: I
           </div>
         </div>
       ) : (
-        <header className="feed-head">
-          <span className="feed-stamp flat">{stamp}</span>
-          {showSchool && <Link href={schoolHref(it.emis)} className="feed-school"><b>{it.school}</b><span className="small muted">{where}</span></Link>}
-        </header>
+        <div className="feed-hero feed-hero-blank">
+          <span className="feed-stamp">{stamp}</span>
+          <div className="feed-hero-foot">
+            {showSchool
+              ? <Link href={schoolHref(it.emis)}><b>{it.school}</b><span>{where}</span></Link>
+              : <span><b>{it.title}</b></span>}
+          </div>
+        </div>
       )}
       <div className="feed-body">
         <p className="feed-when small muted">{ago(it.at)}{it.trial && <span className="trial-tag">Trial</span>}</p>
