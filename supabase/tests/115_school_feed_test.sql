@@ -113,6 +113,29 @@ select pg_temp.as_user((select b from f));
 select pg_temp.check((select count(*) from public.feed_post_comments(:proj, :'epost')) = 0, 'a blocked person''s comments are hidden');
 reset role;
 
+-- Replies and comment reactions.
+delete from public.member_blocks;
+select pg_temp.as_user((select a from f));
+insert into public.feed_comments (project_id, post_key, body) values (:proj, :'epost', 'First!');
+select id as c1 from public.feed_comments where project_id = :proj and body = 'First!' \gset
+reset role;
+select pg_temp.as_user((select b from f));
+insert into public.feed_comments (project_id, post_key, body, reply_to) values (:proj, :'epost', 'Replying', :c1);
+select id as c2 from public.feed_comments where project_id = :proj and body = 'Replying' \gset
+insert into public.feed_comments (project_id, post_key, body, reply_to) values (:proj, :'epost', 'Reply to the reply', :c2);
+select pg_temp.check((select reply_to = :c1 from public.feed_comments where body = 'Reply to the reply'), 'a reply to a reply stays under the first comment');
+select pg_temp.check(pg_temp.fails(format($$insert into public.feed_comments (project_id, post_key, body, reply_to) values (%s, 'opened', 'wrong post', %s)$$, :proj, :c1)), 'a reply must be on the same post');
+insert into public.feed_comment_reactions (comment_id, emoji) values (:c1, '🔥');
+insert into public.feed_comment_reactions (comment_id, emoji) values (:c1, '😮');
+select pg_temp.check((select my_reaction = '😮' and (reactions->>'😮')::int = 1 and coalesce((reactions->>'🔥')::int, 0) = 0 from public.feed_comments_list(:proj, :'epost') where id = :c1), 'one reaction per player per comment, a new one swaps the old');
+select pg_temp.check((select reply_to = :c1 from public.feed_comments_list(:proj, :'epost') where id = :c2), 'the list carries reply_to');
+select pg_temp.check(pg_temp.fails(format($$insert into public.feed_comment_reactions (comment_id, user_id, emoji) values (%s, '%s', '🔥')$$, :c1, (select a from f))), 'cannot react as someone else');
+reset role;
+select pg_temp.as_user(null);
+select pg_temp.check(pg_temp.fails($$select * from public.feed_comment_reactions$$), 'signed-out visitors cannot read comment reactions');
+reset role;
+delete from public.feed_comments;
+
 -- Flood: 15 a minute.
 delete from public.member_blocks;
 delete from public.feed_comments;

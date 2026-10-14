@@ -2200,7 +2200,7 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .feed-past-row i { margin-left: auto; font-style: normal; }
 .feed-past-body { padding: 0 0 12px; }
 .feed-past-body img { display: block; width: 100%; max-height: 260px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
-.feed-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.feed-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .cheer { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; font-size: 15px; font-weight: 800;
   background: var(--panel); border: 1.5px solid var(--gold); color: var(--text); }
 .cheer span { color: var(--gold); font-variant-numeric: tabular-nums; }
@@ -2218,7 +2218,21 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .feed-totals span { font-size: 12px; color: var(--muted); }
 .feed-comments { margin-top: 12px; display: grid; gap: 8px; }
 .feed-comment p { margin: 2px 0; overflow-wrap: anywhere; }
-.feed-compose { display: grid; gap: 6px; }
+.feed-comment { padding: 10px 0; border-top: 1px solid var(--line, rgba(255,255,255,.1)); }
+.feed-comment:first-child { border-top: 0; padding-top: 0; }
+.feed-comment.is-reply { margin: 8px 0 0 14px; padding: 8px 0 0 12px; border-top: 0; border-left: 2px solid rgba(255,255,255,.12); }
+.fc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 4px; font-size: 13px; }
+.fc-actions .linkish { color: var(--muted); font-weight: 700; }
+.fc-actions .fc-report { margin-left: auto; font-weight: 500; }
+.feed-comment .emojipick { margin-top: 6px; flex-wrap: wrap; width: fit-content; max-width: 100%; }
+.feed-compose { display: grid; gap: 8px; margin-top: 6px; }
+.fc-field { position: relative; }
+.fc-field textarea { width: 100%; box-sizing: border-box; }
+.fc-replying { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,.05); color: var(--muted); }
+.fc-send { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+.fc-send .fc-emoji-btn { background: none; border: 1px solid var(--line); color: var(--text); font-size: 18px; padding: 6px 12px; margin-right: auto; }
+.fc-send .fc-emoji-btn:hover { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+.fc-emoji { flex-wrap: wrap; width: fit-content; max-width: 100%; }
 
 /* Good news entry points: a gold, unmissable way into the school feed. */
 .otl-head { margin: 0 0 12px; }
@@ -2232,11 +2246,11 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .goodnews .feed-hero { border-radius: 10px; overflow: hidden; }
 .gn-text { display: grid; gap: 2px; }
 .gn-text .feed-stamp { justify-self: start; margin-bottom: 4px; }
-.feed-actions .ft-share-btn, .feed-actions .fa { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 40px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 0;
+.feed-actions .ft-share-btn, .feed-actions .fa { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 40px; padding: 0 12px; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 0;
   background: transparent; border: 1px solid var(--line); color: var(--text); white-space: nowrap; }
 .feed-actions .fa span { color: var(--muted); font-size: 13px; }
 .feed-actions .fa[aria-expanded="true"] { border-color: var(--muted); }
-.feed-actions .cheer { height: 40px; padding: 0 16px; flex: none; white-space: nowrap; }
+.feed-actions .cheer { height: 40px; padding: 0 13px; flex: none; white-space: nowrap; }
 .feed-actions .ft-share-note { flex-basis: 100%; margin: 2px 0 0; }
 .feed-backers { margin: 6px 0 0; }
 .feed-backers > button.feed-facts { margin: 0; text-align: left; background: none; border: 0; padding: 4px 0; color: var(--gold); font-weight: 700; cursor: pointer; }
