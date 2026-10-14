@@ -2170,3 +2170,17 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .also-more-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .also-more-text span { font-size: 13px; color: var(--muted); }
 .also-more-go { flex: none; font-size: 14px; font-weight: 600; color: var(--accent); }
+
+/* School feed */
+.feed { display: grid; gap: 12px; }
+.feed-card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); padding: 12px; }
+.feed-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.feed-school { display: grid; min-width: 0; color: var(--text); }
+.feed-what { margin: 6px 0 0; }
+.feed-note { margin: 4px 0 0; color: var(--muted); }
+.feed-photo { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); margin-top: 10px; }
+.feed-react { margin-top: 10px; }
+.feed-more { justify-self: center; }
+.feed-comments { margin-top: 10px; display: grid; gap: 8px; }
+.feed-comment p { margin: 2px 0; overflow-wrap: anywhere; }
+.feed-compose { display: grid; gap: 6px; }

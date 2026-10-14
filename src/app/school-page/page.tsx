@@ -17,6 +17,7 @@ import { ord } from "@/lib/growth";
 import { joinLink } from "@/lib/join-link";
 import { projectPhotoUrl, STATE_LABEL, type ProjectState } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
+import { SchoolFeed } from "@/components/school-feed";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
@@ -133,6 +134,10 @@ function SchoolView({ p, season, seasonName, onChange, how }: { p: Page; season:
       {classStage && <ClassTable emis={s.emis} stage={classStage} season={season} school={s.name} />}
       <Players players={p.players} />
       <GivenCard p={p} />
+      <div className="card narrow">
+        <h2>Happening at {s.name}</h2>
+        <SchoolFeed emis={s.emis} />
+      </div>
     </>
   );
 }
