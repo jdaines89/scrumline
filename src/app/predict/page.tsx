@@ -11,6 +11,7 @@ import { RoundPicker } from "@/components/round-picker";
 import { Crowd, type CrowdRow } from "@/components/crowd";
 import { RoundDigest } from "@/components/round-digest";
 import { PrizeLine } from "@/components/prize-line";
+import { ShareCallsButton, type CallRow } from "@/components/share-calls";
 import { usePoolPrizes } from "@/lib/prizes";
 import { usePreview, withTrialPrize } from "@/lib/preview";
 import { currentRound } from "@/components/sponsor-line";
@@ -197,6 +198,17 @@ function Predict() {
   const done = isLocked(round);
   const total = [...scores.values()].reduce((a, b) => a + b.total_pts, 0);
   const filled = ms.filter((m) => preds.has(m.id)).length;
+  // Your calls as a story picture; the real scores only once a match has been played.
+  const shareRows: CallRow[] = ms.flatMap((m) => {
+    const p = preds.get(m.id), h = teams.get(m.home_team_id), a = teams.get(m.away_team_id);
+    if (!p || !h || !a) return [];
+    const played = !season.is_replay && matchStarted(m) && m.home_score !== null && m.away_score !== null;
+    return [{
+      home: h.display_name, away: a.display_name, homeColour: h.colour, awayColour: a.colour,
+      call: [p.home_score, p.away_score], banker: !!p.is_banker,
+      final: played ? [m.home_score!, m.away_score!] : null, pts: scores.get(m.id)?.total_pts ?? null,
+    }];
+  });
   // Each side's last five results this season before the round starts, newest last. Blank until they've played.
   const firstKick = ms.map((m) => m.kickoff_at).sort()[0];
   const form = new Map<string, string>();
@@ -344,6 +356,7 @@ function Predict() {
             : <>{filled} of {ms.length} called{hasBanker ? ", Banker picked" : ", no Banker yet"}.</>}
         </p>
         <TournamentLine sponsors={backers} seasonName={season.name} round={round} title={false} />
+        {shareRows.length > 0 && <ShareCallsButton rows={shareRows} round={roundName(round)} tournament={season.name} name={me.display_name} />}
         {round !== null && prizes.some((p) => p.round === round) && <PrizeLine prizes={prizes.filter((p) => p.round === round)} round={round} onChange={reloadPrizes} compact />}
         {digest && <RoundDigest d={digest} round={round} open={unlockedCalls} teamsOf={(id) => {
           const m = ms.find((x) => x.id === id)!;
