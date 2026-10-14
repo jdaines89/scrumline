@@ -6,6 +6,9 @@ import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
 import { provinceName, schoolHref } from "@/lib/crest";
 import { projectPhotoUrl } from "@/lib/projects";
+import { Tabs } from "@/components/tabs";
+import { ShareMomentButton } from "@/components/share-moment";
+import type { Moment } from "@/lib/share-moments";
 import { supabase } from "@/lib/supabase";
 import { STATIC, TRIAL_FACTS, useTrialFeed } from "@/lib/trial-projects";
 
@@ -39,12 +42,31 @@ const rands = (minor: number) => `R${Math.round(minor / 100).toLocaleString("en-
 /** Learner numbers come from a government list that is a year or so old, so only a rough figure is shown. */
 const aboutLearners = (n: number) => { const step = n < 100 ? 10 : n < 1000 ? 100 : 500; return `~${Math.max(step, Math.round(n / step) * step).toLocaleString("en-ZA")}`; };
 
+/** Where a project is now, from its newest post that moves it along. */
+type Stage = "fundraising" | "progress" | "delivered";
+type StageFilter = "all" | Stage;
+const STAGE_OF: Record<string, Stage> = { opened: "fundraising", funded: "progress", order: "progress", delivery: "delivered" };
+const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress", "In progress"], ["delivered", "Delivered"]] as const;
+
+/** The picture for a post: only real figures, and a trial post carries none. */
+function shareMoment(it: Item, facts?: Facts): Moment {
+  const word = (STAMP[it.event] ?? "Update");
+  const real = !it.trial && facts;
+  const stat = real ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
+  const label = real ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
+  return {
+    kind: "project", kicker: it.trial ? "Example project" : word, stamp: it.trial ? "Example" : word, over: it.school, headline: it.title,
+    stat, statLabel: label, said: "",
+    detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${stat ? `. ${stat} ${label}` : ""}.`,
+  };
+}
+
 /**
  * The good happening at schools: project events, newest first. One school's, one
  * province's, or the whole country's. Every post is a project event, so nothing
  * floats loose, and reactions and comments follow the chat rules.
  */
-export function SchoolFeed({ emis, province, empty }: { emis?: string; province?: string; empty?: string }) {
+export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; province?: string; empty?: string; filters?: boolean }) {
   const { me } = useLeague();
   const key = `feed1:${emis ?? ""}:${province ?? ""}`;
   const [items, setItems] = useState<Item[] | null>(() => readCache<Item[]>(key) ?? null);
@@ -52,6 +74,7 @@ export function SchoolFeed({ emis, province, empty }: { emis?: string; province?
   const [busy, setBusy] = useState(false);
   const [facts, setFacts] = useState<Record<number, Facts>>({});
   const trial = useTrialFeed(emis, province);
+  const [stage, setStage] = useState<StageFilter>("all");
 
   const load = useCallback(async (before?: string) => {
     const { data, error } = await supabase.rpc("school_feed", {
@@ -75,13 +98,25 @@ export function SchoolFeed({ emis, province, empty }: { emis?: string; province?
 
   useEffect(() => { setItems(readCache<Item[]>(key) ?? null); setMore(true); load(); }, [key, load]);
 
-  if (!items) return <div className="skeleton" style={{ height: 200 }} />;
-  // Trial posts slot in by date among the real ones already loaded.
-  const shown = trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items;
+  // A project's stage is its newest post that moves it along; posts arrive newest first.
+  const shown = items && (trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items);
+  const stageOf = new Map<number, Stage>();
+  for (const it of shown ?? []) if (STAGE_OF[it.event] && !stageOf.has(it.project_id)) stageOf.set(it.project_id, STAGE_OF[it.event]);
+  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage));
+
+  // A filter can leave a page nearly empty while older posts wait: fetch on until there is something to see.
+  useEffect(() => {
+    if (!items || busy || !more || stage === "all" || (visible?.length ?? 0) >= 4) return;
+    setBusy(true); load(items[items.length - 1].at).finally(() => setBusy(false));
+  }, [items, busy, more, stage, visible?.length, load]);
+
+  if (!items || !shown || !visible) return <div className="skeleton" style={{ height: 200 }} />;
   if (!shown.length) return <p className="sub" style={{ margin: 0 }}>{empty ?? "Nothing yet. When a project opens or arrives at a school, it shows up here."}</p>;
   return (
     <div className="feed">
-      {shown.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id] ?? TRIAL_FACTS[it.project_id]} />)}
+      {filters && <Tabs label="Project status" items={STAGE_TABS} value={stage} onPick={setStage} size="sub" />}
+      {!visible.length && !more && <p className="sub" style={{ margin: 0 }}>No projects here yet.</p>}
+      {visible.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id] ?? TRIAL_FACTS[it.project_id]} />)}
       {more && (
         <button type="button" className="ghost feed-more" disabled={busy}
           onClick={async () => { setBusy(true); await load(items[items.length - 1].at); setBusy(false); }}>
@@ -152,6 +187,7 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
               {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
             </button>
           )}
+          <ShareMomentButton moment={shareMoment(it, facts)} label="Share" />
           <button type="button" className="rchip" aria-expanded={more} aria-label="More reactions" onClick={() => setMore(!more)}>{more ? "Less" : "More"}</button>
         </div>
         {(more || others.some((e) => (counts[e] ?? 0) > 0)) && (
@@ -163,6 +199,7 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
             ))}
           </div>
         )}
+        {it.trial && <p className="small muted feed-trialnote">An example post, so comments are off. They open on real projects.</p>}
         {open && <Comments it={it} onCount={setTotal} />}
       </div>
     </article>
