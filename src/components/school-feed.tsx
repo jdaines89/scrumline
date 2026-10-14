@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLeague } from "@/components/league";
 import { readCache, writeCache } from "@/lib/cache";
+import { encodeMentions, splitMentions, typingTag } from "@/lib/mentions";
 import { provinceName, schoolHref } from "@/lib/crest";
 import { projectPhotoUrl } from "@/lib/projects";
 import { Tabs } from "@/components/tabs";
@@ -22,7 +23,12 @@ interface Item {
   reactions: Record<string, number>; mine: string[]; comments: number; trial?: true;
 }
 interface Facts { project_id: number; items: string; target_minor: number; pledged_minor: number; backers: number; learners: number | null }
-interface Comment { id: number; author_id: string; author_name: string | null; body: string; created_at: string; mine: boolean }
+interface Comment {
+  id: number; author_id: string; author_name: string | null; body: string; created_at: string; mine: boolean;
+  reply_to?: number | null; reactions?: Record<string, number>; my_reaction?: string | null;
+}
+/** Quick emoji for a comment: the phone's own keyboard works too, this is one tap away. */
+const COMMENT_EMOJI = ["😀", "😂", "🔥", "👏", "🏉", "💪", "🙌", "❤️"];
 
 /** "5 min ago", "3 h ago", "2 d ago", else the date. */
 /** A post's photo: shipped with the app (trial posts) or from storage. */
@@ -316,9 +322,10 @@ export function FeedTotals() {
 
 /** Comments typed on trial posts: kept in memory only, never sent anywhere. */
 const TRIAL_COMMENTS = new Map<string, Comment[]>();
+let trialCommentId = 0;
 
 function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
-  const { me } = useLeague();
+  const { me, members } = useLeague();
   const tkey = `${it.project_id}:${it.post_key}`;
   const [list, setList] = useState<Comment[] | null>(null);
   const [text, setText] = useState("");
@@ -326,29 +333,75 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   const [busy, setBusy] = useState(false);
   const [reporting, setReporting] = useState<number | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
+  const [tag, setTag] = useState<string | null>(null);
+  const [emoji, setEmoji] = useState(false);
+  const [reacting, setReacting] = useState<number | null>(null);
+  const box = useRef<HTMLTextAreaElement>(null);
+  const names = useMemo(() => new Map(members.map((m) => [m.user_id, m.display_name])), [members]);
+  const matches = tag === null ? [] : members.filter((m) => m.user_id !== me.user_id && m.display_name.toLowerCase().startsWith(tag.toLowerCase())).slice(0, 5);
 
   const load = useCallback(async () => {
     if (it.trial) { const rows = TRIAL_COMMENTS.get(tkey) ?? []; setList(rows); onCount(rows.length); return; }
-    const { data } = await supabase.rpc("feed_post_comments", { p_project: it.project_id, p_post_key: it.post_key });
+    let { data, error } = await supabase.rpc("feed_comments_list", { p_project: it.project_id, p_post_key: it.post_key });
+    // Until the database has replies and reactions, fall back to plain comments.
+    if (error) ({ data } = await supabase.rpc("feed_post_comments", { p_project: it.project_id, p_post_key: it.post_key }));
     const rows = (data ?? []) as Comment[];
     setList(rows); onCount(rows.length);
   }, [it.project_id, it.post_key, it.trial, tkey, onCount]);
   useEffect(() => { load(); }, [load]);
 
+  function onType(v: string) {
+    setText(v);
+    setTag(typingTag(v.slice(0, box.current?.selectionStart ?? v.length)));
+  }
+  function choose(m: { display_name: string }) {
+    const cur = box.current?.selectionStart ?? text.length;
+    const before = text.slice(0, cur).replace(/@[^@]*$/, `@${m.display_name} `);
+    setText(before + text.slice(cur)); setTag(null);
+    requestAnimationFrame(() => { box.current?.focus(); box.current?.setSelectionRange(before.length, before.length); });
+  }
+  function addEmoji(e: string) {
+    const cur = box.current?.selectionStart ?? text.length;
+    setText(text.slice(0, cur) + e + text.slice(cur)); setEmoji(false);
+    requestAnimationFrame(() => { box.current?.focus(); box.current?.setSelectionRange(cur + e.length, cur + e.length); });
+  }
+
   async function send() {
-    const body = text.trim();
-    if (!body || busy) return;
+    const body = encodeMentions(text.trim(), members);
+    if (!text.trim() || busy) return;
     if (it.trial) {
-      TRIAL_COMMENTS.set(tkey, [...(TRIAL_COMMENTS.get(tkey) ?? []), { id: Date.now(), author_id: me.user_id, author_name: me.display_name, body, created_at: new Date().toISOString(), mine: true }]);
-      setText(""); load(); return;
+      const parent = replyTo && (list ?? []).find((c) => c.id === replyTo.id);
+      TRIAL_COMMENTS.set(tkey, [...(TRIAL_COMMENTS.get(tkey) ?? []), { id: --trialCommentId, author_id: me.user_id, author_name: me.display_name, body, created_at: new Date().toISOString(), mine: true,
+        reply_to: parent ? (parent.reply_to ?? parent.id) : null, reactions: {}, my_reaction: null }]);
+      setText(""); setReplyTo(null); setTag(null); load(); return;
     }
     setBusy(true); setErr(null);
     const { data: why } = await supabase.rpc("comment_check", { p_project: it.project_id, p_post_key: it.post_key, p_body: body });
     if (why) { setErr(why as string); setBusy(false); return; }
-    const { error } = await supabase.from("feed_comments").insert({ project_id: it.project_id, post_key: it.post_key, body });
+    const row: { project_id: number; post_key: string; body: string; reply_to?: number } = { project_id: it.project_id, post_key: it.post_key, body };
+    if (replyTo) row.reply_to = replyTo.id;
+    const { error } = await supabase.from("feed_comments").insert(row);
     setBusy(false);
     if (error) { setErr(error.message); return; }
-    setText(""); load();
+    setText(""); setReplyTo(null); setTag(null); load();
+  }
+
+  // One reaction per player per comment: another swaps it, the same takes it off.
+  async function react(c: Comment, e: string) {
+    setReacting(null);
+    const prev = c.my_reaction ?? null, on = prev === e;
+    const counts = { ...(c.reactions ?? {}) };
+    if (prev) counts[prev] = Math.max(0, (counts[prev] ?? 0) - 1);
+    if (!on) counts[e] = (counts[e] ?? 0) + 1;
+    const patch = (x: Comment) => x.id === c.id ? { ...x, reactions: counts, my_reaction: on ? null : e } : x;
+    setList((cur) => (cur ?? []).map(patch));
+    if (it.trial) { TRIAL_COMMENTS.set(tkey, (TRIAL_COMMENTS.get(tkey) ?? []).map(patch)); return; }
+    const t = supabase.from("feed_comment_reactions");
+    let error: { message: string } | null = null;
+    if (prev) ({ error } = await t.delete().match({ comment_id: c.id, user_id: me.user_id, emoji: prev }));
+    if (!error && !on) ({ error } = await t.insert({ comment_id: c.id, user_id: me.user_id, emoji: e }));
+    if (error && !error.message.includes("duplicate")) load();
   }
 
   async function report(id: number, reason: string) {
@@ -360,23 +413,71 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
     load();
   }
 
+  const body = (b: string) => splitMentions(b).map((p, i) => "text" in p ? p.text
+    : <span key={i} className={`tag${p.userId === me.user_id ? " me" : ""}`}>@{names.get(p.userId) ?? "someone"}</span>);
+  const shown = list ?? [];
+  const top = shown.filter((c) => !c.reply_to || !shown.some((x) => x.id === c.reply_to));
+  const repliesOf = (id: number) => shown.filter((c) => c.reply_to === id);
+
+  const row = (c: Comment, reply: boolean) => {
+    const chips = EMOJI.filter((e) => (c.reactions?.[e] ?? 0) > 0);
+    return (
+      <div key={c.id} className={`feed-comment${reply ? " is-reply" : ""}`}>
+        <div><b>{c.mine ? "You" : c.author_name ?? "Former member"}</b> <span className="small muted">{ago(c.created_at)}</span></div>
+        <p>{body(c.body)}</p>
+        <div className="fc-actions">
+          <button type="button" className="linkish" onClick={() => { setReplyTo(c); box.current?.focus(); }}>Reply</button>
+          {chips.map((e) => (
+            <button key={e} type="button" className={`rchip${c.my_reaction === e ? " mine" : ""}`} aria-pressed={c.my_reaction === e} onClick={() => react(c, e)}>
+              {e} <span>{c.reactions?.[e]}</span>
+            </button>
+          ))}
+          <button type="button" className="linkish" aria-expanded={reacting === c.id} aria-label="React to this comment" onClick={() => setReacting(reacting === c.id ? null : c.id)}>☺ React</button>
+          {!c.mine && (reporting === c.id
+            ? <span className="small">{REASONS.map(([v, l]) => <button key={v} type="button" className="linkish" style={{ marginRight: 10 }} onClick={() => report(c.id, v)}>{l}</button>)}
+                <button type="button" className="linkish muted" onClick={() => setReporting(null)}>Cancel</button></span>
+            : <button type="button" className="linkish fc-report" onClick={() => setReporting(c.id)}>Report</button>)}
+        </div>
+        {reacting === c.id && (
+          <div className="emojipick" role="group" aria-label="React">
+            {EMOJI.map((e) => <button key={e} type="button" onClick={() => react(c, e)}>{e}</button>)}
+          </div>
+        )}
+        {repliesOf(c.id).map((r) => row(r, true))}
+      </div>
+    );
+  };
+
   return (
     <div className="feed-comments">
-      {list === null ? <div className="skeleton" style={{ height: 48 }} /> : list.map((c) => (
-        <div key={c.id} className="feed-comment">
-          <div><b>{c.mine ? "You" : c.author_name ?? "Former member"}</b> <span className="small muted">{ago(c.created_at)}</span></div>
-          <p>{c.body}</p>
-          {!c.mine && (reporting === c.id
-            ? <div className="small">{REASONS.map(([v, l]) => <button key={v} type="button" className="linkish" style={{ marginRight: 10 }} onClick={() => report(c.id, v)}>{l}</button>)}
-                <button type="button" className="linkish muted" onClick={() => setReporting(null)}>Cancel</button></div>
-            : <button type="button" className="linkish small" style={{ color: "var(--muted)" }} onClick={() => setReporting(c.id)}>Report</button>)}
-        </div>
-      ))}
+      {list === null ? <div className="skeleton" style={{ height: 48 }} /> : top.map((c) => row(c, false))}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
       {it.trial && <p className="small muted" style={{ margin: "6px 0 0" }}><span className="trial-tag" style={{ marginRight: 8 }}>Trial</span>Comments on example posts stay on this phone and aren't saved.</p>}
       <div className="feed-compose">
-        <textarea rows={2} maxLength={500} placeholder="Say something kind" value={text} onChange={(e) => setText(e.target.value)} />
-        <button type="button" disabled={busy || !text.trim()} onClick={send}>{busy ? "Sending…" : "Post"}</button>
+        {replyTo && (
+          <p className="fc-replying small">
+            <span>Replying to <b>{replyTo.mine ? "yourself" : replyTo.author_name ?? "a former member"}</b></span>
+            <button type="button" className="linkish" aria-label="Cancel reply" onClick={() => setReplyTo(null)}>✕</button>
+          </p>
+        )}
+        <div className="fc-field">
+          {matches.length > 0 && (
+            <ul className="tagpick" role="listbox">
+              {matches.map((m) => <li key={m.user_id} role="option" aria-selected="false" onMouseDown={(e) => { e.preventDefault(); choose(m); }}>@{m.display_name}</li>)}
+            </ul>
+          )}
+          <textarea ref={box} rows={2} maxLength={380} placeholder={replyTo ? "Write a reply" : "Say something kind. Type @ to tag a player"} value={text}
+            onChange={(e) => onType(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setTag(null); setEmoji(false); } }} />
+        </div>
+        {emoji && (
+          <div className="emojipick fc-emoji" role="group" aria-label="Emoji">
+            {COMMENT_EMOJI.map((e) => <button key={e} type="button" onClick={() => addEmoji(e)}>{e}</button>)}
+          </div>
+        )}
+        <div className="fc-send">
+          <button type="button" className="fc-emoji-btn" aria-expanded={emoji} aria-label="Add an emoji" onClick={() => setEmoji(!emoji)}>☺</button>
+          <button type="button" disabled={busy || !text.trim()} onClick={send}>{busy ? "Sending…" : replyTo ? "Reply" : "Post"}</button>
+        </div>
       </div>
       {err && <p className="small" style={{ color: "var(--danger)", margin: "6px 0 0" }}>{err}</p>}
     </div>
