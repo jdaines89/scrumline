@@ -7,6 +7,7 @@ import { readCache, writeCache } from "@/lib/cache";
 import { provinceName, schoolHref } from "@/lib/crest";
 import { projectPhotoUrl } from "@/lib/projects";
 import { supabase } from "@/lib/supabase";
+import { STATIC, TRIAL_FACTS, useTrialFeed } from "@/lib/trial-projects";
 
 const EMOJI = ["👍", "🔥", "🏉", "😮", "😢", "😂"];
 const PAGE = 20;
@@ -15,12 +16,15 @@ const REASONS: [string, string][] = [["hate", "Hateful"], ["bullying", "Bullying
 interface Item {
   project_id: number; post_key: string; at: string; event: string; emis: string; school: string; town: string | null;
   province: string; title: string; note: string | null; image_path: string | null;
-  reactions: Record<string, number>; mine: string[]; comments: number;
+  reactions: Record<string, number>; mine: string[]; comments: number; trial?: true;
 }
 interface Facts { project_id: number; items: string; target_minor: number; pledged_minor: number; backers: number; learners: number | null }
 interface Comment { id: number; author_id: string; author_name: string | null; body: string; created_at: string; mine: boolean }
 
 /** "5 min ago", "3 h ago", "2 d ago", else the date. */
+/** A post's photo: shipped with the app (trial posts) or from storage. */
+const photoUrl = (path: string) => path.startsWith(STATIC) ? Promise.resolve(path.slice(STATIC.length)) : projectPhotoUrl(path);
+
 function ago(iso: string): string {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 3600) return `${Math.max(1, Math.round(s / 60))} min ago`;
@@ -47,6 +51,7 @@ export function SchoolFeed({ emis, province, empty }: { emis?: string; province?
   const [more, setMore] = useState(true);
   const [busy, setBusy] = useState(false);
   const [facts, setFacts] = useState<Record<number, Facts>>({});
+  const trial = useTrialFeed(emis, province);
 
   const load = useCallback(async (before?: string) => {
     const { data, error } = await supabase.rpc("school_feed", {
@@ -71,10 +76,12 @@ export function SchoolFeed({ emis, province, empty }: { emis?: string; province?
   useEffect(() => { setItems(readCache<Item[]>(key) ?? null); setMore(true); load(); }, [key, load]);
 
   if (!items) return <div className="skeleton" style={{ height: 200 }} />;
-  if (!items.length) return <p className="sub" style={{ margin: 0 }}>{empty ?? "Nothing yet. When a project opens or arrives at a school, it shows up here."}</p>;
+  // Trial posts slot in by date among the real ones already loaded.
+  const shown = trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items;
+  if (!shown.length) return <p className="sub" style={{ margin: 0 }}>{empty ?? "Nothing yet. When a project opens or arrives at a school, it shows up here."}</p>;
   return (
     <div className="feed">
-      {items.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id]} />)}
+      {shown.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id] ?? TRIAL_FACTS[it.project_id]} />)}
       {more && (
         <button type="button" className="ghost feed-more" disabled={busy}
           onClick={async () => { setBusy(true); await load(items[items.length - 1].at); setBusy(false); }}>
@@ -92,12 +99,13 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
   const [more, setMore] = useState(false);
   const [total, setTotal] = useState(it.comments);
   const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => { if (it.image_path) projectPhotoUrl(it.image_path).then(setUrl); }, [it.image_path]);
+  useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
 
   async function react(e: string) {
     const on = mine.includes(e);
     setMine(on ? mine.filter((x) => x !== e) : [...mine, e]);
     setCounts({ ...counts, [e]: Math.max(0, (counts[e] ?? 0) + (on ? -1 : 1)) });
+    if (it.trial) return;
     const { error } = on
       ? await supabase.from("feed_reactions").delete().match({ project_id: it.project_id, post_key: it.post_key, user_id: me, emoji: e })
       : await supabase.from("feed_reactions").insert({ project_id: it.project_id, post_key: it.post_key, user_id: me, emoji: e });
@@ -131,7 +139,7 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
         </header>
       )}
       <div className="feed-body">
-        <p className="feed-when small muted">{ago(it.at)}</p>
+        <p className="feed-when small muted">{ago(it.at)}{it.trial && <span className="trial-tag">Trial</span>}</p>
         <p className="feed-title"><b>{it.title}</b></p>
         {it.note && <p className="feed-note">{it.note}</p>}
         {facts?.items && <p className="feed-facts">{facts.items}{facts_line && <span> · {facts_line}</span>}</p>}
@@ -139,9 +147,11 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
           <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
             🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
           </button>
-          <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
-            {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
-          </button>
+          {!it.trial && (
+            <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
+              {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
+            </button>
+          )}
           <button type="button" className="rchip" aria-expanded={more} aria-label="More reactions" onClick={() => setMore(!more)}>{more ? "Less" : "More"}</button>
         </div>
         {(more || others.some((e) => (counts[e] ?? 0) > 0)) && (
@@ -161,13 +171,18 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
 
 /** Real totals across all schools, shown above the national feed. Hidden until they load. */
 export function FeedTotals() {
-  const [t, setT] = useState<{ delivered: number; backed_minor: number; schools: number } | null>(() => readCache("feedtotals1") ?? null);
+  const [real, setT] = useState<{ delivered: number; backed_minor: number; schools: number } | null>(() => readCache("feedtotals1") ?? null);
+  let t = real;
   useEffect(() => {
     supabase.rpc("feed_totals").then(({ data }) => {
       const row = (Array.isArray(data) ? data[0] : data) as typeof t;
       if (row) { writeCache("feedtotals1", row); setT(row); }
     });
   }, []);
+  // Trial projects count too while they show, so the strip matches the posts below it.
+  const trialIds = [...new Set(useTrialFeed().filter((i) => i.event === "delivery").map((i) => i.project_id))];
+  if (t && trialIds.length) t = { delivered: t.delivered + trialIds.length, schools: t.schools + trialIds.length,
+    backed_minor: t.backed_minor + trialIds.reduce((n, id) => n + (TRIAL_FACTS[id]?.pledged_minor ?? 0), 0) };
   if (!t) return <div className="feed-totals" aria-hidden="true" style={{ visibility: "hidden" }}><div><b>0</b><span>x</span></div></div>;
   return (
     <div className="feed-totals">
@@ -243,6 +258,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
 export function GoodNewsCard() {
   const [it, setIt] = useState<Item | null | undefined>(() => readCache<Item | null>("goodnews1"));
   const [url, setUrl] = useState<string | null>(null);
+  const trial = useTrialFeed().find((r) => r.image_path);
   useEffect(() => {
     supabase.rpc("school_feed", { p_emis: null, p_province: null, p_before: null, p_limit: 8 }).then(({ data, error }) => {
       if (error) return;
@@ -251,27 +267,28 @@ export function GoodNewsCard() {
       writeCache("goodnews1", pick); setIt(pick);
     });
   }, []);
-  useEffect(() => { setUrl(null); if (it?.image_path) projectPhotoUrl(it.image_path).then(setUrl); }, [it?.image_path]);
-  const where = it ? [it.town, provinceName(it.province)].filter(Boolean).join(", ") : "";
+  const latest = trial && (!it?.image_path || trial.at > it.at) ? trial : it;
+  useEffect(() => { setUrl(null); if (latest?.image_path) photoUrl(latest.image_path).then(setUrl); }, [latest?.image_path]);
+  const where = latest ? [latest.town, provinceName(latest.province)].filter(Boolean).join(", ") : "";
   return (
     <div className="card goodnews">
       <h2>Good news from schools</h2>
-      {it && (
+      {latest && (
         <Link href="/feed/" className="gn-latest">
-          {it.image_path && (
+          {latest.image_path && (
             <div className="feed-hero">
-              {url ? <img src={url} alt={it.note ?? it.title} /> : <div className="skeleton feed-hero-skel" />}
-              <span className="feed-stamp">{STAMP[it.event] ?? "Update"}</span>
-              <div className="feed-hero-foot"><b>{it.school}</b><span>{where}</span></div>
+              {url ? <img src={url} alt={latest.note ?? latest.title} /> : <div className="skeleton feed-hero-skel" />}
+              <span className="feed-stamp">{STAMP[latest.event] ?? "Update"}</span>
+              <div className="feed-hero-foot"><b>{latest.school}</b><span>{where}</span></div>
             </div>
           )}
-          {!it.image_path && (
-            <div className="gn-text"><span className="feed-stamp flat">{STAMP[it.event] ?? "Update"}</span><b>{it.school}</b><span className="small muted">{where}</span></div>
+          {!latest.image_path && (
+            <div className="gn-text"><span className="feed-stamp flat">{STAMP[latest.event] ?? "Update"}</span><b>{latest.school}</b><span className="small muted">{where}</span></div>
           )}
-          <p className="feed-title" style={{ margin: "10px 0 0" }}><b>{it.title}</b></p>
+          <p className="feed-title" style={{ margin: "10px 0 0" }}><b>{latest.title}</b>{"trial" in latest && <span className="trial-tag">Trial</span>}</p>
         </Link>
       )}
-      {it === null && <p className="sub" style={{ margin: "0 0 4px" }}>Projects are coming to schools. Every one shows up here, with photos.</p>}
+      {latest === null && <p className="sub" style={{ margin: "0 0 4px" }}>Projects are coming to schools. Every one shows up here, with photos.</p>}
       <Link href="/feed/" className="btn gn-go">See all the good happening ›</Link>
     </div>
   );
