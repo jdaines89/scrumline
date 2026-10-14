@@ -376,11 +376,8 @@ function Predict() {
                   {!season.is_replay && !started && (myLocks.has(m.id)
                     ? <span className="bank locked">🔒 Locked</span>
                     : p && <button type="button" className="bank" onClick={() => {
-                        // A locked call can't change, Banker included, so say so while there's still time to pick it.
-                        const ask = p.is_banker || hasBanker
-                          ? "Lock this call? You can't change it after."
-                          : "Lock this call? You can't change it or make it your Banker after. Pick your Banker first if it's this game.";
-                        if (window.confirm(ask)) lockMatches([m.id]);
+                        // A locked call can't become the Banker, so ask only while no Banker is picked; otherwise lock straight away.
+                        if (hasBanker || window.confirm("No Banker yet. Once locked, this game can't be your Banker. Lock it anyway?")) lockMatches([m.id]);
                       }}>Lock</button>)}
                 </span>
               </div>
