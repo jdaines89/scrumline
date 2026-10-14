@@ -1849,28 +1849,7 @@ body {
     var(--panel-2);
 }
 .match .mhead { background: transparent; }
-/* A slow, soft light travels along the colour line now and then, like light
-   catching a jersey. Transform only, staggered so cards never move together. */
-.match:not(.skeleton) { position: relative; }
-.match:not(.skeleton)::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 35%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  transform: translateX(-100%);
-  animation: line-sheen 9s ease-in-out infinite;
-  pointer-events: none;
-}
-.match:nth-child(3n + 2)::after { animation-delay: 1.5s; }
-.match:nth-child(3n)::after { animation-delay: 3s; }
-@keyframes line-sheen {
-  0% { transform: translateX(-100%); }
-  35%, 100% { transform: translateX(290%); }
-}
-@media (prefers-reduced-motion: reduce) { .match::after { animation: none; display: none; } }
+.match { position: relative; }
 /* Provinces: the schools table's rows without a crest. */
 .provinces .srow { grid-template-columns: 28px minmax(0, 1fr) auto; }
 .provinces .srow .sname { grid-column: 2; }
