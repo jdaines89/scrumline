@@ -2172,7 +2172,9 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .also-more-go { flex: none; font-size: 14px; font-weight: 600; color: var(--accent); }
 
 /* School feed: photo first, a stamped word, one big cheer. */
-.feed { display: grid; gap: 14px; }
+.feed { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.feed-tabs .stage-tabs { gap: 0; }
+.feed-tabs .stage-tabs button, .feed-tabs .stage-tabs button:hover { flex: 1 1 auto; padding: 6px 4px 9px; font-size: 13px; }
 .feed-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); overflow: hidden; }
 .feed-hero { position: relative; aspect-ratio: 4 / 3; background: var(--panel); }
 .feed-hero img, .feed-hero-skel { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: 0; }
@@ -2198,7 +2200,11 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .cheer:hover { background: var(--panel); border-color: var(--gold); color: var(--text); }
 .cheer.mine { background: var(--gold); color: #1a1405; }
 .cheer.mine span { color: #1a1405; }
-.feed-react { margin-top: 10px; }
+.feed-react { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin-top: 6px; }
+.feed-react .feed-addr { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted); }
+.feed-react button { background: none; border: 0; padding: 4px 0; font-size: 17px; color: var(--text); display: inline-flex; align-items: center; gap: 5px; border-bottom: 2px solid transparent; border-radius: 0; }
+.feed-react button span { font-size: 13px; color: var(--muted); font-weight: 700; }
+.feed-react button.mine { border-bottom-color: var(--gold); }
 .feed-more { justify-self: center; }
 .feed-totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; padding: 12px 6px; border-radius: 10px; border: 1px solid var(--line); border-left: 3px solid var(--gold); background: var(--panel-2); text-align: center; }
 .feed-totals b { display: block; font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--gold); line-height: 1.2; }
@@ -2215,7 +2221,12 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .goodnews .feed-hero { border-radius: 10px; overflow: hidden; }
 .gn-text { display: grid; gap: 2px; }
 .gn-text .feed-stamp { justify-self: start; margin-bottom: 4px; }
-.feed-actions .ft-share-btn { padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 0; }
+.feed-actions .ft-share-btn, .feed-actions .fa { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 40px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 0;
+  background: transparent; border: 1px solid var(--line); color: var(--text); white-space: nowrap; }
+.feed-actions .fa span { color: var(--muted); font-size: 13px; }
+.feed-actions .fa[aria-expanded="true"] { border-color: var(--muted); }
+.feed-actions .cheer { height: 40px; padding: 0 16px; flex: none; white-space: nowrap; }
+.feed-actions .ft-share-note { flex-basis: 100%; margin: 2px 0 0; }
 .feed-backers { margin: 6px 0 0; }
 .feed-backers > button.feed-facts { margin: 0; text-align: left; background: none; border: 0; padding: 4px 0; color: var(--gold); font-weight: 700; cursor: pointer; }
 .feed-backer-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 0; }

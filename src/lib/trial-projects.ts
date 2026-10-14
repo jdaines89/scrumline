@@ -49,6 +49,14 @@ function items(): TrialItem[] {
     post({ ...UMVUZO, project_id: -12, post_key: "opened", at: ago(31, 5), event: "opened", title: "New toilets and basins",
       note: "This is what learners use today. Help replace them with proper toilets.",
       image_path: photo("toilets-before.jpg"), reactions: { "😢": 18, "👍": 7 } }),
+    post({ ...VICTORIA, project_id: -14, post_key: "opened", at: ago(2, 5), event: "opened", title: "Tackle bags and match balls for the juniors",
+      note: "Our junior teams train with worn-out balls and no tackle bags. Help us kit them out.",
+      image_path: null, reactions: { "🔥": 8 } }),
+    post({ ...CLARENDON, project_id: -15, post_key: "e5", at: ago(1, 8), event: "order", title: "Shade sails over the playground",
+      note: "Fully backed, and the sails are ordered. Installation is booked for the school holidays.",
+      image_path: null, reactions: { "🔥": 15, "👍": 4 } }),
+    post({ ...CLARENDON, project_id: -15, post_key: "funded", at: ago(6, 3), event: "funded", title: "Shade sails over the playground",
+      note: null, image_path: null, reactions: { "🔥": 11 } }),
   ];
 }
 
@@ -56,6 +64,8 @@ export const TRIAL_FACTS: Record<number, { project_id: number; items: string; ta
   [-11]: { project_id: -11, items: "1,200 books, 8 shelves, 6 tables and 36 chairs", target_minor: 8500000, pledged_minor: 8500000, backers: 7, learners: 986 },
   [-12]: { project_id: -12, items: "8 flush toilets and 6 basins", target_minor: 18000000, pledged_minor: 18000000, backers: 4, learners: 1512 },
   [-13]: { project_id: -13, items: "3 x 5,000 litre tanks with stands and pipes", target_minor: 6000000, pledged_minor: 6000000, backers: 3, learners: 1074 },
+  [-14]: { project_id: -14, items: "30 match balls and 12 tackle bags", target_minor: 2500000, pledged_minor: 900000, backers: 3, learners: 1074 },
+  [-15]: { project_id: -15, items: "4 shade sails and posts", target_minor: 4000000, pledged_minor: 4000000, backers: 4, learners: 986 },
 };
 
 /** Who backed each trial project: made-up, adds up to the amounts above. */
@@ -75,6 +85,15 @@ export const TRIAL_BACKERS: Record<number, { name: string; business: boolean; am
     { name: "A player", business: false, amount_minor: 500000 },
   ],
 };
+
+TRIAL_BACKERS[-14] = [
+  { name: "Touchline Coffee", business: true, amount_minor: 500000 }, { name: "A player", business: false, amount_minor: 200000 },
+  { name: "A player", business: false, amount_minor: 200000 },
+];
+TRIAL_BACKERS[-15] = [
+  { name: "Scrumcap Optometrists", business: true, amount_minor: 2000000 }, { name: "Front Row Motors", business: true, amount_minor: 1500000 },
+  { name: "A player", business: false, amount_minor: 250000 }, { name: "A player", business: false, amount_minor: 250000 },
+];
 
 /** The trial posts this player should see: one school's, one province's, or all. */
 export function useTrialFeed(emis?: string, province?: string): TrialItem[] {

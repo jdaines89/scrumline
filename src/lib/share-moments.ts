@@ -17,6 +17,8 @@ export interface Moment {
   stamp?: string; stat?: string; statLabel?: string;
   /** A photo to print on the picture (a project's), as a URL the canvas may read. */
   photo?: string;
+  /** What was bought, and the one line of figures, for the picture with a photo. */
+  items?: string; facts?: string;
   /** The small line over a picture's big line, when there's no game: the round, or the school. */
   over?: string;
   /** Your call on the game, for the picture: "My call 24–20" or "I backed Glasgow". */

@@ -164,8 +164,8 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
       y += 110;
     }
   } else if (photo) {
-    // The project's own photo, printed and pinned at a slight angle, with the name and figure under it.
-    const pw = W - pad * 2, ph = 480, pcx = W / 2, pcy = 690 + ph / 2;
+    // The project's own photo, printed and pinned at a slight angle, then what was done and who made it happen.
+    const pw = W - pad * 2, ph = 540, pcx = W / 2, pcy = 690 + ph / 2;
     g.save(); g.translate(pcx, pcy); g.rotate(1.2 * Math.PI / 180);
     g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 28; g.shadowOffsetY = 10;
     g.fillStyle = CHALK; g.fillRect(-pw / 2 - 12, -ph / 2 - 12, pw + 24, ph + 24);
@@ -174,11 +174,14 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
     const k = Math.max(pw / photo.width, ph / photo.height), dw = photo.width * k, dh = photo.height * k;
     g.drawImage(photo, -dw / 2, -dh / 2, dw, dh);
     g.restore();
-    g.fillStyle = GOLD; g.letterSpacing = "3px"; fit((m.over ?? m.kicker).toUpperCase(), 800, 34, 22); g.fillText((m.over ?? m.kicker).toUpperCase(), pad, 1236); g.letterSpacing = "0px";
-    g.fillStyle = CHALK; const hs = fit(m.headline, 900, 84, 44);
-    g.fillText(m.headline, pad, 1236 + 14 + hs);
-    y = 1236 + 14 + hs + 34;
-    chalkLine(pad, y, W - pad, y - 5, 5, .5);
+    let ty = 690 + ph + 78;
+    g.fillStyle = GOLD; g.letterSpacing = "3px"; fit((m.over ?? m.kicker).toUpperCase(), 800, 32, 20); g.fillText((m.over ?? m.kicker).toUpperCase(), pad, ty); g.letterSpacing = "0px";
+    g.fillStyle = CHALK; const hs = fit(m.headline, 900, 72, 40);
+    ty += 12 + hs; g.fillText(m.headline, pad, ty);
+    if (m.items) { g.fillStyle = MUTED; fit(m.items, 500, 34, 24); g.fillText(m.items, pad, ty += 52); }
+    const line = m.facts ?? [m.stat, m.statLabel].filter(Boolean).join(" ");
+    if (line) { g.fillStyle = CHALK; fit(line, 800, 44, 28); g.fillText(line, pad, ty += 64); }
+    y = ty;
   } else {
     // The league or class, with a chalk line under it like a try line.
     g.fillStyle = GOLD; g.letterSpacing = "3px"; fit((m.over ?? m.kicker).toUpperCase(), 800, 36, 24); g.fillText((m.over ?? m.kicker).toUpperCase(), pad, y + 70); g.letterSpacing = "0px";
@@ -190,13 +193,13 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
 
   // The figure that makes it worth posting.
   if (m.score) y = Math.max(y, 1140);
-  if (m.stat) {
-    const big = photo ? 96 : 140, up = photo ? 100 : 130, down = photo ? 148 : 202;
+  if (m.stat && !photo) {
+    const big = 140, up = 130, down = 202;
     g.fillStyle = CHALK; fit(m.stat, 900, big, 60); g.fillText(m.stat, pad, y + up);
-    g.fillStyle = MUTED; fit(m.statLabel ?? "", 600, photo ? 36 : 42, 26); g.fillText(m.statLabel ?? "", pad, y + down);
+    g.fillStyle = MUTED; fit(m.statLabel ?? "", 600, 42, 26); g.fillText(m.statLabel ?? "", pad, y + down);
     y += down;
   }
-  g.fillStyle = CHALK; fit(`— ${name}`, 700, 44, 28); g.fillText(`— ${name}`, pad, Math.min(y + 96, H - 330));
+  g.fillStyle = CHALK; fit(`— ${name}`, 700, 44, 28); g.fillText(`— ${name}`, pad, photo ? Math.min(y + 70, H - 336) : Math.min(y + 96, H - 330));
 
   // Grain over everything above the foot, like a photo of a muddy pitch.
   const img = g.getImageData(0, 0, W, H - 300);

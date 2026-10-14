@@ -51,13 +51,16 @@ const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress",
 /** The picture for a post: only real figures, and a trial post carries none. */
 function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const word = (STAMP[it.event] ?? "Update");
-  const real = !it.trial && facts;
-  const stat = real ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
-  const label = real ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
+  const fig = facts
+    ? [facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : null,
+       facts.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ")
+    : "";
+  const stat = facts ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
+  const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
     kind: "project", kicker: it.trial ? "Example project" : word, stamp: it.trial ? "Example" : word, over: it.school, headline: it.title,
-    stat, statLabel: label, said: "", photo: photo ?? undefined,
-    detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${stat ? `. ${stat} ${label}` : ""}.`,
+    stat, statLabel: label, said: "", photo: photo ?? undefined, items: facts?.items, facts: fig || undefined,
+    detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${facts?.items ? `. ${facts.items}` : ""}${fig ? `. ${fig}` : ""}.`,
   };
 }
 
@@ -98,11 +101,11 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
 
   useEffect(() => { setItems(readCache<Item[]>(key) ?? null); setMore(true); load(); }, [key, load]);
 
-  // A project's stage is its newest post that moves it along; posts arrive newest first.
+  // A project's stage is its newest post that moves it along; posts arrive newest first. A tab shows the projects at that stage and only the posts that belong to it, so an old "New project" post never sits under Delivered.
   const shown = items && (trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items);
   const stageOf = new Map<number, Stage>();
   for (const it of shown ?? []) if (STAGE_OF[it.event] && !stageOf.has(it.project_id)) stageOf.set(it.project_id, STAGE_OF[it.event]);
-  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage));
+  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage && (!STAGE_OF[it.event] || STAGE_OF[it.event] === stage)));
 
   // A filter can leave a page nearly empty while older posts wait: fetch on until there is something to see.
   useEffect(() => {
@@ -114,7 +117,7 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
   if (!shown.length) return <p className="sub" style={{ margin: 0 }}>{empty ?? "Nothing yet. When a project opens or arrives at a school, it shows up here."}</p>;
   return (
     <div className="feed">
-      {filters && <Tabs label="Project status" items={STAGE_TABS} value={stage} onPick={setStage} size="sub" />}
+      {filters && <div className="feed-tabs"><Tabs label="Project status" items={STAGE_TABS} value={stage} onPick={setStage} size="sub" /></div>}
       {!visible.length && !more && <p className="sub" style={{ margin: 0 }}>No projects here yet.</p>}
       {visible.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id] ?? TRIAL_FACTS[it.project_id]} />)}
       {more && (
@@ -183,21 +186,19 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
           <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
             🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
           </button>
-          <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
-            {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
+          <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
+            💬{total > 0 && <span>{total}</span>}
           </button>
           <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
-          <button type="button" className="rchip" aria-expanded={more} aria-label="More reactions" onClick={() => setMore(!more)}>{more ? "Less" : "More"}</button>
         </div>
-        {(more || others.some((e) => (counts[e] ?? 0) > 0)) && (
-          <div className="reactions feed-react">
-            {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
-              <button key={e} type="button" className={`rchip${mine.includes(e) ? " mine" : ""}`} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
-                {e}{(counts[e] ?? 0) > 0 && <> <span>{counts[e]}</span></>}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="feed-react">
+          {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
+            <button key={e} type="button" className={mine.includes(e) ? "mine" : ""} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
+              {e}{(counts[e] ?? 0) > 0 && <span>{counts[e]}</span>}
+            </button>
+          ))}
+          <button type="button" className="feed-addr" aria-expanded={more} onClick={() => setMore(!more)}>{more ? "Done" : "☺ React"}</button>
+        </div>
         {open && <Comments it={it} onCount={setTotal} />}
       </div>
     </article>
@@ -221,7 +222,7 @@ function Backers({ it, line, canOpen }: { it: Item; line: string; canOpen: boole
   if (!canOpen) return <p className="feed-facts">{line}</p>;
   return (
     <div className="feed-backers">
-      <button type="button" className="linkish feed-facts" aria-expanded={open} onClick={toggle}>{line} {open ? "⌃" : "›"}</button>
+      <button type="button" className="linkish feed-facts" aria-expanded={open} onClick={toggle}>{line}{"\u00a0"}{open ? "⌃" : "›"}</button>
       {open && (list === null ? <div className="skeleton" style={{ height: 40 }} /> : (
         <ul className="feed-backer-list">
           {[...list].sort((a, b) => b.amount_minor - a.amount_minor).map((b, i) => (
