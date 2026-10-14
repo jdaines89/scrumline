@@ -182,11 +182,9 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
           <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
             🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
           </button>
-          {!it.trial && (
-            <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
-              {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
-            </button>
-          )}
+          <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
+            {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
+          </button>
           <ShareMomentButton moment={shareMoment(it, facts)} label="Share" />
           <button type="button" className="rchip" aria-expanded={more} aria-label="More reactions" onClick={() => setMore(!more)}>{more ? "Less" : "More"}</button>
         </div>
@@ -199,7 +197,6 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
             ))}
           </div>
         )}
-        {it.trial && <p className="small muted feed-trialnote">An example post, so comments are off. They open on real projects.</p>}
         {open && <Comments it={it} onCount={setTotal} />}
       </div>
     </article>
@@ -230,7 +227,12 @@ export function FeedTotals() {
   );
 }
 
+/** Comments typed on trial posts: kept in memory only, never sent anywhere. */
+const TRIAL_COMMENTS = new Map<string, Comment[]>();
+
 function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
+  const { me } = useLeague();
+  const tkey = `${it.project_id}:${it.post_key}`;
   const [list, setList] = useState<Comment[] | null>(null);
   const [text, setText] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -239,15 +241,20 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   const [note, setNote] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (it.trial) { const rows = TRIAL_COMMENTS.get(tkey) ?? []; setList(rows); onCount(rows.length); return; }
     const { data } = await supabase.rpc("feed_post_comments", { p_project: it.project_id, p_post_key: it.post_key });
     const rows = (data ?? []) as Comment[];
     setList(rows); onCount(rows.length);
-  }, [it.project_id, it.post_key, onCount]);
+  }, [it.project_id, it.post_key, it.trial, tkey, onCount]);
   useEffect(() => { load(); }, [load]);
 
   async function send() {
     const body = text.trim();
     if (!body || busy) return;
+    if (it.trial) {
+      TRIAL_COMMENTS.set(tkey, [...(TRIAL_COMMENTS.get(tkey) ?? []), { id: Date.now(), author_id: me.user_id, author_name: me.display_name, body, created_at: new Date().toISOString(), mine: true }]);
+      setText(""); load(); return;
+    }
     setBusy(true); setErr(null);
     const { data: why } = await supabase.rpc("comment_check", { p_project: it.project_id, p_post_key: it.post_key, p_body: body });
     if (why) { setErr(why as string); setBusy(false); return; }
@@ -259,6 +266,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
 
   async function report(id: number, reason: string) {
     setReporting(null);
+    if (it.trial) return;
     const { error } = await supabase.from("feed_comment_reports").insert({ comment_id: id, reason });
     if (error && !error.message.includes("duplicate")) { setErr(error.message); return; }
     setNote("Thanks. It's hidden and we'll look at it.");
@@ -278,6 +286,7 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
         </div>
       ))}
       {note && <p className="small muted" style={{ margin: "6px 0 0" }}>{note}</p>}
+      {it.trial && <p className="small muted" style={{ margin: "6px 0 0" }}><span className="trial-tag" style={{ marginRight: 8 }}>Trial</span>Comments on example posts stay on this phone and aren't saved.</p>}
       <div className="feed-compose">
         <textarea rows={2} maxLength={500} placeholder="Say something kind" value={text} onChange={(e) => setText(e.target.value)} />
         <button type="button" disabled={busy || !text.trim()} onClick={send}>{busy ? "Sending…" : "Post"}</button>
