@@ -15,6 +15,8 @@ export interface Moment {
   kind: string; kicker: string; headline: string; detail: string; said: string;
   /** The picture's big stamped word, and the figure under the game with what it counts. */
   stamp?: string; stat?: string; statLabel?: string;
+  /** A photo to print on the picture (a project's), as a URL the canvas may read. */
+  photo?: string;
   /** The small line over a picture's big line, when there's no game: the round, or the school. */
   over?: string;
   /** Your call on the game, for the picture: "My call 24–20" or "I backed Glasgow". */

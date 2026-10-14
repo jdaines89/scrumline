@@ -80,6 +80,7 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   const rand = seeded(`${m.kind}|${m.headline}`);
   const CHALK = "#f1efe6", GOLD = "#e0b23c", MUTED = "#a9b8ae";
   const brand = await loadBrand();
+  const photo = m.photo && !m.score ? await loadPhoto(m.photo) : null;
   // Full names always: shrink the type until the line fits rather than cutting it.
   const fit = (text: string, w: number, px: number, min: number, room = W - pad * 2) => {
     let s = px; g.font = font(w, s);
@@ -162,6 +163,22 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
       g.fillStyle = "#14200f"; g.fillText(t, 32, 42); g.restore(); g.letterSpacing = "0px";
       y += 110;
     }
+  } else if (photo) {
+    // The project's own photo, printed and pinned at a slight angle, with the name and figure under it.
+    const pw = W - pad * 2, ph = 480, pcx = W / 2, pcy = 690 + ph / 2;
+    g.save(); g.translate(pcx, pcy); g.rotate(1.2 * Math.PI / 180);
+    g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 28; g.shadowOffsetY = 10;
+    g.fillStyle = CHALK; g.fillRect(-pw / 2 - 12, -ph / 2 - 12, pw + 24, ph + 24);
+    g.shadowColor = "transparent";
+    g.beginPath(); g.rect(-pw / 2, -ph / 2, pw, ph); g.clip();
+    const k = Math.max(pw / photo.width, ph / photo.height), dw = photo.width * k, dh = photo.height * k;
+    g.drawImage(photo, -dw / 2, -dh / 2, dw, dh);
+    g.restore();
+    g.fillStyle = GOLD; g.letterSpacing = "3px"; fit((m.over ?? m.kicker).toUpperCase(), 800, 34, 22); g.fillText((m.over ?? m.kicker).toUpperCase(), pad, 1236); g.letterSpacing = "0px";
+    g.fillStyle = CHALK; const hs = fit(m.headline, 900, 84, 44);
+    g.fillText(m.headline, pad, 1236 + 14 + hs);
+    y = 1236 + 14 + hs + 34;
+    chalkLine(pad, y, W - pad, y - 5, 5, .5);
   } else {
     // The league or class, with a chalk line under it like a try line.
     g.fillStyle = GOLD; g.letterSpacing = "3px"; fit((m.over ?? m.kicker).toUpperCase(), 800, 36, 24); g.fillText((m.over ?? m.kicker).toUpperCase(), pad, y + 70); g.letterSpacing = "0px";
@@ -174,9 +191,10 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   // The figure that makes it worth posting.
   if (m.score) y = Math.max(y, 1140);
   if (m.stat) {
-    g.fillStyle = CHALK; fit(m.stat, 900, 140, 80); g.fillText(m.stat, pad, y + 130);
-    g.fillStyle = MUTED; fit(m.statLabel ?? "", 600, 42, 28); g.fillText(m.statLabel ?? "", pad, y + 202);
-    y += 202;
+    const big = photo ? 96 : 140, up = photo ? 100 : 130, down = photo ? 148 : 202;
+    g.fillStyle = CHALK; fit(m.stat, 900, big, 60); g.fillText(m.stat, pad, y + up);
+    g.fillStyle = MUTED; fit(m.statLabel ?? "", 600, photo ? 36 : 42, 26); g.fillText(m.statLabel ?? "", pad, y + down);
+    y += down;
   }
   g.fillStyle = CHALK; fit(`— ${name}`, 700, 44, 28); g.fillText(`— ${name}`, pad, Math.min(y + 96, H - 330));
 
@@ -199,6 +217,18 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   g.fillStyle = MUTED; g.font = font(500, 32); g.fillText("Helping fund South African schools.", pad, top + 228);
   // A photo-like picture: JPEG keeps the grain at a size that sends quickly.
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/jpeg", .9));
+}
+
+/** A photo for the canvas, or null if it can't be read (the picture is then made without it). */
+function loadPhoto(url: string): Promise<HTMLImageElement | null> {
+  return new Promise((ok) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const t = setTimeout(() => ok(null), 8000);
+    img.onload = () => { clearTimeout(t); ok(img); };
+    img.onerror = () => { clearTimeout(t); ok(null); };
+    img.src = url;
+  });
 }
 
 function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
