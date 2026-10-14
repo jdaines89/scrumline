@@ -18,7 +18,7 @@ export default function FeedPage() {
         <option value="">All provinces</option>
         {CODES.map((c) => <option key={c} value={c}>{provinceName(c)}</option>)}
       </select>
-      <SchoolFeed province={province || undefined} />
+      <SchoolFeed province={province || undefined} filters />
     </div>
   );
 }

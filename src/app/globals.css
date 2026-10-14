@@ -2215,3 +2215,4 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 .goodnews .feed-hero { border-radius: 10px; overflow: hidden; }
 .gn-text { display: grid; gap: 2px; }
 .gn-text .feed-stamp { justify-self: start; margin-bottom: 4px; }
+.feed-actions .ft-share-btn { padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 0; }
