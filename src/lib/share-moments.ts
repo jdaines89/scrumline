@@ -15,6 +15,8 @@ export interface Moment {
   kind: string; kicker: string; headline: string; detail: string; said: string;
   /** The picture's big stamped word, and the figure under the game with what it counts. */
   stamp?: string; stat?: string; statLabel?: string;
+  /** An example (trial) project: marked small in the corner, so the big stamp is the real stage word. */
+  example?: boolean;
   /** A photo to print on the picture (a project's), as a URL the canvas may read. */
   photo?: string;
   /** What was bought, and the one line of figures, for the picture with a photo. */

@@ -55,7 +55,7 @@ function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const stat = facts ? (it.event === "opened" && facts.pledged_minor < facts.target_minor ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
-    kind: "project", kicker: it.trial ? "Example project" : word, stamp: it.trial ? "Example" : word, over: it.school, headline: it.title,
+    kind: "project", kicker: word, stamp: word, example: it.trial, over: it.school, headline: it.title,
     stat, statLabel: label, said: "", photo: photo ?? undefined, items: facts?.items, facts: fig || undefined,
     detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${facts?.items ? `. ${facts.items}` : ""}${fig ? `. ${fig}` : ""}.`,
   };
@@ -383,6 +383,16 @@ function Comments({ it, onCount }: { it: Item; onCount: (n: number) => void }) {
   );
 }
 
+/** The stamped heading and the one-line idea behind the feed, shared by Home and the feed page. */
+export function OverTheLineHead({ intro }: { intro: string }) {
+  return (
+    <div className="otl-head">
+      <h2 className="otl-stamp">Over the Line</h2>
+      <p className="otl-intro">{intro}</p>
+    </div>
+  );
+}
+
 /**
  * Home: the latest from Over the Line, photo first, with one bold way
  * into the whole feed. Always shows (even before the first post) so the way in
@@ -405,7 +415,7 @@ export function GoodNewsCard() {
   const where = latest ? [latest.town, provinceName(latest.province)].filter(Boolean).join(", ") : "";
   return (
     <div className="card goodnews">
-      <h2>Over the Line</h2>
+      <OverTheLineHead intro="Schools set the goal. Every call you make helps carry a project over the line." />
       {latest && (
         <Link href="/feed/" className="gn-latest">
           {latest.image_path && (
