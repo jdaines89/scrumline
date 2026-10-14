@@ -51,10 +51,8 @@ const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress",
 /** The picture for a post: only real figures, and a trial post carries none. */
 function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const word = (STAMP[it.event] ?? "Update");
-  const fig = facts
-    ? (facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : "")
-    : "";
-  const stat = facts ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
+  const fig = moneyLine(it, facts);
+  const stat = facts ? (it.event === "opened" && facts.pledged_minor < facts.target_minor ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = facts ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
     kind: "project", kicker: it.trial ? "Example project" : word, stamp: it.trial ? "Example" : word, over: it.school, headline: it.title,
@@ -104,7 +102,14 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
   const shown = items && (trial.length ? [...items, ...trial.filter((t) => !more || !items.length || t.at >= items[items.length - 1].at)].sort((a, b) => b.at.localeCompare(a.at)) : items);
   const stageOf = new Map<number, Stage>();
   for (const it of shown ?? []) if (STAGE_OF[it.event] && !stageOf.has(it.project_id)) stageOf.set(it.project_id, STAGE_OF[it.event]);
-  const visible = shown && (stage === "all" ? shown : shown.filter((it) => stageOf.get(it.project_id) === stage && (!STAGE_OF[it.event] || STAGE_OF[it.event] === stage)));
+  // One project is one story: its posts collapse into one card led by the newest post, with the earlier ones as a stage line.
+  const groups: { lead: Item; history: Item[] }[] = [];
+  const at = new Map<number, number>();
+  for (const it of shown ?? []) {
+    const g = at.get(it.project_id);
+    if (g === undefined) { at.set(it.project_id, groups.length); groups.push({ lead: it, history: [] }); } else groups[g].history.push(it);
+  }
+  const visible = shown && (stage === "all" ? groups : groups.filter((g) => stageOf.get(g.lead.project_id) === stage));
 
   // A filter can leave a page nearly empty while older posts wait: fetch on until there is something to see.
   useEffect(() => {
@@ -118,7 +123,7 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
     <div className="feed">
       {filters && <div className="feed-tabs"><Tabs label="Project status" items={STAGE_TABS} value={stage} onPick={setStage} size="sub" /></div>}
       {!visible.length && !more && <p className="sub" style={{ margin: 0 }}>No projects here yet.</p>}
-      {visible.map((it) => <FeedCard key={`${it.project_id}:${it.post_key}`} it={it} me={me.user_id} showSchool={!emis} facts={facts[it.project_id] ?? TRIAL_FACTS[it.project_id]} />)}
+      {visible.map((g) => <FeedCard key={g.lead.project_id} it={g.lead} history={g.history} me={me.user_id} showSchool={!emis} facts={facts[g.lead.project_id] ?? TRIAL_FACTS[g.lead.project_id]} />)}
       {more && (
         <button type="button" className="ghost feed-more" disabled={busy}
           onClick={async () => { setBusy(true); await load(items[items.length - 1].at); setBusy(false); }}>
@@ -129,14 +134,22 @@ export function SchoolFeed({ emis, province, empty, filters }: { emis?: string; 
   );
 }
 
-function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSchool: boolean; facts?: Facts }) {
+/** The money line for where a project stands: still raising shows goal progress, anything later shows the final amount. */
+function moneyLine(it: Item, facts?: Facts): string {
+  if (!facts || facts.backers < 1) return "";
+  const who = `${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`;
+  return it.event === "opened" && facts.pledged_minor < facts.target_minor
+    ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)} from ${who}`
+    : `${rands(facts.pledged_minor)} from ${who}`;
+}
+
+/** Cheer, comments, share and reactions for one post: used by a project's newest post and by each earlier post in its story. */
+function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; url: string | null }) {
   const [mine, setMine] = useState<string[]>(it.mine);
   const [counts, setCounts] = useState<Record<string, number>>(it.reactions);
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const [total, setTotal] = useState(it.comments);
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
 
   // One reaction per player per post: tapping another swaps it, tapping the same takes it off.
   async function react(e: string) {
@@ -155,14 +168,63 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
     if (error && !error.message.includes("duplicate")) { setMine(it.mine); setCounts(it.reactions); }
   }
 
+  const others = EMOJI.filter((e) => e !== "🔥");
+  return (
+    <>
+      <div className="feed-actions">
+        <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
+          🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
+        </button>
+        <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
+          💬{total > 0 && <span>{total}</span>}
+        </button>
+        <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
+      </div>
+      <div className="feed-react">
+        {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
+          <button key={e} type="button" className={mine.includes(e) ? "mine" : ""} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
+            {e}{(counts[e] ?? 0) > 0 && <span>{counts[e]}</span>}
+          </button>
+        ))}
+        <button type="button" className="feed-addr" aria-expanded={more} onClick={() => setMore(!more)}>{more ? "Done" : "☺ React"}</button>
+      </div>
+      {open && <Comments it={it} onCount={setTotal} />}
+    </>
+  );
+}
+
+/** An earlier post of the same project: one tappable line with its engagement, opening to its photo, words, cheers and comments. */
+function StoryPost({ it, me, facts }: { it: Item; me: string; facts?: Facts }) {
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { if (open && it.image_path) photoUrl(it.image_path).then(setUrl); }, [open, it.image_path]);
+  const cheers = Object.values(it.reactions).reduce((n, c) => n + c, 0);
+  return (
+    <li className="feed-past">
+      <button type="button" className="feed-past-row" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <b>{STAMP[it.event] ?? "Update"}</b><span>{ago(it.at).replace(/ 20\d\d$/, "")}</span>
+        {cheers > 0 && <span>{cheers} {cheers === 1 ? "reaction" : "reactions"}</span>}{it.comments > 0 && <span>{it.comments} {it.comments === 1 ? "comment" : "comments"}</span>}
+        <i>{open ? "⌃" : "›"}</i>
+      </button>
+      {open && (
+        <div className="feed-past-body">
+          {it.image_path && (url ? <img src={url} alt={it.note ?? it.title} /> : <div className="skeleton" style={{ height: 160 }} />)}
+          {it.note && <p className="feed-note">{it.note}</p>}
+          <Engage it={it} me={me} facts={facts} url={url} />
+        </div>
+      )}
+    </li>
+  );
+}
+
+function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: Item[]; me: string; showSchool: boolean; facts?: Facts }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
+
   const stamp = STAMP[it.event] ?? "Update";
   const place = [it.town, provinceName(it.province)].filter(Boolean).join(", ");
   const where = [place, facts?.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ");
-  const facts_line = facts
-    ? [facts.backers > 0 ? `${rands(facts.pledged_minor)} from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}` : null,
-       ].filter(Boolean).join(" · ")
-    : "";
-  const others = EMOJI.filter((e) => e !== "🔥");
+  const facts_line = moneyLine(it, facts);
 
   return (
     <article className={`feed-card${it.image_path ? " has-photo" : ""}`}>
@@ -188,24 +250,12 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
         {it.note && <p className="feed-note">{it.note}</p>}
         {facts?.items && <p className="feed-facts">{facts.items}</p>}
         {facts_line && <Backers it={it} line={facts_line} canOpen={(facts?.backers ?? 0) > 0} />}
-        <div className="feed-actions">
-          <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
-            🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
-          </button>
-          <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
-            💬{total > 0 && <span>{total}</span>}
-          </button>
-          <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
-        </div>
-        <div className="feed-react">
-          {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
-            <button key={e} type="button" className={mine.includes(e) ? "mine" : ""} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
-              {e}{(counts[e] ?? 0) > 0 && <span>{counts[e]}</span>}
-            </button>
-          ))}
-          <button type="button" className="feed-addr" aria-expanded={more} onClick={() => setMore(!more)}>{more ? "Done" : "☺ React"}</button>
-        </div>
-        {open && <Comments it={it} onCount={setTotal} />}
+        <Engage it={it} me={me} facts={facts} url={url} />
+        {history.length > 0 && (
+          <ul className="feed-story" aria-label="Earlier in this project">
+            {history.map((h) => <StoryPost key={h.post_key} it={h} me={me} facts={facts} />)}
+          </ul>
+        )}
       </div>
     </article>
   );
