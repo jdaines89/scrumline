@@ -10,7 +10,7 @@ import { Tabs } from "@/components/tabs";
 import { ShareMomentButton } from "@/components/share-moment";
 import type { Moment } from "@/lib/share-moments";
 import { supabase } from "@/lib/supabase";
-import { STATIC, TRIAL_FACTS, useTrialFeed } from "@/lib/trial-projects";
+import { STATIC, TRIAL_BACKERS, TRIAL_FACTS, useTrialFeed } from "@/lib/trial-projects";
 
 const EMOJI = ["👍", "🔥", "🏉", "😮", "😢", "😂"];
 const PAGE = 20;
@@ -49,14 +49,14 @@ const STAGE_OF: Record<string, Stage> = { opened: "fundraising", funded: "progre
 const STAGE_TABS = [["all", "All"], ["fundraising", "Fundraising"], ["progress", "In progress"], ["delivered", "Delivered"]] as const;
 
 /** The picture for a post: only real figures, and a trial post carries none. */
-function shareMoment(it: Item, facts?: Facts): Moment {
+function shareMoment(it: Item, facts?: Facts, photo?: string | null): Moment {
   const word = (STAMP[it.event] ?? "Update");
   const real = !it.trial && facts;
   const stat = real ? (it.event === "opened" ? `${rands(facts.pledged_minor)} of ${rands(facts.target_minor)}` : rands(facts.pledged_minor)) : undefined;
   const label = real ? (it.event === "opened" ? "backed so far" : `from ${facts.backers} ${facts.backers === 1 ? "backer" : "backers"}`) : undefined;
   return {
     kind: "project", kicker: it.trial ? "Example project" : word, stamp: it.trial ? "Example" : word, over: it.school, headline: it.title,
-    stat, statLabel: label, said: "",
+    stat, statLabel: label, said: "", photo: photo ?? undefined,
     detail: `${it.school}${it.town ? `, ${it.town}` : ""}${it.trial ? " (an example project)" : ""}${stat ? `. ${stat} ${label}` : ""}.`,
   };
 }
@@ -177,7 +177,8 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
         <p className="feed-when small muted">{ago(it.at)}{it.trial && <span className="trial-tag">Trial</span>}</p>
         <p className="feed-title"><b>{it.title}</b></p>
         {it.note && <p className="feed-note">{it.note}</p>}
-        {facts?.items && <p className="feed-facts">{facts.items}{facts_line && <span> · {facts_line}</span>}</p>}
+        {facts?.items && <p className="feed-facts">{facts.items}</p>}
+        {facts_line && <Backers it={it} line={facts_line} canOpen={(facts?.backers ?? 0) > 0} />}
         <div className="feed-actions">
           <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
             🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
@@ -185,7 +186,7 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
           <button type="button" className="rchip" aria-expanded={open} onClick={() => setOpen(!open)}>
             {total > 0 ? `${total} comment${total === 1 ? "" : "s"}` : "Comment"}
           </button>
-          <ShareMomentButton moment={shareMoment(it, facts)} label="Share" />
+          <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
           <button type="button" className="rchip" aria-expanded={more} aria-label="More reactions" onClick={() => setMore(!more)}>{more ? "Less" : "More"}</button>
         </div>
         {(more || others.some((e) => (counts[e] ?? 0) > 0)) && (
@@ -200,6 +201,35 @@ function FeedCard({ it, me, showSchool, facts }: { it: Item; me: string; showSch
         {open && <Comments it={it} onCount={setTotal} />}
       </div>
     </article>
+  );
+}
+
+interface Backer { name: string; business: boolean; amount_minor: number; status?: string }
+
+/** "R85,000 from 7 backers ›": tap to see who gave what. Names are the ones the projects page already shows signed-in players. */
+function Backers({ it, line, canOpen }: { it: Item; line: string; canOpen: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [list, setList] = useState<Backer[] | null>(null);
+  async function toggle() {
+    const next = !open; setOpen(next);
+    if (!next || list) return;
+    if (it.trial) { setList(TRIAL_BACKERS[it.project_id] ?? []); return; }
+    const { data } = await supabase.rpc("school_projects_list");
+    const p = ((data ?? []) as { id: number; backers: (Backer & { status: string })[] }[]).find((r) => r.id === it.project_id);
+    setList((p?.backers ?? []).filter((b) => b.status !== "lapsed"));
+  }
+  if (!canOpen) return <p className="feed-facts">{line}</p>;
+  return (
+    <div className="feed-backers">
+      <button type="button" className="linkish feed-facts" aria-expanded={open} onClick={toggle}>{line} {open ? "⌃" : "›"}</button>
+      {open && (list === null ? <div className="skeleton" style={{ height: 40 }} /> : (
+        <ul className="feed-backer-list">
+          {[...list].sort((a, b) => b.amount_minor - a.amount_minor).map((b, i) => (
+            <li key={i}><span>{b.name}{b.business && <span className="feed-biz">Business</span>}</span><b>{rands(b.amount_minor)}</b></li>
+          ))}
+        </ul>
+      ))}
+    </div>
   );
 }
 

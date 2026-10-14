@@ -58,6 +58,24 @@ export const TRIAL_FACTS: Record<number, { project_id: number; items: string; ta
   [-13]: { project_id: -13, items: "3 x 5,000 litre tanks with stands and pipes", target_minor: 6000000, pledged_minor: 6000000, backers: 3, learners: 1074 },
 };
 
+/** Who backed each trial project: made-up, adds up to the amounts above. */
+export const TRIAL_BACKERS: Record<number, { name: string; business: boolean; amount_minor: number }[]> = {
+  [-11]: [
+    { name: "Front Row Motors", business: true, amount_minor: 3000000 }, { name: "Touchline Coffee", business: true, amount_minor: 2000000 },
+    { name: "Lineout Physio", business: true, amount_minor: 1500000 }, { name: "A player", business: false, amount_minor: 500000 },
+    { name: "A player", business: false, amount_minor: 500000 }, { name: "A player", business: false, amount_minor: 500000 },
+    { name: "A player", business: false, amount_minor: 500000 },
+  ],
+  [-12]: [
+    { name: "Scrumcap Optometrists", business: true, amount_minor: 8000000 }, { name: "Front Row Motors", business: true, amount_minor: 6000000 },
+    { name: "Touchline Coffee", business: true, amount_minor: 3000000 }, { name: "A player", business: false, amount_minor: 1000000 },
+  ],
+  [-13]: [
+    { name: "Lineout Physio", business: true, amount_minor: 3000000 }, { name: "Front Row Motors", business: true, amount_minor: 2500000 },
+    { name: "A player", business: false, amount_minor: 500000 },
+  ],
+};
+
 /** The trial posts this player should see: one school's, one province's, or all. */
 export function useTrialFeed(emis?: string, province?: string): TrialItem[] {
   const { me } = useLeague();
