@@ -143,14 +143,13 @@ function moneyLine(it: Item, facts?: Facts): string {
     : `${rands(facts.pledged_minor)} from ${who}`;
 }
 
-function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: Item[]; me: string; showSchool: boolean; facts?: Facts }) {
+/** Cheer, comments, share and reactions for one post: used by a project's newest post and by each earlier post in its story. */
+function Engage({ it, me, facts, url }: { it: Item; me: string; facts?: Facts; url: string | null }) {
   const [mine, setMine] = useState<string[]>(it.mine);
   const [counts, setCounts] = useState<Record<string, number>>(it.reactions);
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const [total, setTotal] = useState(it.comments);
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
 
   // One reaction per player per post: tapping another swaps it, tapping the same takes it off.
   async function react(e: string) {
@@ -169,12 +168,63 @@ function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: I
     if (error && !error.message.includes("duplicate")) { setMine(it.mine); setCounts(it.reactions); }
   }
 
+  const others = EMOJI.filter((e) => e !== "🔥");
+  return (
+    <>
+      <div className="feed-actions">
+        <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
+          🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
+        </button>
+        <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
+          💬{total > 0 && <span>{total}</span>}
+        </button>
+        <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
+      </div>
+      <div className="feed-react">
+        {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
+          <button key={e} type="button" className={mine.includes(e) ? "mine" : ""} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
+            {e}{(counts[e] ?? 0) > 0 && <span>{counts[e]}</span>}
+          </button>
+        ))}
+        <button type="button" className="feed-addr" aria-expanded={more} onClick={() => setMore(!more)}>{more ? "Done" : "☺ React"}</button>
+      </div>
+      {open && <Comments it={it} onCount={setTotal} />}
+    </>
+  );
+}
+
+/** An earlier post of the same project: one tappable line with its engagement, opening to its photo, words, cheers and comments. */
+function StoryPost({ it, me, facts }: { it: Item; me: string; facts?: Facts }) {
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { if (open && it.image_path) photoUrl(it.image_path).then(setUrl); }, [open, it.image_path]);
+  const cheers = Object.values(it.reactions).reduce((n, c) => n + c, 0);
+  return (
+    <li className="feed-past">
+      <button type="button" className="feed-past-row" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <b>{STAMP[it.event] ?? "Update"}</b><span>{ago(it.at).replace(/ 20\d\d$/, "")}</span>
+        {cheers > 0 && <span>{cheers} {cheers === 1 ? "reaction" : "reactions"}</span>}{it.comments > 0 && <span>{it.comments} {it.comments === 1 ? "comment" : "comments"}</span>}
+        <i>{open ? "⌃" : "›"}</i>
+      </button>
+      {open && (
+        <div className="feed-past-body">
+          {it.image_path && (url ? <img src={url} alt={it.note ?? it.title} /> : <div className="skeleton" style={{ height: 160 }} />)}
+          {it.note && <p className="feed-note">{it.note}</p>}
+          <Engage it={it} me={me} facts={facts} url={url} />
+        </div>
+      )}
+    </li>
+  );
+}
+
+function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: Item[]; me: string; showSchool: boolean; facts?: Facts }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { if (it.image_path) photoUrl(it.image_path).then(setUrl); }, [it.image_path]);
+
   const stamp = STAMP[it.event] ?? "Update";
   const place = [it.town, provinceName(it.province)].filter(Boolean).join(", ");
   const where = [place, facts?.learners ? `${aboutLearners(facts.learners)} learners` : null].filter(Boolean).join(" · ");
   const facts_line = moneyLine(it, facts);
-  const story = [...history].reverse().concat(it);
-  const others = EMOJI.filter((e) => e !== "🔥");
 
   return (
     <article className={`feed-card${it.image_path ? " has-photo" : ""}`}>
@@ -199,30 +249,13 @@ function FeedCard({ it, history, me, showSchool, facts }: { it: Item; history: I
         <p className="feed-title"><b>{it.title}</b></p>
         {it.note && <p className="feed-note">{it.note}</p>}
         {facts?.items && <p className="feed-facts">{facts.items}</p>}
-        {story.length > 1 && (
-          <ol className="feed-story" aria-label="Project story">
-            {story.map((s) => <li key={s.post_key} className={s === it ? "now" : ""}><b>{STAMP[s.event] ?? "Update"}</b><span>{ago(s.at).replace(/ 20\d\d$/, "")}</span></li>)}
-          </ol>
-        )}
         {facts_line && <Backers it={it} line={facts_line} canOpen={(facts?.backers ?? 0) > 0} />}
-        <div className="feed-actions">
-          <button type="button" className={`cheer${mine.includes("🔥") ? " mine" : ""}`} aria-pressed={mine.includes("🔥")} onClick={() => react("🔥")}>
-            🔥 Cheer{(counts["🔥"] ?? 0) > 0 && <span>{counts["🔥"]}</span>}
-          </button>
-          <button type="button" className="fa" aria-expanded={open} aria-label="Comments" onClick={() => setOpen(!open)}>
-            💬{total > 0 && <span>{total}</span>}
-          </button>
-          <ShareMomentButton moment={shareMoment(it, facts, url)} label="Share" />
-        </div>
-        <div className="feed-react">
-          {others.filter((e) => more || (counts[e] ?? 0) > 0).map((e) => (
-            <button key={e} type="button" className={mine.includes(e) ? "mine" : ""} aria-pressed={mine.includes(e)} onClick={() => react(e)}>
-              {e}{(counts[e] ?? 0) > 0 && <span>{counts[e]}</span>}
-            </button>
-          ))}
-          <button type="button" className="feed-addr" aria-expanded={more} onClick={() => setMore(!more)}>{more ? "Done" : "☺ React"}</button>
-        </div>
-        {open && <Comments it={it} onCount={setTotal} />}
+        <Engage it={it} me={me} facts={facts} url={url} />
+        {history.length > 0 && (
+          <ul className="feed-story" aria-label="Earlier in this project">
+            {history.map((h) => <StoryPost key={h.post_key} it={h} me={me} facts={facts} />)}
+          </ul>
+        )}
       </div>
     </article>
   );
