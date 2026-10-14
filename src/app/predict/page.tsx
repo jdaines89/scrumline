@@ -229,7 +229,7 @@ function Predict() {
     if (openIds.length) steps.push({
       title: `Lock ${openIds.length === ms.length ? "your" : openIds.length} call${openIds.length === 1 ? "" : "s"} to see everyone's`,
       detail: "You'll see what everyone who's locked the same games called. A lock can't be undone.",
-      onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after.`)) lockMatches(openIds); },
+      onClick: () => { if (window.confirm(`Lock ${openIds.length} call${openIds.length === 1 ? "" : "s"}? You can't change them after${hasBanker ? "" : ", and none of them can be your Banker. Pick your Banker first"}.`)) lockMatches(openIds); },
     });
     // Every league you're in, the one on screen first; with more than one you choose where to say it.
     const leagues = [...pools].sort((a, b) => Number(b.id === pool?.id) - Number(a.id === pool?.id));
@@ -375,7 +375,13 @@ function Predict() {
                     : !shut && !bankerShut && p ? <button type="button" className="bank" onClick={() => back(m.id)}>Make Banker</button> : null}
                   {!season.is_replay && !started && (myLocks.has(m.id)
                     ? <span className="bank locked">🔒 Locked</span>
-                    : p && <button type="button" className="bank" onClick={() => lockMatches([m.id])}>Lock</button>)}
+                    : p && <button type="button" className="bank" onClick={() => {
+                        // A locked call can't change, Banker included, so say so while there's still time to pick it.
+                        const ask = p.is_banker || hasBanker
+                          ? "Lock this call? You can't change it after."
+                          : "Lock this call? You can't change it or make it your Banker after. Pick your Banker first if it's this game.";
+                        if (window.confirm(ask)) lockMatches([m.id]);
+                      }}>Lock</button>)}
                 </span>
               </div>
               <div className="pred">
@@ -487,7 +493,7 @@ function Predict() {
               const open = ms.filter((m) => preds.has(m.id) && !matchStarted(m) && !myLocks.has(m.id)).map((m) => m.id);
               return open.length > 0 && !allIn && (
                 <button type="button" onClick={() => {
-                  if (window.confirm(`Lock ${open.length} call${open.length === 1 ? "" : "s"}? You can't change them after, but you'll see the calls of others who've locked the same games.`)) lockMatches(open);
+                  if (window.confirm(`Lock ${open.length} call${open.length === 1 ? "" : "s"}? You can't change them after${hasBanker ? "" : " or make one your Banker"}, but you'll see the calls of others who've locked the same games.`)) lockMatches(open);
                 }}>Lock {open.length === ms.length ? "all" : open.length} call{open.length === 1 ? "" : "s"}</button>
               );
             })()}
@@ -497,7 +503,7 @@ function Predict() {
           </div>
         )}
         {!season.is_replay && !done && (
-          <p className="small muted">Every call locks at kickoff anyway. Lock one earlier and you&apos;ll see the calls of others who&apos;ve locked that game too. A lock can&apos;t be undone.</p>
+          <p className="small muted">Every call locks at kickoff anyway. Lock one earlier and you&apos;ll see the calls of others who&apos;ve locked that game too. A lock can&apos;t be undone, so pick your Banker first.</p>
         )}
         {!done && season.is_replay && (
           <>
