@@ -36,6 +36,16 @@ select pg_temp.as_user(null);
 select pg_temp.check(pg_temp.fails($$select * from public.school_feed()$$), 'signed-out visitors cannot read the feed');
 reset role;
 
+
+-- Real numbers for the feed.
+select pg_temp.as_user((select a from f));
+select pg_temp.check((select items = '300 story books' and backers = 0 from public.feed_project_facts(array[:proj])), 'project facts show what was bought');
+select pg_temp.check((select delivered >= 0 and schools >= 1 from public.feed_totals()), 'the totals strip has figures');
+reset role;
+select pg_temp.as_user(null);
+select pg_temp.check(pg_temp.fails($$select * from public.feed_totals()$$), 'signed-out visitors cannot read the totals');
+reset role;
+
 -- Reactions.
 select pg_temp.as_user((select a from f));
 insert into public.feed_reactions (project_id, post_key, emoji) values (:proj, :'epost', '🔥');
