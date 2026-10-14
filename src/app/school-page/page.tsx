@@ -17,6 +17,7 @@ import { ord } from "@/lib/growth";
 import { joinLink } from "@/lib/join-link";
 import { projectPhotoUrl, STATE_LABEL, type ProjectState } from "@/lib/projects";
 import { money } from "@/lib/sponsor";
+import { SchoolFeed } from "@/components/school-feed";
 import { supabase } from "@/lib/supabase";
 import type { Member } from "@/lib/types";
 import { SCHOOL_MINIMUM, SCHOOL_TRIAL } from "@/lib/school";
@@ -133,6 +134,10 @@ function SchoolView({ p, season, seasonName, onChange, how }: { p: Page; season:
       {classStage && <ClassTable emis={s.emis} stage={classStage} season={season} school={s.name} />}
       <Players players={p.players} />
       <GivenCard p={p} />
+      <div className="card narrow">
+        <h2>Happening at {s.name}</h2>
+        <SchoolFeed emis={s.emis} />
+      </div>
     </>
   );
 }
@@ -299,11 +304,8 @@ function GivenCard({ p }: { p: Page }) {
         </>
       ) : null}
 
-      {projects.length > 0 && (
-        <ul className="sch-projects">
-          {projects.map((x) => <ProjectRow key={x.id} x={x} />)}
-        </ul>
-      )}
+      <ProjectList title="Active" projects={projects.filter((x) => x.state === "open" || x.state === "funded" || x.state === "ordered")} />
+      <ProjectList title="Completed" projects={projects.filter((x) => x.state === "delivered")} />
 
       {p.partners.length > 0 && (
         <div className="sch-partner">
@@ -329,6 +331,19 @@ function GivenCard({ p }: { p: Page }) {
   );
 }
 
+/** One group of a school's projects under its own heading; nothing shows when the group is empty. */
+function ProjectList({ title, projects }: { title: string; projects: Proj[] }) {
+  if (!projects.length) return null;
+  return (
+    <>
+      <h3 className="sch-proj-title">{title}</h3>
+      <ul className="sch-projects">
+        {projects.map((x) => <ProjectRow key={x.id} x={x} />)}
+      </ul>
+    </>
+  );
+}
+
 function ProjectRow({ x }: { x: Proj }) {
   const pct = x.target_minor ? Math.min(100, Math.round((x.pledged_minor / x.target_minor) * 100)) : 0;
   return (
@@ -347,6 +362,7 @@ function ProjectRow({ x }: { x: Proj }) {
             {x.state === "open" ? `closes ${day(x.deadline)}` : `${x.backers} ${x.backers === 1 ? "backer" : "backers"}`}
           </span>
         </div>
+        {x.photos.length > 1 && <div className="sch-gallery">{x.photos.slice(0, -1).map((ph) => <ProjectPhoto key={ph.image_path} photo={ph} />)}</div>}
         {x.state === "open" && <Link className="small" href="/giving/">Back this project</Link>}
       </div>
     </li>

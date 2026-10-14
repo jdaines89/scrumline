@@ -10,6 +10,10 @@ interface Held {
   body: string; image_path: string | null; held_at: string; posted_at: string;
   reports: number; reasons: string | null; author_removed: number; author_caught: number;
 }
+interface HeldComment {
+  comment_id: number; school: string; project: string; author_id: string; author_name: string | null;
+  body: string; held_at: string; reasons: string | null; author_removed: number;
+}
 interface Caught { id: number; author_name: string | null; place: string; pool_name: string | null; body: string; category: string; created_at: string }
 interface Ban { user_id: string; name: string; until: string; reason: string }
 interface Problem { id: number; name: string | null; email: string | null; body: string; page: string | null; error: string | null; device: string | null; created_at: string; done_at: string | null }
@@ -24,12 +28,14 @@ export default function AdminModeration() {
   const [held, setHeld] = useState<Held[] | null>(null);
   const [caught, setCaught] = useState<Caught[] | null>(null);
   const [bans, setBans] = useState<Ban[] | null>(null);
+  const [comments, setComments] = useState<HeldComment[] | null>(null);
   const [problems, setProblems] = useState<Problem[] | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => {
     const [h, c, b] = await Promise.all([supabase.rpc("mod_queue"), supabase.rpc("mod_caught", { p_limit: 50 }), supabase.rpc("mod_bans")]);
     supabase.rpc("mod_problems", { p_limit: 50 }).then(({ data }) => setProblems((data ?? []) as Problem[]));
+    supabase.rpc("mod_comment_queue").then(({ data }) => setComments((data ?? []) as HeldComment[]));
     setHeld((h.data ?? []) as Held[]);
     setCaught((c.data ?? []) as Caught[]);
     setBans((b.data ?? []) as Ban[]);
@@ -41,6 +47,12 @@ export default function AdminModeration() {
   async function decide(h: Held, action: "keep" | "remove" | "ban") {
     const { data, error } = await supabase.rpc("mod_decide", { p_message: h.message_id, p_action: action });
     if (!error && action !== "keep" && h.image_path) await supabase.storage.from("chat-photos").remove([h.image_path]);
+    setMsg(error ? { ok: false, text: error.message } : { ok: true, text: `${data as string}.` });
+    load();
+  }
+
+  async function decideComment(c: HeldComment, action: "keep" | "remove" | "ban") {
+    const { data, error } = await supabase.rpc("mod_comment_decide", { p_comment: c.comment_id, p_action: action });
     setMsg(error ? { ok: false, text: error.message } : { ok: true, text: `${data as string}.` });
     load();
   }
@@ -76,6 +88,29 @@ export default function AdminModeration() {
               <button type="button" className="danger" onClick={() => decide(h, "remove")}>Remove</button>
               <button type="button" className="danger" onClick={() => decide(h, "ban")}>Remove and ban</button>
               <button type="button" className="linkish small" onClick={() => run(supabase.rpc("mod_clear_avatar", { p_user: h.author_id }), "Profile picture cleared.")}>Clear their profile picture</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card narrow">
+        <h2>Reported comments</h2>
+        <p className="sub">Comments on school feed posts. Hidden from everyone until you decide, with the same keep, remove and ban rules as messages.</p>
+        {comments === null && <div className="skeleton" style={{ height: 60 }} />}
+        {comments?.length === 0 && <p className="small muted" style={{ marginBottom: 0 }}>Nothing to look at.</p>}
+        {comments?.map((c) => (
+          <div key={c.comment_id} className="task">
+            <strong>{c.author_name ?? "Former member"}</strong>
+            <span className="small muted">{c.school} · {c.project} · {when(c.held_at)}</span>
+            <blockquote className="modquote">{c.body}</blockquote>
+            <div className="small muted">
+              {c.reasons ? `Reported for ${c.reasons.split(", ").map((r) => REASON[r] ?? r).join(", ")}` : "Reported"}
+              {c.author_removed > 0 ? ` · ${c.author_removed} removed in 30 days` : ""}
+            </div>
+            <div className="modacts">
+              <button type="button" className="ghost" onClick={() => decideComment(c, "keep")}>Keep</button>
+              <button type="button" className="danger" onClick={() => decideComment(c, "remove")}>Remove</button>
+              <button type="button" className="danger" onClick={() => decideComment(c, "ban")}>Remove and ban</button>
             </div>
           </div>
         ))}
