@@ -1956,8 +1956,8 @@ button.lgc-recruit { margin: 0; padding: 10px 16px; border-left: 0; border-top: 
 .match .pfinal-s { font-size: 30px; }
 /* Every card wears the same soft edge and a faint glow under its header;
    the Banker's is the same thing in gold, so it stands out without shouting. */
-.match { box-shadow: 0 0 0 1px rgba(167, 192, 180, 0.35), 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 28px rgba(0, 0, 0, 0.28); }
-.match .mhead { background: linear-gradient(180deg, rgba(167, 192, 180, 0.09), transparent); }
+.match { box-shadow: 0 0 0 1px rgba(167, 192, 180, 0.5), 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 28px rgba(0, 0, 0, 0.28); }
+.match .mhead { background: linear-gradient(180deg, rgba(167, 192, 180, 0.16), transparent); }
 .match.banker { box-shadow: 0 0 0 1px rgba(224, 178, 60, 0.45), 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 28px rgba(0, 0, 0, 0.28); }
 .match.banker .mhead { background: linear-gradient(180deg, rgba(224, 178, 60, 0.13), rgba(224, 178, 60, 0.03)); }
 .mwhen { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
