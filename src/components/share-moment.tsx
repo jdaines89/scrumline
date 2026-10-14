@@ -219,6 +219,11 @@ export async function drawMoment(m: Moment, name: string, colours: (string | nul
   g.letterSpacing = "0px";
   g.fillStyle = CHALK; g.font = font(600, 29); g.fillText(DESCRIPTOR, pad, top + 180, W - pad * 2);
   g.fillStyle = MUTED; g.font = font(500, 32); g.fillText("Helping fund South African schools.", pad, top + 228);
+  if (m.example) {
+    g.save(); g.font = font(800, 26); g.letterSpacing = "6px"; g.textAlign = "right"; g.fillStyle = "rgba(241,239,230,.6)";
+    g.fillText("EXAMPLE", W - pad, H - 40); g.restore();
+  }
+
   // A photo-like picture: JPEG keeps the grain at a size that sends quickly.
   return new Promise((ok) => c.toBlob((b) => ok(b!), "image/jpeg", .9));
 }

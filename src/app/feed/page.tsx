@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FeedTotals, SchoolFeed } from "@/components/school-feed";
+import { FeedTotals, OverTheLineHead, SchoolFeed } from "@/components/school-feed";
 import { provinceName } from "@/lib/crest";
 
 const CODES = ["EC", "FS", "GP", "KZN", "LP", "MP", "NC", "NW", "WC"];
@@ -11,8 +11,7 @@ export default function FeedPage() {
   const [province, setProvince] = useState("");
   return (
     <div className="card">
-      <h2>Over the Line</h2>
-      <p className="sub">Projects opening, getting backed and arriving at schools across South Africa.</p>
+      <OverTheLineHead intro="Real projects at real schools: toilets, books, water, kit. Players and sponsors push each one forward, and every call you make helps carry it over the line." />
       <FeedTotals />
       <select aria-label="Province" value={province} onChange={(e) => setProvince(e.target.value)} style={{ marginBottom: 12 }}>
         <option value="">All provinces</option>
