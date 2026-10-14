@@ -98,17 +98,21 @@ function Predict() {
   const shown = useRef<string | null>(null);
   // Per match: whether the last thing typed is saving, saved or failed to save.
   const [saveState, setSaveState] = useState<Record<string, { s: SaveState; error?: string }>>({});
-  const saver = useRef<ReturnType<typeof callSaver<[number, number]>> | null>(null);
+  const saver = useRef<ReturnType<typeof callSaver<[number, number, number]>> | null>(null);
   const { typing, typed, left } = useScoreTyping();
   const wrong = (box: string, v: string) => bad(v) && typing !== box;
-  saver.current ??= callSaver<[number, number]>({
-    send: async (matchId, [h, a]) => {
+  // The saver lives for the whole page, across tournament switches, so each call carries the entry
+  // it was typed under. It used to keep the first tournament's entry, filing later calls under it.
+  const entryNow = useRef(entry!.id);
+  entryNow.current = entry!.id;
+  saver.current ??= callSaver<[number, number, number]>({
+    send: async (matchId, [h, a, entryId]) => {
       const { error } = await supabase.from("predictions").upsert(
-        { entry_id: entry!.id, match_id: matchId, home_score: h, away_score: a });
+        { entry_id: entryId, match_id: matchId, home_score: h, away_score: a });
       return error?.message ?? null;
     },
-    onSaved: (matchId, [h, a]) => setPreds((p) => new Map(p).set(matchId,
-      { entry_id: entry!.id, match_id: matchId, home_score: h, away_score: a, is_banker: p.get(matchId)?.is_banker ?? false })),
+    onSaved: (matchId, [h, a, entryId]) => entryId === entryNow.current && setPreds((p) => new Map(p).set(matchId,
+      { entry_id: entryId, match_id: matchId, home_score: h, away_score: a, is_banker: p.get(matchId)?.is_banker ?? false })),
     onState: (matchId, s, error) => setSaveState((x) => ({ ...x, [matchId]: { s, error } })),
   });
   // Leaving the page or the app mid-typing still sends the last call typed.
@@ -262,7 +266,7 @@ function Predict() {
     setDraft((d) => ({ ...d, [matchId]: [h, a] }));
     setMsg(null);
     if (h === "" || a === "" || !isRugbyScore(+h) || !isRugbyScore(+a)) { saver.current!.drop(matchId); setSaveState((x) => { const n = { ...x }; delete n[matchId]; return n; }); return; }
-    saver.current!.set(matchId, [+h, +a]);
+    saver.current!.set(matchId, [+h, +a, entry!.id]);
   }
 
   async function back(matchId: string) {
