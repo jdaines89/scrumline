@@ -250,7 +250,10 @@ nav.tabs .count.at { background: var(--gold); color: #1a1407; }
 @media (max-width: 560px) {
   nav.tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 0; }
   nav.tabs::-webkit-scrollbar { display: none; }
-  nav.tabs a { padding: 10px 2px; font-size: 13px; white-space: nowrap; flex: 1 0 auto; text-align: center; }
+  nav.tabs a { padding: 10px 4px; font-size: 13px; white-space: nowrap; flex: 1 0 auto; text-align: center; }
+  nav.tabs a + a { position: relative; }
+  nav.tabs a + a::before { content: ""; position: absolute; left: 0; top: 50%; height: 14px; margin-top: -7px; border-left: 1px solid rgba(255, 255, 255, .16); }
+  nav.tabs a.on::before, nav.tabs a.on + a::before { display: none; }
   nav.tabs .signout { white-space: nowrap; }
 }
 
