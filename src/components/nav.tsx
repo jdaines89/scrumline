@@ -16,7 +16,7 @@ const TABS = [
   ["/leagues/", "Leagues"],
   ["/chat/", "Chat"],
   ["/fixtures/", "Matches"],
-  ["/feed/", "Try Time"],
+  ["/feed/", "Try\u00a0Time"],
 ];
 
 /** Screens that sit under a tab without being its own address: a league's table under Leagues, the log under Matches. */
