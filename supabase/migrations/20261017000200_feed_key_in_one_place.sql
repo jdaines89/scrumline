@@ -42,8 +42,8 @@ declare
 begin
   if to_regclass('net._http_response') is not null then
     execute $q$select count(*) from net._http_response r
-               where r.status_code in (401, 403) and r.created > $1 - interval '2 hours'
-                 and r.content like '%API key%'$q$
+               where r.status_code in (401, 403, 429) and r.created > $1 - interval '2 hours'
+                 and (r.content like '%Sports API%' or r.content like '%thesportsdb%')$q$
       into n using p_now;
     if n > 0 then
       kind := 'feed';
@@ -55,10 +55,10 @@ begin
   select count(*) into n
   from public.matches m join public.seasons s on s.id = m.season
   where not s.is_replay and m.status = 'SCHEDULED'
-    and m.kickoff_at < p_now - interval '4 hours' and m.kickoff_at > p_now - interval '7 days';
+    and m.kickoff_at < p_now - interval '3 hours' and m.kickoff_at > p_now - interval '7 days';
   if n > 0 then
     kind := 'scores';
-    detail := n || ' match' || case when n = 1 then ' has' else 'es have' end || ' no score yet, over 4 hours after kickoff.';
+    detail := n || ' match' || case when n = 1 then ' has' else 'es have' end || ' no score yet, over 3 hours after kickoff.';
     return next;
   end if;
 
