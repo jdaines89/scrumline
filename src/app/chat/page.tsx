@@ -370,7 +370,8 @@ function Chat({ onBack }: { onBack?: () => void }) {
   // Swipe right on a bubble to reply. Vertical drags stay as scrolling.
   const swipeHandlers = (m: ChatMessage) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.pointerType === "mouse" || !canReply) return;
+      // A swipe from the screen's very edge opens the menu instead.
+      if (e.pointerType === "mouse" || !canReply || e.clientX < 24) return;
       swipe.current = { id: m.id, x: e.clientX, y: e.clientY, dx: 0, el: e.currentTarget, moved: false };
     },
     onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {

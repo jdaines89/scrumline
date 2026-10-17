@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { Icon, type MenuItem, SideMenu } from "@/components/side-menu";
 import { isBusinessSession, isSchoolSession } from "@/lib/account";
 import { readCache } from "@/lib/cache";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +19,12 @@ const TABS = [
   ["/fixtures/", "Matches"],
   ["/feed/", "Try\u00a0Time"],
 ];
+const ICON: Record<string, string> = {
+  "/": "home", "/predict/": "predict", "/leagues/": "leagues", "/chat/": "chat", "/fixtures/": "matches", "/feed/": "trytime",
+  "/sponsor/results/": "business", "/school/": "school",
+};
+/** On a phone these five sit in the bar along the bottom; everything else is in the menu. */
+const BAR = ["/", "/predict/", "/leagues/", "/chat/", "/fixtures/"];
 
 /** Screens that sit under a tab without being its own address: a league's table under Leagues, the log under Matches. */
 const UNDER: Record<string, string[]> = { "/leagues/": ["/leaderboard", "/rankings"], "/fixtures/": ["/standings"] };
@@ -112,25 +119,61 @@ export function Nav() {
     if (k) track(k);
   }, [player, path]);
   if (!uid) return <nav className="tabs" />;
+  const out = <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>;
+  const asItems = (rows: [string, string, string, boolean][]): MenuItem[] => rows.map(([href, label, icon, on]) => ({ href, label, icon, on }));
   if (business) return (
+    <>
+    <SideMenu main={asItems([
+      ["/sponsor/results/", "Your results", "business", Boolean(path?.startsWith("/sponsor/results"))],
+      ["/sponsor/", "Sponsor a school", "school", Boolean(path?.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament|prizes)/.test(path))],
+      ["/sponsor/tournament/", "Sponsor a tournament", "leagues", Boolean(path?.startsWith("/sponsor/tournament"))],
+      ["/giving/", "Giving", "giving", Boolean(path?.startsWith("/giving"))],
+      ["/sponsor/profile/", "Profile", "profile", Boolean(path?.startsWith("/sponsor/profile"))],
+    ])} more={[]} />
     <nav className="tabs">
       <Link href="/sponsor/results/" className={path?.startsWith("/sponsor/results") ? "on" : ""}>Your results</Link>
       <Link href="/sponsor/" className={path?.startsWith("/sponsor") && !/^\/sponsor\/(profile|results|tournament|prizes)/.test(path) ? "on" : ""}>Sponsor a school</Link>
       <Link href="/sponsor/tournament/" className={path?.startsWith("/sponsor/tournament") ? "on" : ""}>Sponsor a tournament</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
       <Link href="/sponsor/profile/" className={path?.startsWith("/sponsor/profile") ? "on" : ""}>Profile</Link>
-      <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
+      {out}
     </nav>
+    </>
   );
   if (schoolOnly) return (
+    <>
+    <SideMenu main={asItems([
+      ["/school/", "Your school", "school", Boolean(path?.startsWith("/school"))],
+      ["/giving/", "Giving", "giving", Boolean(path?.startsWith("/giving"))],
+    ])} more={[]} />
     <nav className="tabs">
       <Link href="/school/" className={path?.startsWith("/school") ? "on" : ""}>Your school</Link>
       <Link href="/giving/" className={path?.startsWith("/giving") ? "on" : ""}>Giving</Link>
-      <button type="button" className="linkish tab-out" onClick={() => supabase.auth.signOut()}>Sign out</button>
+      {out}
     </nav>
+    </>
   );
+  const tabs = [...TABS, ...(sponsors ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])];
+  const isOn = (href: string) => path === href || (UNDER[href] ?? []).some((u) => path?.startsWith(u)) || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? ""));
+  const badge = (href: string) => href === "/chat/" && path !== href && unread.count > 0
+    ? <span className={unread.tagged ? "count at" : "count"}>{unread.tagged ? "@" : unread.count}</span> : null;
+  const item = ([href, label]: string[]): MenuItem => ({ href, label: label.replace("\u00a0", " "), icon: ICON[href], on: isOn(href), badge: badge(href) });
   return (
     <>
+    <SideMenu
+      // The five in the bottom bar aren't listed again here.
+      main={[
+        ...tabs.filter(([href]) => !BAR.includes(href)).map(item),
+        { href: "/rankings/", label: "Rankings", icon: "rankings", on: Boolean(path?.startsWith("/rankings")) },
+        { href: "/schools/", label: "Schools", icon: "school", on: Boolean(path?.startsWith("/schools")) },
+        { href: "/standings/", label: "Log", icon: "log", on: Boolean(path?.startsWith("/standings")) },
+      ]}
+      more={[
+        { href: "/me/", label: "Profile and settings", icon: "profile", on: path === "/me/" },
+        { href: "/achievements/", label: "Achievements", icon: "achievements", on: path === "/achievements/" },
+        { href: "/giving/", label: "Giving", icon: "giving", on: Boolean(path?.startsWith("/giving")) },
+        { href: "/rules/", label: "Rules", icon: "rules", on: Boolean(path?.startsWith("/rules")) },
+      ]} />
     <Link href="/achievements/" className={`achbtn${path === "/achievements/" ? " on" : ""}`} aria-label="Achievements">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4" />
@@ -143,14 +186,25 @@ export function Nav() {
         </svg>
       )}
     </Link>
-    <nav className="tabs">
-      {[...TABS, ...(sponsors ? [["/sponsor/results/", "Business"]] : []), ...(schoolContact ? [["/school/", "School"]] : [])].map(([href, label]) => (
-        <Link key={href} href={href} className={path === href || (UNDER[href] ?? []).some((u) => path?.startsWith(u)) || (href === "/sponsor/results/" && /^\/(sponsor|giving)/.test(path ?? "")) ? "on" : ""}>
+    <nav className="tabs player">
+      {tabs.map(([href, label]) => (
+        <Link key={href} href={href} className={isOn(href) ? "on" : ""}>
           {label}
-          {href === "/chat/" && path !== href && unread.count > 0 &&
-            <span className={unread.tagged ? "count at" : "count"}>{unread.tagged ? "@" : unread.count}</span>}
+          {badge(href)}
         </Link>
       ))}
+    </nav>
+    <nav className="bottombar" aria-label="Main">
+      {BAR.map((href) => {
+        const [, label] = TABS.find(([h]) => h === href)!;
+        return (
+          <Link key={href} href={href} className={isOn(href) ? "on" : ""}>
+            <Icon name={ICON[href]} size={22} />
+            <span>{label}</span>
+            {badge(href)}
+          </Link>
+        );
+      })}
     </nav>
     </>
   );
