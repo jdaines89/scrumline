@@ -1114,10 +1114,6 @@ button.wip-save { width: 100%; margin-top: 16px; padding: 12px; }
 .code-foot .linkish { font-weight: 500; font-size: 14px; }
 
 /* Another tournament is on while this one rests (the URC break): one calm line on Home. */
-.also-on { display: flex; gap: 14px; align-items: center; justify-content: space-between; }
-.also-on p { margin: 0; }
-.also-on button { flex: none; padding: 8px 14px; font-size: 14px; }
-@media (max-width: 560px) { .also-on { flex-direction: column; align-items: stretch; } .also-on button { align-self: flex-end; } }
 
 /* Rules: plain lists in calm cards. */
 .rules h3 { margin: 0 0 8px; }
@@ -1889,12 +1885,6 @@ body {
 /* Tab bars that span the card, so the scope bar and the stage bar under it line up. */
 .seg.wide { display: flex; width: 100%; }
 .seg.wide button { flex: 1 1 0; padding-left: 4px; padding-right: 4px; white-space: nowrap; }
-.also-soon { display: grid; gap: 12px; }
-.also-row { display: flex; gap: 14px; align-items: center; justify-content: space-between; }
-.also-row p { margin: 0; font-size: 15px; line-height: 1.45; }
-.also-acts { flex: none; display: flex; gap: 8px; }
-.also-row button { flex: none; padding: 8px 14px; font-size: 14px; }
-@media (max-width: 560px) { .also-row { flex-direction: column; align-items: stretch; } .also-acts { align-self: flex-end; } }
 
 /* Leagues: one flat card per league (no boxes inside a big box), a rank badge, and the invite as a footer strip. */
 .lgpage { margin-bottom: 16px; }
@@ -2054,17 +2044,8 @@ body { font-size: var(--fs-body); line-height: 1.45; }
 .card .tc-name.tc-none { font-size: var(--fs-h2); }
 .tc-round-name { font-size: 14px; }
 .tc-count { font-size: 13px; }
-.also-row p { font-size: var(--fs-body); line-height: 1.45; }
-.also-row button { padding: 7px 14px; min-height: 36px; }
 .smeter-name { font-size: 15px; }
 .smeter-line { font-size: var(--fs-small); }
-/* "Play it" stays beside the words on phones too, rather than on a line of its own. */
-.also-on p { font-size: var(--fs-body); line-height: 1.45; }
-.also-on button { padding: 7px 14px; min-height: 36px; }
-@media (max-width: 560px) {
-  .also-row { gap: 10px; }
-  .also-on { flex-direction: row; align-items: center; gap: 12px; }
-}
 
 /* Leagues */
 .lg-head h2 { font-size: var(--fs-title); }
