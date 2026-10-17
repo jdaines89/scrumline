@@ -19,6 +19,8 @@ const ICONS: Record<string, string> = {
   business: "M3 8h18v12H3zM8 8V5h8v3M3 13h18",
   school: "M12 4L2 9l10 5 10-5zM6 11v5c3 2 9 2 12 0v-5",
   giving: "M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z",
+  rankings: "M5 20V10M12 20V4M19 20v-7M3 20h18",
+  log: "M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01",
   rules: "M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7",
   report: "M12 3l9 16H3zM12 10v4M12 17v.5",
   signout: "M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10",

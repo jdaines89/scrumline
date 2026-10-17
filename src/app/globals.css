@@ -2312,6 +2312,7 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
   .sm-who b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sm-who small { color: var(--muted); font-size: 13px; }
   .sm-group { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .sm-panel > .sm-group:first-child { border-top: 0; }
   .sm-group a, .sm-group button {
     display: flex; align-items: center; gap: 14px; width: 100%; min-height: 46px; padding: 0 10px; border: 0; border-radius: 10px;
     background: none; color: var(--text); font: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
