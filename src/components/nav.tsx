@@ -161,16 +161,14 @@ export function Nav() {
   return (
     <>
     <SideMenu
-      who={<Link href="/me/" className={`sm-who${path === "/me/" ? " on" : ""}`}>
-        {me ? <Avatar member={me} size={40} /> : <Icon name="profile" />}
-        <span><b>{me?.display_name ?? "Your profile"}</b><small>Your profile</small></span>
-      </Link>}
-      main={tabs.map(item)}
-      more={[
+      // The five in the bottom bar aren't listed again here.
+      main={[
+        ...tabs.filter(([href]) => !BAR.includes(href)).map(item),
         { href: "/achievements/", label: "Achievements", icon: "achievements", on: path === "/achievements/" },
         { href: "/giving/", label: "Giving", icon: "giving", on: Boolean(path?.startsWith("/giving")) },
         { href: "/rules/", label: "Rules", icon: "rules", on: Boolean(path?.startsWith("/rules")) },
-      ]} />
+      ]}
+      more={[]} />
     <Link href="/achievements/" className={`achbtn${path === "/achievements/" ? " on" : ""}`} aria-label="Achievements">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4" />
