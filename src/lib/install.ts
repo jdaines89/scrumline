@@ -17,3 +17,16 @@ export function installHow(ua: string, platform = "", touchPoints = 0): InstallH
   if (/Android/i.test(ua)) return "android";
   return "desktop";
 }
+
+/**
+ * What the alerts card on Home and Predict offers. Installing is never pushed
+ * on anyone: the card only offers it when the browser itself can do it in one
+ * tap. Everyone else (iPhones, Redmi and other phones without one-tap install,
+ * links opened inside WhatsApp) just plays in the browser, with email
+ * reminders, and the steps stay on Profile for anyone who goes looking.
+ */
+export function alertsOffer(state: "unsupported" | "needs-home-screen" | "blocked" | "off" | "on", installable: boolean, installed: boolean): "turn-on" | "install" | null {
+  if (state === "off") return "turn-on";
+  if ((state === "unsupported" || state === "needs-home-screen") && installable && !installed) return "install";
+  return null;
+}

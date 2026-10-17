@@ -109,7 +109,8 @@ export function NotifySettings({ me, onMessage }: { me: Member; onMessage: (ok: 
       {!installed && installable && (
         <button type="button" className="ghost notify-install" onClick={async () => { await install(); }}>Install Scrumline on this phone</button>
       )}
-      {how && !installed && !installable && (
+      {/* Steps only where they're the one way to get push (iPhones). Everyone else just plays in the browser. */}
+      {how && !installed && !installable && state === "needs-home-screen" && (
         <div className="install">
           <div className="pref-text">
             <strong>Install Scrumline on this phone</strong>
