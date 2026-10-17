@@ -2256,3 +2256,78 @@ a.lgc-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
 /* Share my calls: sits under the round heading, quiet like the other ghost buttons. */
 .share-calls { margin: 4px 0 12px; }
 .share-calls .ghost { padding: 10px 16px; }
+
+/* Phone menu: ☰ beside the logo opens a side menu (also a swipe from the left edge); the five main screens sit in a bar along the bottom. */
+.menubtn, .bottombar, .sidemenu { display: none; }
+@media (max-width: 560px) {
+  .menubtn {
+    display: grid; place-items: center; position: absolute; top: 22px; left: 8px; width: 40px; height: 40px; padding: 0;
+    border: 0; border-radius: 10px; background: none; color: var(--text);
+  }
+  .menubtn:active { background: var(--panel); }
+  /* Space for ☰ is kept from the first paint for anyone signed in, so the logo never slides over. */
+  html[data-signed-in] header.top .brand, header.top .shell:has(.menubtn) .brand { padding-left: 44px; }
+  header.top .shell:has(.achbtn) .brand { padding-right: 52px; }
+  .achbtn { display: none; }
+  nav.tabs.player, html[data-signed-in] nav.tabs:empty { display: none; }
+  header.top .shell:has(nav.tabs.player), html[data-signed-in] header.top .shell:has(nav.tabs:empty) { padding-bottom: 14px; }
+  html[data-signed-in] header.top { margin-bottom: 16px; }
+
+  .bottombar {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(17, 36, 29, .96); border-top: 1px solid #3a3320;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .bottombar a {
+    flex: 1 1 0; position: relative; display: grid; justify-items: center; gap: 2px; padding: 4px 0;
+    color: var(--muted); font-size: 11px; font-weight: 500;
+  }
+  .bottombar a:hover { text-decoration: none; }
+  .bottombar a.on { color: var(--gold); }
+  .bottombar .count {
+    position: absolute; top: 0; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--accent); color: #0d1f17; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+  }
+  .bottombar .count.at { background: var(--gold); color: #1a1407; }
+  body:has(.bottombar) { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  /* While typing, the keyboard needs the room. */
+  html:has(input:focus, textarea:focus) .bottombar { display: none; }
+  html:has(input:focus, textarea:focus) body:has(.bottombar) { padding-bottom: 0; }
+
+  .sidemenu { display: block; position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+  .sidemenu.open { pointer-events: auto; }
+  .sm-back { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); opacity: 0; transition: opacity .2s; }
+  .sidemenu.open .sm-back { opacity: 1; }
+  .sm-panel {
+    position: absolute; top: 0; bottom: 0; left: 0; width: min(300px, 82vw); overflow-y: auto;
+    padding: calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
+    background: var(--bg); border-right: 1px solid #3a3320; box-shadow: 8px 0 30px rgba(0, 0, 0, .4);
+    transform: translateX(-102%); transition: transform .22s ease-out;
+  }
+  .sidemenu.open .sm-panel { transform: none; }
+  .sm-who { display: flex; align-items: center; gap: 12px; padding: 8px 10px 16px; color: var(--text); }
+  .sm-who:hover { text-decoration: none; }
+  .sm-who span { display: grid; min-width: 0; }
+  .sm-who b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sm-who small { color: var(--muted); font-size: 13px; }
+  .sm-group { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .sm-group a, .sm-group button {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 46px; padding: 0 10px; border: 0; border-radius: 10px;
+    background: none; color: var(--text); font: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
+  }
+  .sm-group a svg, .sm-group button svg { flex: none; color: var(--muted); }
+  .sm-group a:hover, .sm-group button:hover { text-decoration: none; background: var(--panel); }
+  .sm-group a.on { background: var(--panel); color: var(--gold); }
+  .sm-group a.on svg { color: var(--gold); }
+  .sm-group .count {
+    margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+    background: var(--accent); color: #0d1f17; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+  }
+  .sm-group .count.at { background: var(--gold); color: #1a1407; }
+  html.menu-open { overflow: hidden; }
+  /* Chrome would read a swipe from the edge as Back; here it opens the menu. */
+  html:has(.menubtn) { overscroll-behavior-x: none; }
+}
+@media (max-width: 560px) and (prefers-reduced-motion: reduce) { .sm-panel, .sm-back { transition: none; } }
+@media print { .bottombar, .sidemenu, .menubtn { display: none !important; } }
