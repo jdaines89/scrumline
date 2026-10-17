@@ -7,6 +7,7 @@ export type InstallHow =
   | "in-app"      // a link opened inside WhatsApp, Facebook, Instagram etc.: can't install from here
   | "ios-safari"
   | "ios-other"   // Chrome, Firefox or Edge on iPhone
+  | "mi-browser"  // Xiaomi's own browser (Mi Browser, Mint): no install, use Chrome
   | "android"
   | "desktop";
 
@@ -14,6 +15,7 @@ export function installHow(ua: string, platform = "", touchPoints = 0): InstallH
   if (/FBAN|FBAV|FB_IAB|Instagram|Snapchat|Line\/|WhatsApp|GSA\/|; wv\)/i.test(ua)) return "in-app";
   const ios = /iPad|iPhone|iPod/.test(ua) || (platform === "MacIntel" && touchPoints > 1);
   if (ios) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? "ios-other" : "ios-safari";
+  if (/MiuiBrowser|XiaoMi\/Mint/i.test(ua)) return "mi-browser";
   if (/Android/i.test(ua)) return "android";
   return "desktop";
 }
